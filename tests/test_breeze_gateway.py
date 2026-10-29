@@ -14,6 +14,7 @@ from unittest.mock import patch
 from ai_consultant import AIConsultant
 from market_clock import MarketClock
 from test_self_healing_exit import ROOT, Trader, approved_decision, entry_dossier
+from trading.adapters.account_lease import AccountExecutionLease
 from trading.adapters.gateways import BreezeExecutionGateway, create_execution_gateway
 from trading.adapters.gateways.breeze import broker_time, option_contract
 from trading.application.scheduler import run_scheduler
@@ -169,6 +170,12 @@ class BreezeTests(unittest.TestCase):
         network = patch("urllib.request.urlopen", side_effect=self.server)
         network.start()
         self.addCleanup(network.stop)
+        lock_root = patch.dict("os.environ", {"TRADING_ACCOUNT_LOCK_DIR": str(self.root)})
+        lock_root.start()
+        self.addCleanup(lock_root.stop)
+        self.account_lease = AccountExecutionLease("breeze", "BREEZE_TEST")
+        self.account_lease.__enter__()
+        self.addCleanup(self.account_lease.__exit__, None, None, None)
         self.gateway = self.gateway_new()
 
     def gateway_new(self, arm=True):
@@ -183,6 +190,7 @@ class BreezeTests(unittest.TestCase):
         gateway.rate_limiter.acquire = lambda **kwargs: True
         if arm:
             self.assertTrue(gateway.set_mode("LIVE").get("live_authorized"))
+            gateway.bind_account_lease(self.account_lease)
         return gateway
 
     def trader(self, gateway=None, qty=65):
@@ -219,6 +227,17 @@ class BreezeTests(unittest.TestCase):
         self.assertTrue(gateway.set_mode("LIVE")["error"])
         self.assertFalse(gateway.is_connected())
         self.assertFalse(gateway._live_authorized)
+        self.assertFalse(self.server.posts())
+
+    def test_breeze_unbound_live_gateway_cannot_transmit(self):
+        other = self.gateway_new(arm=False)
+        self.assertTrue(other.set_mode("LIVE").get("live_authorized"))
+        other.register_contract(INSTRUMENT, SYMBOL)
+        reply = other.place_buy_order(INSTRUMENT, 65, 67, request_id="unbound-breeze")
+        self.assertEqual("LIVE_EXECUTION_ACCOUNT_LEASE_REQUIRED", reply["detail"])
+        self.assertFalse(self.server.posts())
+        wire = other._submit_buy_order(SYMBOL, 65, 67, "UNBOUND")
+        self.assertEqual("LIVE_EXECUTION_ACCOUNT_LEASE_REQUIRED", wire["detail"])
         self.assertFalse(self.server.posts())
 
     def test_paper_and_changed_credentials_block_mutations(self):

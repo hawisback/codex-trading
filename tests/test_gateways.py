@@ -18,6 +18,7 @@ from test_self_healing_exit import Trader, approved_decision, entry_dossier, SYM
 from ai_consultant import AIConsultant
 from trading.adapters.gateways import BreezeExecutionGateway, KiteExecutionGateway, create_execution_gateway
 from trading.adapters.gateways.journal import broker_tag
+from trading.adapters.account_lease import AccountExecutionLease
 from trading.adapters.gateways.rate_limiter import TokenBucketRateLimiter
 from trading.application.scheduler import run_scheduler
 
@@ -178,6 +179,13 @@ class GatewayTests(unittest.TestCase):
         http = patch("urllib.request.urlopen", side_effect=self.server)
         http.start()
         self.addCleanup(http.stop)
+        # Offline simulator owns the same local account lease as production.
+        lock_root = patch.dict("os.environ", {"TRADING_ACCOUNT_LOCK_DIR": str(self.root)})
+        lock_root.start()
+        self.addCleanup(lock_root.stop)
+        self.account_lease = AccountExecutionLease("kite", "TEST_ACCOUNT")
+        self.account_lease.__enter__()
+        self.addCleanup(self.account_lease.__exit__, None, None, None)
         self.gateway = self.gateway_new()
 
     def gateway_new(self, *, account="TEST_ACCOUNT", arm=True, journal_name="broker_intents.json"):
@@ -192,6 +200,7 @@ class GatewayTests(unittest.TestCase):
         gateway.quote_limiter.acquire = lambda **kw: True
         if arm:
             self.assertTrue(gateway.set_mode("LIVE").get("live_authorized"))
+            gateway.bind_account_lease(self.account_lease)
         return gateway
 
     def seed(self, qty=130, sell=65):
@@ -252,6 +261,25 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual(before, len(self.server.calls))
         self.gateway.set_mode("PAPER")
         self.assertTrue(self.gateway.place_buy_order(SYMBOL, 65, 67)["error"])
+
+    def test_live_order_without_bound_account_lease_never_transmits(self):
+        other = self.gateway_new(arm=False)
+        self.assertTrue(other.set_mode("LIVE").get("live_authorized"))
+        before = len(self.server.posts())
+        reply = other.place_buy_order(SYMBOL, 65, 67, request_id="unowned-live")
+        self.assertEqual("LIVE_EXECUTION_ACCOUNT_LEASE_REQUIRED", reply["detail"])
+        self.assertEqual(before, len(self.server.posts()))
+        # Even bypassing the high-level intent API cannot POST through the transport.
+        wire = other._submit_buy_order(SYMBOL, 65, 67, "UNOWNED")
+        self.assertEqual("LIVE_EXECUTION_ACCOUNT_LEASE_REQUIRED", wire["detail"])
+        self.assertEqual(before, len(self.server.posts()))
+
+    def test_bound_lease_released_prevents_subsequent_mutation(self):
+        other = self.gateway_new()
+        self.account_lease.__exit__(None, None, None)
+        reply = other.place_buy_order(SYMBOL, 65, 67, request_id="released-live")
+        self.assertEqual("LIVE_EXECUTION_ACCOUNT_LEASE_REQUIRED", reply["detail"])
+        self.assertFalse(self.server.posts())
 
     def test_profile_account_is_verified_and_wrong_account_refuses_live(self):
         other = self.gateway_new(account="WRONG", arm=False)
