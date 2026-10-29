@@ -666,10 +666,12 @@ class PositionLifecycle:
             return {"error": True, "detail": str(exc)}
         qty = self.calculate_compounding_quantity(margin, price)
         affordable = max(0, int((margin - FEE_RESERVE) // (price * LOT_SIZE))) * LOT_SIZE
-        ceiling = int(self.strategy_cfg.get("compounding", {}).get("max_order_quantity") or
-                      self.trading_cfg.get("risk", {}).get("max_order_quantity") or 65)
-        qty = min(qty, affordable, ceiling, MAX_POSITION_QUANTITY)
-        qty = (qty // 65) * LOT_SIZE
+        # The global broker-margin policy, not a strategy-specific maximum,
+        # limits the entry to the owner-approved tier and ten full lots.
+        # The quote-derived limit price was validated above and sizing is
+        # recalculated using freshly retrieved broker available margin.
+        qty = min(qty, affordable, MAX_POSITION_QUANTITY)
+        qty = (qty // LOT_SIZE) * LOT_SIZE
         if qty <= 0:
             return {"error": True, "detail": "INSUFFICIENT_MARGIN_BLOCKED"}
         now = MarketClock.now_ist()
