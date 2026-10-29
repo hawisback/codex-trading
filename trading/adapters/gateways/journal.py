@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from execution_safety import ReconciliationError, SchedulerLock, atomic_save
-from trading.domain.intent_state import proposed_transition
+from trading.domain.intent_state import proposed_transition, needs_reconciliation
 
 WORKSPACE = Path(__file__).resolve().parents[3]
 
@@ -106,6 +106,40 @@ class GatewayJournal:
         with self._lock, SchedulerLock(self.path.with_name(self.path.name + ".writer.lock")):
             self._reload(force=True)  # Always re-read after acquiring OS ownership.
             return self._put(request_id, **updates)
+
+    def prepare_mutation(self, request_id, *, target_order_id, action, target_kind, symbol):
+        """Write a distinct CANCEL/MODIFY intent before the broker mutation.
+
+        This is an account-scoped atomic check+insert. A mutation owns its
+        own request/tag identity, while the existing original order retains
+        the *only* `order_id` field. The target is stored separately so
+        journal.match(order_id=...) stays unambiguous.
+        """
+        if (not isinstance(request_id, str) or not request_id
+                or not isinstance(target_order_id, str) or not target_order_id
+                or action not in ("CANCEL", "MODIFY_STOP", "REPRICE_EXIT")
+                or target_kind not in ("ENTRY", "STOP", "EXIT")
+                or not isinstance(symbol, str) or not symbol):
+            raise ReconciliationError("Invalid existing-order mutation identity")
+        with self._lock, SchedulerLock(self.path.with_name(self.path.name + ".writer.lock")):
+            self._reload(force=True)
+            if self.account is None:
+                raise ReconciliationError("Gateway journal account is unverified")
+            records = self.data["accounts"].get(f"{self.broker}:{self.account}", {})
+            if request_id in records:
+                raise ReconciliationError("Existing mutation request ID cannot be replayed")
+            for record in records.values():
+                if (record.get("kind") == "MUTATION"
+                        and record.get("target_order_id") == target_order_id
+                        and needs_reconciliation(record.get("phase"))):
+                    raise ReconciliationError(
+                        "Unresolved mutation on broker order; reconcile before retry"
+                    )
+            return self._put(
+                request_id, kind="MUTATION", mutation_action=action,
+                target_kind=target_kind, target_order_id=target_order_id,
+                symbol=symbol, phase="PREPARED",
+            )
 
     def transition(self, request_id, next_phase, *, broker_verified=False, **updates):
         """Atomically validate a phase advance against the *latest* journal state.
