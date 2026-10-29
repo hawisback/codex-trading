@@ -209,7 +209,7 @@ class MacdMomentumStrategy:
                     (ce_cross and spot < session_vwap - self.vwap_tolerance_pts)
                     or (pe_cross and spot > session_vwap + self.vwap_tolerance_pts)
                 ):
-                    return neutral("MACD swing rejected by explicitly required VWAP alignment.")
+                    return neutral("MACD swing is fighting explicitly required VWAP alignment.")
                 if distance >= self.vwap_climax_pts:
                     supporting.append(f"VWAP extension {distance:.1f}pts: AI review required")
             for name in ("ema_9", "ema_20"):
