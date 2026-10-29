@@ -3,6 +3,7 @@
 import copy
 import hashlib
 import json
+import math
 import threading
 from pathlib import Path
 from typing import Any
@@ -107,7 +108,8 @@ class GatewayJournal:
             self._reload(force=True)  # Always re-read after acquiring OS ownership.
             return self._put(request_id, **updates)
 
-    def prepare_mutation(self, request_id, *, target_order_id, action, target_kind, symbol):
+    def prepare_mutation(self, request_id, *, target_order_id, action, target_kind, symbol,
+                         target_quantity=None, expected_trigger_price=None, expected_limit_price=None):
         """Write a distinct CANCEL/MODIFY intent before the broker mutation.
 
         This is an account-scoped atomic check+insert. A mutation owns its
@@ -119,8 +121,21 @@ class GatewayJournal:
                 or not isinstance(target_order_id, str) or not target_order_id
                 or action not in ("CANCEL", "MODIFY_STOP", "REPRICE_EXIT")
                 or target_kind not in ("ENTRY", "STOP", "EXIT")
-                or not isinstance(symbol, str) or not symbol):
+                or not isinstance(symbol, str) or not symbol
+                or (target_quantity is not None and
+                    (type(target_quantity) is not int or target_quantity <= 0))
+                or (action == "MODIFY_STOP" and target_kind != "STOP")
+                or (action == "REPRICE_EXIT" and target_kind != "EXIT")):
             raise ReconciliationError("Invalid existing-order mutation identity")
+        for field, value in (
+            ("expected_trigger_price", expected_trigger_price),
+            ("expected_limit_price", expected_limit_price),
+        ):
+            if value is not None and (
+                type(value) not in (int, float)
+                or not math.isfinite(value) or value <= 0
+            ):
+                raise ReconciliationError(f"Invalid {field} in mutation intent")
         with self._lock, SchedulerLock(self.path.with_name(self.path.name + ".writer.lock")):
             self._reload(force=True)
             if self.account is None:
@@ -131,7 +146,7 @@ class GatewayJournal:
             for record in records.values():
                 if (record.get("kind") == "MUTATION"
                         and record.get("target_order_id") == target_order_id
-                        and needs_reconciliation(record.get("phase"))):
+                        and record.get("phase") not in ("REJECTED", "RECONCILED")):
                     raise ReconciliationError(
                         "Unresolved mutation on broker order; reconcile before retry"
                     )
@@ -139,6 +154,9 @@ class GatewayJournal:
                 request_id, kind="MUTATION", mutation_action=action,
                 target_kind=target_kind, target_order_id=target_order_id,
                 symbol=symbol, phase="PREPARED",
+                target_quantity=target_quantity,
+                expected_trigger_price=expected_trigger_price,
+                expected_limit_price=expected_limit_price,
             )
 
     def transition(self, request_id, next_phase, *, broker_verified=False, **updates):
@@ -175,6 +193,14 @@ class GatewayJournal:
             raise ReconciliationError("Broker request identity is immutable")
         records = self.records
         old = records.get(request_id, {})
+        if old and old.get("kind") == "MUTATION":
+            for field in (
+                "kind", "mutation_action", "target_kind",
+                "target_order_id", "symbol", "target_quantity",
+                "expected_trigger_price", "expected_limit_price",
+            ):
+                if field in updates and updates[field] != old.get(field):
+                    raise ReconciliationError("Mutation intent identity/expected prices are immutable")
         record = {**old, **updates, "request_id": request_id, "tag": expected_tag}
         for existing_id, existing in records.items():
             if existing_id != request_id and existing["tag"] == record["tag"]:
