@@ -8,8 +8,10 @@ This package contains historical analysis and backtesting tools, **not the live 
 | --- | --- |
 | `python calc_10k_compound.py` | `python -m research.calculators.calc_10k_compound` |
 | `python calc_50k_oct05_week.py` | `python -m research.calculators.calc_50k_oct05_week` |
+| `python audit_trade_dossier.py` | `python -m research.audits.audit_trade_dossier` |
+| `python inspect_oct05.py` | `python -m research.audits.inspect_oct05` |
 
-Execute from the repository root, with explicit historical data dependencies installed. The original root script names remain **thin compatibility wrappers**. The actual implementations now live in `research/calculators`. No scripts were run as part of this migration.
+Execute from the repository root, with explicit historical data dependencies installed. The original root script names remain **thin compatibility wrappers** for both CLI execution and historical imports. The actual implementations now live in `research/calculators`. No scripts were run as part of this migration.
 
 ## Proposed layout
 

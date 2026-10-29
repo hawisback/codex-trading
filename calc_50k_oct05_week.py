@@ -1,9 +1,7 @@
-"""Backward-compatible launcher; implementation moved to research/calculators.
-
-Historical simulation only. This script does not describe live sizing rules.
-"""
-
-from research.calculators.calc_50k_oct05_week import run_calculation
+"""Compatibility entrypoint. Canonical implementation: research.calculators.calc_50k_oct05_week."""
 
 if __name__ == "__main__":
-    run_calculation()
+    import runpy
+    runpy.run_module("research.calculators.calc_50k_oct05_week", run_name="__main__")
+else:
+    from research.calculators.calc_50k_oct05_week import *  # noqa: F401,F403 - Preserve historical import names
