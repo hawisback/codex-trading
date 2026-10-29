@@ -240,14 +240,14 @@
         "min_invalidation_buffer_pts": 25,
         "min_hist_threshold": 0.2,
         "max_daily_entries": 10,
-        "require_candle_alignment": true,
-        "require_vwap_alignment": true,
+        "require_candle_alignment": false,
+        "require_vwap_alignment": false,
         "vwap_tolerance_pts": 12,
         "vwap_climax_pts": 72,
-        "opening_range_filter_enabled": true,
+        "opening_range_filter_enabled": false,
         "opening_range_buffer_pts": 8,
         "midday_dead_zone_filter": {
-          "enabled": true,
+          "enabled": false,
           "start_minute": 135,
           "end_minute": 240,
           "min_15m_range_pts": 18
@@ -255,8 +255,9 @@
         "use_rolling_2m": true,
         "prior_session_warmup_enabled": true,
         "entry_start_time": "09:30",
-        "early_orb_required": true,
-        "early_orb_cutoff_time": "10:00"
+        "early_orb_required": false,
+        "early_orb_cutoff_time": "10:00",
+        "continuation_max_observations": 8
       },
       "exit": {
         "max_hold_seconds": 21600,

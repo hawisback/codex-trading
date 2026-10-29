@@ -86,6 +86,10 @@ class MacdMomentumStrategy:
         self.ema_proximity_pts = number(entry.get("ema_proximity_pts", 10), minimum=0)
         self.min_invalidation_buffer_pts = number(entry.get("min_invalidation_buffer_pts", 25), minimum=.01)
         self.min_hist_threshold = number(entry.get("min_hist_threshold", .20), minimum=0)
+        self.continuation_max_observations = number(entry.get("continuation_max_observations", 8), minimum=1)
+        if int(self.continuation_max_observations) != self.continuation_max_observations or isinstance(entry.get("continuation_max_observations", 8), bool):
+            raise ValueError("Continuation observation window must be a positive integer")
+        self.continuation_max_observations = int(self.continuation_max_observations)
         self.vwap_tolerance_pts = number(entry.get("vwap_tolerance_pts", 12), minimum=0)
         self.vwap_climax_pts = number(entry.get("vwap_climax_pts", 50), minimum=.01)
         self.opening_range_buffer_pts = number(entry.get("opening_range_buffer_pts", 8), minimum=0)
@@ -162,28 +166,59 @@ class MacdMomentumStrategy:
         except (ValueError, TypeError, KeyError, OverflowError):
             return neutral("Invalid or incomplete timestamped candle history.")
         macd, signal, hist = calculate_macd(closes, self.fast_period, self.slow_period, self.signal_period)
-        ce_cross = macd[-1] > signal[-1] and macd[-2] <= signal[-2]
-        pe_cross = macd[-1] < signal[-1] and macd[-2] >= signal[-2]
-        if not (ce_cross or pe_cross):
-            return neutral(f"2m MACD in-range: MACD={macd[-1]:.2f}, Signal={signal[-1]:.2f}; no fresh crossover.")
-        if abs(hist[-1]) < self.min_hist_threshold:
-            return neutral(f"2m MACD crossover rejected: Histogram ({hist[-1]:+.2f}) below threshold ({self.min_hist_threshold:.2f}).")
-        direction = "CE" if ce_cross else "PE"
+        # A verified same-direction MACD state may continue for a bounded
+        # number of *completed observations* after its most recent cross.
+        # Never infer a swing from the MACD sign alone: an actual crossing
+        # must exist inside this window, with no later opposite cross.
+        last_cross = None
+        for index in range(len(macd) - 1, max(0, len(macd) - 1 - self.continuation_max_observations), -1):
+            bullish = macd[index] > signal[index] and macd[index - 1] <= signal[index - 1]
+            bearish = macd[index] < signal[index] and macd[index - 1] >= signal[index - 1]
+            if bullish or bearish:
+                last_cross = ("CE" if bullish else "PE", len(macd) - 1 - index)
+                break
+        if last_cross is None:
+            return neutral("No recent completed MACD crossover or valid swing continuation.")
+        direction, cross_age = last_cross
+        sign = 1 if direction == "CE" else -1
+        if sign * hist[-1] < self.min_hist_threshold:
+            return neutral("MACD swing lost directional histogram conviction.")
+        ce_cross, pe_cross = direction == "CE", direction == "PE"
+        setup_label = "crossover" if cross_age == 0 else f"continuation ({cross_age} observations after cross)"
         try:
             spot = number(ctx.get("spot"), minimum=.01)
-            session_vwap = number(ctx.get("session_vwap"), minimum=.01)
+            raw_vwap = ctx.get("session_vwap")
+            try:
+                session_vwap = number(raw_vwap, minimum=.01)
+            except (TypeError, ValueError, OverflowError):
+                session_vwap = None
+            if self.require_vwap_alignment and session_vwap is None:
+                return neutral("Required VWAP reading unavailable.")
             if self.require_candle_alignment:
                 body = latest["close"] - number(latest["open"], minimum=.01)
                 if (ce_cross and body < 0) or (pe_cross and body > 0):
                     return neutral(f"2m MACD {direction} crossover rejected: Trigger candle opposes crossover.")
-            if self.require_vwap_alignment and (
-                (ce_cross and spot < session_vwap - self.vwap_tolerance_pts)
-                or (pe_cross and spot > session_vwap + self.vwap_tolerance_pts)
-            ):
-                return neutral(f"2m MACD {direction} crossover rejected: Spot is fighting session VWAP flow.")
-            distance = abs(spot - session_vwap)
-            if distance >= self.vwap_climax_pts:
-                return neutral(f"2m MACD {direction} cross rejected: Spot extended {distance:.1f} pts from VWAP (>= {self.vwap_climax_pts:.1f} pts climax cap).")
+            supporting = []
+            if session_vwap is None:
+                supporting.append("VWAP unavailable; alignment unconfirmed")
+            else:
+                distance = abs(spot - session_vwap)
+                aligned = (ce_cross and spot >= session_vwap) or (pe_cross and spot <= session_vwap)
+                supporting.append(f"VWAP {'aligned' if aligned else 'countertrend'}; distance={distance:.1f}pts")
+                if self.require_vwap_alignment and (
+                    (ce_cross and spot < session_vwap - self.vwap_tolerance_pts)
+                    or (pe_cross and spot > session_vwap + self.vwap_tolerance_pts)
+                ):
+                    return neutral("MACD swing rejected by explicitly required VWAP alignment.")
+                if distance >= self.vwap_climax_pts:
+                    supporting.append(f"VWAP extension {distance:.1f}pts: AI review required")
+            for name in ("ema_9", "ema_20"):
+                try:
+                    level = number(ctx.get(name), minimum=.01)
+                    supporting.append(f"{name}: {'aligned' if (ce_cross and spot >= level) or (pe_cross and spot <= level) else 'countertrend'}")
+                except (TypeError, ValueError, OverflowError):
+                    supporting.append(f"{name}: unavailable")
+
             early_orb = self.early_orb_required and now.strftime("%H:%M") < self.early_orb_cutoff_time
             if self.opening_range_filter_enabled or early_orb:
                 orh = max(number(b["high"], minimum=.01) for b in candles[:15])
@@ -227,6 +262,8 @@ class MacdMomentumStrategy:
             number(invalidation, minimum=.01)
         except (ValueError, TypeError, KeyError, OverflowError):
             return neutral("Required Spot/VWAP/EMA or structural prices are missing, non-finite or invalid.")
-        reason = (f"2m MACD {direction} crossover: MACD={macd[-1]:.2f}, Signal={signal[-1]:.2f}, "
-                  f"Histogram={hist[-1]:+.2f}, Spot={spot:.1f}, VWAP={session_vwap:.1f}. " + "; ".join(confirmation))
+        reason = (f"Completed 2m MACD {direction} {setup_label}: MACD={macd[-1]:.2f}, "
+                  f"Signal={signal[-1]:.2f}, Histogram={hist[-1]:+.2f}, Spot={spot:.1f}; "
+                  f"structure invalidation={invalidation:.1f}; " + "; ".join(supporting + confirmation)
+                  + ". Candidate only; Chat Companion must independently approve.")
         return CandidateSignal("BUY_" + direction, [reason], "MACD_2M_MOMENTUM", invalidation)

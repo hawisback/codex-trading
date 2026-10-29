@@ -99,6 +99,15 @@ class DossierService:
         dossier.setup_type = decision.get("setup_type", "TREND_PULLBACK")
         dossier.candidate_timestamp = decision.get("candidate_timestamp") or MarketClock.now_ist().isoformat()
         dossier.invalidation_level = decision.get("invalidation_level")
+        # Preserve exactly the candidate's deterministic signal evidence in
+        # the Chat Companion dossier, including crossover age/continuation,
+        # countertrend VWAP/EMA observations and structural invalidation.
+        if dossier.setup_type == "MACD_2M_MOMENTUM":
+            reasons = decision.get("reasons") or []
+            dossier.trap_advisories.extend(
+                "MACD CANDIDATE EVIDENCE (not an approval): " + str(reason)
+                for reason in reasons if isinstance(reason, str)
+            )
         dossier.risk_policy = dict(self.stop_policy)
         if dossier.setup_type == "MACD_2M_MOMENTUM":
             # Match the completed 5m EMAs used by the strategy, rather than the
