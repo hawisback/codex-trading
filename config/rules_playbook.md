@@ -138,3 +138,9 @@ When evaluating candidate trades against these deterministic rules or presenting
 5. **Verdict:**
    - `APPROVED` $\to$ Enter trade with specified trailing parameters.
    - `VETOED` $\to$ Stand aside and preserve capital.
+
+## POL-06 V1 — MACD Swing / Chat Companion Operating Contract (R06 review branch)
+
+The live entry path is two-stage: (1) the completed rolling two-minute MACD crossover **or up to eight completed continuing observations** generates a directional candidate and records its swing invalidation; (2) the real Chat Companion in `--ai-mode chat` must independently approve that candidate before OMS risk and quote revalidation. An AI veto, missing verdict, stale approval, or any hard execution/risk failure blocks BUY. `playbook` is deterministic and **not** an alternative approval mode for LIVE orders. Broker protective stops and deterministic exits never depend on a second Chat Companion approval.
+
+VWAP and EMA9/EMA20 agreement are supplied as **supporting evidence**, not automatic countertrend rejections for the active MACD profile. Countertrend weakness, weak candles, opening-range context and midday compression must still be examined by the companion. Minimum margin, liquidity, confirmed structural invalidation, session cutoff, valid broker session, mandatory consultation and risk limits remain hard controls. Full acceptance requires offline comparison, refreshed-source mock tests and broker UAT; this is unmerged and not live-certified.

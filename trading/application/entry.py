@@ -25,6 +25,15 @@ class EntryWorkflow:
         elif not trade_allowed and ignore_feed_health:
             logger.info(f"⚡ [OFF-MARKET SIMULATION] {trade_block_reason} Bypassing block for dry run.")
 
+        # LIVE entries must receive an actual Chat Companion verdict.
+        # 'playbook' is a deterministic heuristic, not a neural LLM approval.
+        # Monitor/STOP/EXIT recovery does NOT pass through this new-entry gate.
+        scope = getattr(trader, "execution_scope", {}) or {}
+        mode = scope.get("mode") if isinstance(scope, dict) else None
+        if mode == "LIVE" and getattr(trader.ai_consultant, "mode", None) != "chat":
+            audit.event("entry_blocked", trader, reason="CHAT_COMPANION_REQUIRED")
+            return {"has_open_trades": False, "blocked": "CHAT_COMPANION_REQUIRED"}
+
         # Generate AI Market State Dossier
         try:
             dossier = trader.build_dossier(ctx, decision, open_trades, today_entries, intel=intel)
