@@ -6,6 +6,8 @@ missing records, and unknown submission outcomes block new exposure.
 
 from trading.domain.limits import FEE_RESERVE, HARD_ENTRY_CUTOFF, HARD_SQUARE_OFF, LOT_SIZE, MAX_POSITION_QUANTITY
 from trading.domain.states import PositionStatus
+from trading.domain.owner_lot_policy import preview_owner_lot_ceiling
+from trading.domain.daily_loss_policy import daily_loss_decision
 
 import copy
 import json
@@ -77,10 +79,13 @@ class PositionLifecycle:
             atomic_save(path, dict(identity, flat_since=MarketClock.now_ist().isoformat()))
 
     def _entry_limit_block(self, today_entries):
+        r01 = self.trading_cfg.get("r01_policy", {}).get("enabled") is True
+        if r01 and today_entries >= 10:
+            return "R01_DAILY_ENTRY_CAP"
         if getattr(self, "strategy_mode", None) != "macd_momentum":
             return None
         entry = self.strategy_cfg.get("entry", {})
-        if today_entries >= entry.get("max_daily_entries", 2):
+        if today_entries >= (10 if r01 else entry.get("max_daily_entries", 2)):
             return "DAILY_ENTRY_CAP"
         if today_entries:
             try:
@@ -640,6 +645,18 @@ class PositionLifecycle:
             margin = number(funds.get("available_margin"))
         except EntryBlocked:
             return {"error": True, "detail": "UNVERIFIED_FUNDS_OR_PRICE"}
+        # Opt-in R01: a verified account/day P&L baseline is mandatory for
+        # NEW orders. Missing data can never be interpreted as zero loss.
+        r01 = (self.trading_cfg.get("r01_policy", {}).get("enabled") is True
+               and self.execution_scope.get("mode") == "LIVE")
+        if r01:
+            result = daily_loss_decision(
+                funds, self.execution_scope, MarketClock.now_ist(),
+                self.trading_cfg.get("risk", {}).get("max_daily_loss_pct", 1.5))
+            if not result.allowed:
+                return {"error": True, "detail": result.reason}
+            if funds.get("account_id") != self.execution_scope.get("account_id"):
+                return {"error": True, "detail": "R01_FUNDS_ACCOUNT_MISMATCH"}
         spot_quote = None
         quote_reader = getattr(self, "quote_reader", self.client)
         batch_quotes = getattr(quote_reader, "get_entry_quotes", None)
@@ -664,12 +681,27 @@ class PositionLifecycle:
             logger.warning("[ENTRY BLOCKED] %s instrument=%s reference=%s quote=%s", exc,
                            decision["instrument_id"], decision.get("ltp"), quote)
             return {"error": True, "detail": str(exc)}
-        qty = self.calculate_compounding_quantity(margin, price)
-        affordable = max(0, int((margin - FEE_RESERVE) // (price * LOT_SIZE))) * LOT_SIZE
-        ceiling = int(self.strategy_cfg.get("compounding", {}).get("max_order_quantity") or
-                      self.trading_cfg.get("risk", {}).get("max_order_quantity") or 65)
-        qty = min(qty, affordable, ceiling, MAX_POSITION_QUANTITY)
-        qty = (qty // 65) * LOT_SIZE
+        if r01:
+            # This value must come from an authenticated broker adapter, not
+            # from a guessed platform default or an arbitrary config cap.
+            broker_limit = funds.get("max_single_order_quantity")
+            if type(broker_limit) is not int or broker_limit <= 0:
+                return {"error": True, "detail": "R01_BROKER_QUANTITY_LIMIT_UNVERIFIED"}
+            preview = preview_owner_lot_ceiling(
+                capital_basis="available_margin",
+                bracket_capital=margin, available_margin=margin,
+                executable_option_ask=price, lot_size=LOT_SIZE,
+                broker_single_order_quantity_limit=broker_limit)
+            if preview.blocked_reason:
+                return {"error": True, "detail": preview.blocked_reason}
+            qty = preview.ceiling_contracts
+        else:
+            qty = self.calculate_compounding_quantity(margin, price)
+            affordable = max(0, int((margin - FEE_RESERVE) // (price * LOT_SIZE))) * LOT_SIZE
+            ceiling = int(self.strategy_cfg.get("compounding", {}).get("max_order_quantity") or
+                          self.trading_cfg.get("risk", {}).get("max_order_quantity") or 65)
+            qty = min(qty, affordable, ceiling, MAX_POSITION_QUANTITY)
+            qty = (qty // 65) * LOT_SIZE
         if qty <= 0:
             return {"error": True, "detail": "INSUFFICIENT_MARGIN_BLOCKED"}
         now = MarketClock.now_ist()
@@ -692,6 +724,7 @@ class PositionLifecycle:
                  "entry_price": price, "last_bid": quote["best_bid"], "peak_bid": quote["best_bid"],
                  "entry_time": MarketClock.now_ist().isoformat(),
                  "today_entry_number": today_entries + 1,
+                 "r01_policy_version": "r01-owner-20261029-v1" if r01 else None,
                  "setup_type": decision.get("setup_type", "TREND_PULLBACK"),
                  "invalidation_level": decision.get("invalidation_level"), "entry_execution": evidence}
         if decision.get("stop_loss_context") is not None:
