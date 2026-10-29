@@ -7,6 +7,7 @@ from entry_policy import timestamp
 from execution_safety import ReconciliationError, TERMINAL, remaining, status
 from market_clock import MarketClock
 from trading.domain.prices import round_tick
+from trading.domain.protection import (entry_reference, existing_stop_floor, initial_stop_trigger)
 
 logger = logging.getLogger("NiftyAI")
 
@@ -27,7 +28,7 @@ class StopManager:
 
     @staticmethod
     def ref(stop):
-        return stop.get("entry_order_id") or stop.get("parent_order_id")
+        return entry_reference(stop)
 
     def confirm(self, state):
         balances = state.get("entry_balances", {})
@@ -70,11 +71,7 @@ class StopManager:
         self.save(state)
 
     def floor(self, state):
-        balances = state.get("entry_balances", {})
-        return max(
-            [float(s.get("trigger_price") or 0) for s in state["stops"] if balances.get(self.ref(s), 0) > 0]
-            + [float(state.get("desired_stop_trigger") or 0)]
-        )
+        return existing_stop_floor(state)
 
     def place(self, state, ref, trigger):
         if not self.owner.refresh_monitor_quote(state, reuse=True):
@@ -140,10 +137,8 @@ class StopManager:
                 return
             if qty <= 0 or active:
                 continue
-            trigger = round_tick(
-                max(
-                    state["entry_price"] * (1 - self.cfg.get("initial_stop_pct", 30) / 100), self.floor(state)
-                )
+            trigger = initial_stop_trigger(
+                state["entry_price"], self.cfg.get("initial_stop_pct", 30), self.floor(state)
             )
             self.place(state, ref, trigger)
             if state.get("risk_exit_required"):

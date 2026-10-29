@@ -24,6 +24,7 @@ from execution_safety import (ReconciliationError, TERMINAL, atomic_save, filled
 from market_clock import MarketClock
 from trading.adapters.position_store import JsonPositionStore
 from trading.ports import ExecutionGateway, PositionStore
+from trading.application.reconciliation import reconciled_entry_balances
 from trading import audit
 
 logger = logging.getLogger("NiftyAI")
@@ -145,17 +146,8 @@ class PositionLifecycle:
             raise ReconciliationError("Submission outcome unknown; resolve by persisted request_id")
 
     def _entry_balances(self, state):
-        balances = {e["order_id"]: filled(e) for e in state["entries"] if e.get("order_id")}
-        for order in state["stops"] + state["exits"]:
-            qty = filled(order)
-            ref = order.get("entry_order_id") or order.get("parent_order_id")
-            if qty and ref not in balances:
-                raise ReconciliationError("Cannot allocate SELL fills to entry references")
-            if ref in balances:
-                balances[ref] -= qty
-        if any(q < 0 for q in balances.values()):
-            raise ReconciliationError("SELL fills exceed tracked entry quantity")
-        return balances
+        # Delegation retains the public lifecycle boundary and exception contract.
+        return reconciled_entry_balances(state)
 
     def get_trades_state(self, ensure_protection=True):
         with self._oms_lock, self.client.read_budget(20):
