@@ -17,6 +17,7 @@ from trading.adapters.gateways.journal import GatewayJournal
 from trading.adapters.account_lease import AccountExecutionLease, account_lock_path
 from execution_safety import SchedulerLock
 from trading.domain.intent_state import needs_reconciliation
+from trading.domain.mutation_evidence import verified_mutation_evidence
 from trading.adapters.gateways.rate_limiter import TokenBucketRateLimiter
 from trading.domain.prices import round_tick
 
@@ -281,6 +282,69 @@ class BaseBrokerGateway(ABC):
         self._check.set(None)  # A lifecycle exit callback persists one intent, exactly once.
         return check() if check else None
 
+    def reconcile_pending_mutations(self, *, target_order_id=None):
+        """Read-only broker verification of earlier CANCEL/MODIFY/REPRICE intents.
+
+        Only a current, authenticated native account and its own exact broker
+        order book may establish evidence. No order placement, cancel or modify
+        is performed here; broker order state is NOT position-flat evidence.
+        """
+        with self._lock:
+            try:
+                self._authorize()
+                pending = [
+                    record for record in self.journal.records.values()
+                    if record.get("kind") == "MUTATION"
+                    and record.get("phase") not in ("REJECTED", "RECONCILED")
+                    and (target_order_id is None
+                         or record.get("target_order_id") == str(target_order_id))
+                ]
+                if not pending:
+                    return {"status": "READ_ONLY_RECONCILIATION", "resolved": [],
+                            "unresolved": [], "positions_verified": False}
+                book = self.get_orders()
+                if not isinstance(book, dict) or book.get("error"):
+                    raise ReconciliationError("Fresh broker order book unavailable for mutation recovery")
+                orders = book.get("orders")
+                if not isinstance(orders, list):
+                    raise ReconciliationError("Incomplete broker order book")
+                account = self.get_account_id()
+                if not isinstance(account, str) or not account or account != self.journal.account:
+                    raise ReconciliationError("Mutation recovery account mismatch")
+                resolved, unresolved = [], []
+                for record in pending:
+                    ref = record.get("target_order_id")
+                    matches = [o for o in orders
+                               if isinstance(o, dict) and str(o.get("order_id")) == ref]
+                    if len(matches) != 1:
+                        unresolved.append(record["request_id"])
+                        continue
+                    original = self.journal.match(order_id=ref)
+                    if (not isinstance(original, dict)
+                            or original.get("kind") != record.get("target_kind")
+                            or original.get("symbol") != record.get("symbol")):
+                        raise ReconciliationError("Mutation original order correlation unverified")
+                    evidence = verified_mutation_evidence(
+                        record, matches[0], account_id=account,
+                        original_request_id=original["request_id"],
+                    )
+                    if evidence is None:
+                        unresolved.append(record["request_id"])
+                        continue
+                    # PREPARED/SENT can mean transmission occurred; never
+                    # classify as REJECTED merely because a response was lost.
+                    if record.get("phase") not in ("UNKNOWN", "ACKNOWLEDGED"):
+                        self.journal.transition(record["request_id"], "UNKNOWN")
+                    self.journal.transition(
+                        record["request_id"], "RECONCILED", broker_verified=True,
+                        broker_evidence=evidence,
+                    )
+                    resolved.append(record["request_id"])
+                return {"status": "READ_ONLY_RECONCILIATION", "resolved": resolved,
+                        "unresolved": unresolved, "positions_verified": False}
+            except Exception as exc:
+                return self._error("MUTATION_RECOVERY_UNVERIFIED: " + str(exc), unknown=True)
+
     def _prepare(self, request_id, kind, symbol, ref=None, instrument_id=None):
         previous = self.journal.records.get(request_id)
         if previous:
@@ -298,7 +362,11 @@ class BaseBrokerGateway(ABC):
                 if len(matches) == 1:
                     return dict(matches[0], recovered=True)
             return self._error("SUBMISSION_OUTCOME_UNKNOWN", unknown=True)
-        if any(needs_reconciliation(record.get("phase")) for record in self.journal.records.values()):
+        if any(
+            needs_reconciliation(record.get("phase"))
+            or (record.get("kind") == "MUTATION" and record.get("phase") == "ACKNOWLEDGED")
+            for record in self.journal.records.values()
+        ):
             return self._error("ANOTHER_SUBMISSION_OUTCOME_UNKNOWN", unknown=True)
         self.journal.put(
             request_id,
@@ -325,6 +393,9 @@ class BaseBrokerGateway(ABC):
     ):
         try:
             self._authorize()
+            recovery = self.reconcile_pending_mutations()
+            if recovery.get("error"):
+                return recovery
             previous = self._prepare(request_id, kind, symbol, ref, instrument_id)
             if previous is not None:
                 return previous
@@ -455,7 +526,9 @@ class BaseBrokerGateway(ABC):
                 check=final_check,
             )
 
-    def _mutate_existing(self, order_id, send, kind, check=None, *, action="CANCEL"):
+    def _mutate_existing(self, order_id, send, kind, check=None, *,
+                         action="CANCEL", expected_trigger_price=None,
+                         expected_limit_price=None):
         """Mutation of a known broker order requires a separate durable intent.
 
         A response can be an ACK without proving the cancel/modify actually
@@ -466,6 +539,9 @@ class BaseBrokerGateway(ABC):
             intent = None
             try:
                 self._authorize()
+                recovery = self.reconcile_pending_mutations(target_order_id=order_id)
+                if recovery.get("error"):
+                    return recovery
                 order = self.get_order(order_id)
                 if order.get("error") or not self.journal.match(order_id=order_id):
                     return self._error("Order ownership is unverified")
@@ -476,6 +552,14 @@ class BaseBrokerGateway(ABC):
                 symbol = symbol_of(order)
                 if not symbol:
                     return self._error("Existing order symbol is unverified")
+                qty = order.get("quantity")
+                if type(qty) is not int or qty <= 0:
+                    return self._error("Existing broker order quantity is unverified")
+                if action in ("MODIFY_STOP", "REPRICE_EXIT") and (
+                    expected_limit_price is None or
+                    (action == "MODIFY_STOP" and expected_trigger_price is None)
+                ):
+                    return self._error("Existing-order mutation expected prices missing")
                 intent = "AI-MUT-" + datetime_now_id()
                 self.journal.prepare_mutation(
                     intent,
@@ -483,6 +567,9 @@ class BaseBrokerGateway(ABC):
                     action=action,
                     target_kind=kind,
                     symbol=symbol,
+                    target_quantity=qty,
+                    expected_trigger_price=expected_trigger_price,
+                    expected_limit_price=expected_limit_price,
                 )
                 with self._submission(check=check):
                     response = send()
@@ -532,8 +619,8 @@ class BaseBrokerGateway(ABC):
 
     def reprice_exit_order(self, order_id, limit_price):
         return self._mutate_existing(
-            order_id, lambda: self._submit_reprice_exit(order_id, limit_price), "EXIT",
-            action="REPRICE_EXIT",
+            order_id, lambda: self._submit_reprice_exit(order_id, round_tick(limit_price)), "EXIT",
+            action="REPRICE_EXIT", expected_limit_price=round_tick(limit_price),
         )
 
     def _submit_reprice_exit(self, order_id, limit_price):
@@ -562,6 +649,8 @@ class BaseBrokerGateway(ABC):
             "STOP",
             check=check,
             action="MODIFY_STOP",
+            expected_trigger_price=round_tick(trigger_price),
+            expected_limit_price=round_tick(limit_price),
         )
 
     def wait_for_fill(self, order_id, timeout_sec=15, poll_interval=0.5, return_on_partial=False):
