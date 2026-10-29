@@ -38,16 +38,16 @@
     "max_order_quantity": 650,
     "entry_order_timeout_sec": 10,
     "breakeven_buffer_points": 2,
-    "max_trades_per_strategy_per_day": 5,
+    "max_trades_per_strategy_per_day": 10,
     "max_trade_capital": 50000,
     "risk_per_trade_pct_of_account": 0.5,
     "max_daily_loss_r": 2,
     "max_daily_loss_pct": 1.5,
     "max_failed_trades_per_strategy": 2,
-    "max_trades_per_day": 5,
+    "max_trades_per_day": 10,
     "max_concurrent_positions": 1,
     "cooldown_after_loss_min": 10,
-    "option_hard_stop_pct": 25,
+    "option_hard_stop_pct": 20,
     "broker_protective_stop_limit_buffer_pct": 10,
     "broker_protective_stop_max_failures": 2,
     "broker_protective_stop_cancel_timeout_sec": 5,
@@ -82,7 +82,10 @@
         "max_available_margin": null,
         "max_lots": 10
       }
-    ]
+    ],
+    "max_daily_loss_rupees": 5000,
+    "max_planned_loss_per_trade_rupees": 2000,
+    "daily_loss_fee_cushion_per_entry_rupees": 150
   },
   "session": {
     "strategy_b_no_new_trade_before": "09:25",

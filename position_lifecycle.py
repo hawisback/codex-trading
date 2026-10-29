@@ -25,6 +25,7 @@ from market_clock import MarketClock
 from trading.adapters.position_store import JsonPositionStore
 from trading.ports import ExecutionGateway, PositionStore
 from trading.application.reconciliation import reconciled_entry_balances
+from trading.domain.daily_risk import broker_filled_day_pnl, entry_risk_quantity, checked_limit, money
 from trading import audit
 
 logger = logging.getLogger("NiftyAI")
@@ -81,7 +82,7 @@ class PositionLifecycle:
         if getattr(self, "strategy_mode", None) != "macd_momentum":
             return None
         entry = self.strategy_cfg.get("entry", {})
-        if today_entries >= entry.get("max_daily_entries", 2):
+        if today_entries >= min(entry.get("max_daily_entries", 10), 10):
             return "DAILY_ENTRY_CAP"
         if today_entries:
             try:
@@ -668,8 +669,33 @@ class PositionLifecycle:
         # recalculated using freshly retrieved broker available margin.
         qty = min(qty, affordable, MAX_POSITION_QUANTITY)
         qty = (qty // LOT_SIZE) * LOT_SIZE
+        # Daily risk is based on a fresh complete *broker fill* book, scoped
+        # to the broker identity already confirmed by OMS reconciliation.
+        # No LTP-only or static account-equity P&L is accepted for entries.
+        try:
+            checked_limit(self.trading_cfg, "max_daily_loss_rupees", 5000)
+            checked_limit(self.trading_cfg, "max_planned_loss_per_trade_rupees", 2000)
+            checked_limit(self.trading_cfg, "max_trades_per_day", 10)
+            fee_cushion = money(self.trading_cfg["risk"]["daily_loss_fee_cushion_per_entry_rupees"])
+            if fee_cushion < 150:
+                raise ReconciliationError("Daily P&L fee cushion below safety reserve")
+            daily_orders = rows(self.client.get_orders(), "orders")
+            day_pnl, day_entries = broker_filled_day_pnl(
+                daily_orders, MarketClock.today_ist_str(), self.execution_scope,
+                fee_cushion_per_entry=fee_cushion,
+            )
+            if day_entries >= 10:
+                return {"error": True, "detail": "DAILY_ENTRY_CAP"}
+            qty = entry_risk_quantity(
+                candidate_qty=qty, option_limit_price=price,
+                observed_net_pnl=day_pnl, config=self.trading_cfg,
+                fee_cushion=fee_cushion,
+            )
+        except (ReconciliationError, ValueError, TypeError, KeyError, OverflowError) as exc:
+            logger.warning("New entry denied: daily broker P&L cannot be verified: %s", exc)
+            return {"error": True, "detail": "DAILY_RISK_UNVERIFIED"}
         if qty <= 0:
-            return {"error": True, "detail": "INSUFFICIENT_MARGIN_BLOCKED"}
+            return {"error": True, "detail": "DAILY_LOSS_OR_TRADE_RISK_LIMIT"}
         now = MarketClock.now_ist()
         verdict = decision["ai_verdict"]
         cancel_after = min(now + timedelta(seconds=policy.order_timeout),

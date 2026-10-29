@@ -40,7 +40,7 @@ class PositionMonitor:
             self.strategy_cfg.get("exit", {}), ctx.get("vix", {}), MarketClock.now_ist()
         )
         max_hold_seconds = exit_cfg.get("max_hold_seconds", 21600)
-        initial_stop_pct = exit_cfg.get("initial_stop_pct", 30.0)
+        initial_stop_pct = min(float(exit_cfg.get("initial_stop_pct", 30.0)), 20.0)
         target_pct = exit_cfg.get("target_pct", 50.0)
         target_enabled = exit_cfg.get("profit_target_enabled", True)
         enable_structural_stops = exit_cfg.get("structural_stops_enabled", True)

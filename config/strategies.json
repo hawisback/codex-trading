@@ -13,8 +13,8 @@
       },
       "exit": {
         "max_hold_seconds": 360,
-        "initial_stop_pct": 6.0,
-        "target_pct": 7.0,
+        "initial_stop_pct": 6,
+        "target_pct": 7,
         "structural_stops_enabled": false,
         "runner_trailing_enabled": false,
         "lock_breakeven_on_runner": false
@@ -26,23 +26,23 @@
       "entry": {
         "require_pullback": false,
         "require_range_box_filter": true,
-        "range_box_spread_min": 28.0,
-        "value_proximity_pts": 24.0,
+        "range_box_spread_min": 28,
+        "value_proximity_pts": 24,
         "strike_selection": "ATM_ROUNDED",
         "prevent_v_reversal_counter_trades": false,
         "min_spacing_bars": 10
       },
       "exit": {
         "max_hold_seconds": 21600,
-        "initial_stop_pct": 30.0,
-        "target_pct": 50.0,
+        "initial_stop_pct": 30,
+        "target_pct": 50,
         "structural_stops_enabled": true,
-        "vwap_stop_buffer": 15.0,
+        "vwap_stop_buffer": 15,
         "ema20_stop": true,
         "runner_trailing_enabled": true,
-        "runner_activation_pct": 15.0,
-        "ema9_trailing_buffer": 4.0,
-        "peak_pullback_pct": 10.0,
+        "runner_activation_pct": 15,
+        "ema9_trailing_buffer": 4,
+        "peak_pullback_pct": 10,
         "lock_breakeven_on_runner": true
       }
     },
@@ -51,78 +51,78 @@
       "description": "Advanced structural model requiring true pullback-to-EMA9 confirmation (no chasing in mid-air), strict ITM/deep-ATM strike selection (zero 0DTE theta wipeout), and 10% peak runner trailing.",
       "entry": {
         "require_pullback": true,
-        "pullback_ema_tolerance_pts": 4.0,
+        "pullback_ema_tolerance_pts": 4,
         "require_range_box_filter": true,
-        "range_box_spread_min": 28.0,
-        "value_proximity_pts": 24.0,
+        "range_box_spread_min": 28,
+        "value_proximity_pts": 24,
         "strike_selection": "STRICT_ITM",
         "prevent_v_reversal_counter_trades": false,
         "min_spacing_bars": 10
       },
       "exit": {
         "max_hold_seconds": 21600,
-        "initial_stop_pct": 30.0,
-        "target_pct": 50.0,
+        "initial_stop_pct": 30,
+        "target_pct": 50,
         "structural_stops_enabled": false,
-        "vwap_stop_buffer": 15.0,
+        "vwap_stop_buffer": 15,
         "ema20_stop": true,
         "runner_trailing_enabled": true,
-        "runner_activation_pct": 20.0,
+        "runner_activation_pct": 20,
         "continuous_ratchet_enabled": true,
-        "trail_pullback_pct": 10.0,
+        "trail_pullback_pct": 10,
         "progressive_floor_tiers": [
           {
-            "gain_pct": 20.0,
-            "floor_pct": 10.0
+            "gain_pct": 20,
+            "floor_pct": 10
           },
           {
-            "gain_pct": 30.0,
-            "floor_pct": 20.0
+            "gain_pct": 30,
+            "floor_pct": 20
           },
           {
-            "gain_pct": 40.0,
-            "floor_pct": 30.0
+            "gain_pct": 40,
+            "floor_pct": 30
           }
         ],
-        "ema9_trailing_buffer": 4.0,
-        "peak_pullback_pct": 10.0,
+        "ema9_trailing_buffer": 4,
+        "peak_pullback_pct": 10,
         "lock_breakeven_on_runner": true,
         "late_day_micro_trail_enabled": true,
         "late_day_micro_trail_time": "14:00",
-        "late_day_micro_trail_activation_pct": 4.0,
-        "late_day_micro_trail_floor_pct": 1.0,
+        "late_day_micro_trail_activation_pct": 4,
+        "late_day_micro_trail_floor_pct": 1,
         "morning_micro_trail_enabled": true,
         "morning_micro_trail_start": "09:15",
         "morning_micro_trail_end": "09:45",
-        "morning_micro_trail_activation_pct": 10.0,
-        "morning_micro_trail_floor_pct": 1.0,
+        "morning_micro_trail_activation_pct": 10,
+        "morning_micro_trail_floor_pct": 1,
         "morning_micro_trail_first_trade_only": true
       },
       "compounding": {
         "enabled": true,
         "mode": "step_ladder",
-        "baseline_capital": 10000.0,
+        "baseline_capital": 10000,
         "max_lots_cap": 1,
         "max_order_quantity": 65,
         "milestones": [
           {
-            "min_capital": 0.0,
+            "min_capital": 0,
             "lots": 1
           },
           {
-            "min_capital": 20000.0,
+            "min_capital": 20000,
             "lots": 1
           },
           {
-            "min_capital": 40000.0,
+            "min_capital": 40000,
             "lots": 1
           },
           {
-            "min_capital": 70000.0,
+            "min_capital": 70000,
             "lots": 1
           },
           {
-            "min_capital": 100000.0,
+            "min_capital": 100000,
             "lots": 1
           }
         ]
@@ -133,93 +133,93 @@
       "description": "Unified AI model monitoring market state for both Institutional Trend Pullbacks and Rubber-Band Capitulation Springs, featuring structural wick stops, uncapped profit trailing with a 5% peak pullback from +50% gain, and AI Gatekeeper trap vetting.",
       "entry": {
         "require_pullback": true,
-        "pullback_ema_tolerance_pts": 4.0,
+        "pullback_ema_tolerance_pts": 4,
         "require_range_box_filter": true,
-        "range_box_spread_min": 28.0,
-        "value_proximity_pts": 24.0,
+        "range_box_spread_min": 28,
+        "value_proximity_pts": 24,
         "strike_selection": "STRICT_ITM",
         "prevent_v_reversal_counter_trades": false,
         "min_spacing_bars": 10,
         "enable_climax_spring": true,
-        "climax_open_dist_min": 75.0,
-        "climax_vwap_dist_min": 40.0,
-        "climax_rsi_extreme": 32.0,
-        "climax_impulse_delta_min": 18.0,
+        "climax_open_dist_min": 75,
+        "climax_vwap_dist_min": 40,
+        "climax_rsi_extreme": 32,
+        "climax_impulse_delta_min": 18,
         "climax_window_max_bar": 120
       },
       "exit": {
         "max_hold_seconds": 21600,
-        "initial_stop_pct": 20.0,
-        "target_pct": 50.0,
+        "initial_stop_pct": 20,
+        "target_pct": 50,
         "profit_target_enabled": false,
         "aggressive_trail_enabled": true,
-        "aggressive_trail_activation_pct": 50.0,
-        "aggressive_trail_pullback_pct": 5.0,
+        "aggressive_trail_activation_pct": 50,
+        "aggressive_trail_pullback_pct": 5,
         "stop_min_improvement_points": 0.5,
-        "stop_confirmation_timeout_sec": 10.0,
-        "monitor_quote_max_age_sec": 5.0,
-        "monitor_quote_timeout_sec": 3.0,
+        "stop_confirmation_timeout_sec": 10,
+        "monitor_quote_max_age_sec": 5,
+        "monitor_quote_timeout_sec": 3,
         "structural_stops_enabled": true,
         "enable_structural_wick_stop": true,
-        "vwap_stop_buffer": 12.0,
+        "vwap_stop_buffer": 12,
         "ema20_stop": true,
         "runner_trailing_enabled": true,
-        "runner_activation_pct": 20.0,
+        "runner_activation_pct": 20,
         "continuous_ratchet_enabled": true,
-        "trail_pullback_pct": 10.0,
+        "trail_pullback_pct": 10,
         "progressive_floor_tiers": [
           {
-            "gain_pct": 20.0,
-            "floor_pct": 10.0
+            "gain_pct": 20,
+            "floor_pct": 10
           },
           {
-            "gain_pct": 30.0,
-            "floor_pct": 20.0
+            "gain_pct": 30,
+            "floor_pct": 20
           },
           {
-            "gain_pct": 40.0,
-            "floor_pct": 30.0
+            "gain_pct": 40,
+            "floor_pct": 30
           }
         ],
-        "ema9_trailing_buffer": 4.0,
-        "peak_pullback_pct": 10.0,
+        "ema9_trailing_buffer": 4,
+        "peak_pullback_pct": 10,
         "lock_breakeven_on_runner": true,
         "late_day_micro_trail_enabled": true,
         "late_day_micro_trail_time": "14:00",
-        "late_day_micro_trail_activation_pct": 4.0,
-        "late_day_micro_trail_floor_pct": 1.0,
+        "late_day_micro_trail_activation_pct": 4,
+        "late_day_micro_trail_floor_pct": 1,
         "morning_micro_trail_enabled": true,
         "morning_micro_trail_start": "09:15",
         "morning_micro_trail_end": "09:45",
-        "morning_micro_trail_activation_pct": 10.0,
-        "morning_micro_trail_floor_pct": 1.0,
+        "morning_micro_trail_activation_pct": 10,
+        "morning_micro_trail_floor_pct": 1,
         "morning_micro_trail_first_trade_only": true
       },
       "compounding": {
         "enabled": true,
         "mode": "step_ladder",
-        "baseline_capital": 10000.0,
+        "baseline_capital": 10000,
         "max_lots_cap": 1,
         "max_order_quantity": 65,
         "milestones": [
           {
-            "min_capital": 0.0,
+            "min_capital": 0,
             "lots": 1
           },
           {
-            "min_capital": 20000.0,
+            "min_capital": 20000,
             "lots": 1
           },
           {
-            "min_capital": 40000.0,
+            "min_capital": 40000,
             "lots": 1
           },
           {
-            "min_capital": 70000.0,
+            "min_capital": 70000,
             "lots": 1
           },
           {
-            "min_capital": 100000.0,
+            "min_capital": 100000,
             "lots": 1
           }
         ]
@@ -235,22 +235,22 @@
         "strike_selection": "STRICT_ITM",
         "min_spacing_bars": 10,
         "require_ema_confirmation": false,
-        "ema_proximity_pts": 10.0,
+        "ema_proximity_pts": 10,
         "require_ema20_trend_alignment": false,
-        "min_invalidation_buffer_pts": 25.0,
+        "min_invalidation_buffer_pts": 25,
         "min_hist_threshold": 0.2,
-        "max_daily_entries": 2,
+        "max_daily_entries": 10,
         "require_candle_alignment": true,
         "require_vwap_alignment": true,
-        "vwap_tolerance_pts": 12.0,
-        "vwap_climax_pts": 72.0,
+        "vwap_tolerance_pts": 12,
+        "vwap_climax_pts": 72,
         "opening_range_filter_enabled": true,
-        "opening_range_buffer_pts": 8.0,
+        "opening_range_buffer_pts": 8,
         "midday_dead_zone_filter": {
           "enabled": true,
           "start_minute": 135,
           "end_minute": 240,
-          "min_15m_range_pts": 18.0
+          "min_15m_range_pts": 18
         },
         "use_rolling_2m": true,
         "prior_session_warmup_enabled": true,
@@ -260,89 +260,89 @@
       },
       "exit": {
         "max_hold_seconds": 21600,
-        "initial_stop_pct": 25.0,
+        "initial_stop_pct": 25,
         "post_fill_stop_loss": {
-          "min_loss_pct": 15.0,
-          "max_loss_pct": 20.0
+          "min_loss_pct": 15,
+          "max_loss_pct": 20
         },
-        "target_pct": 50.0,
+        "target_pct": 50,
         "profit_target_enabled": false,
         "aggressive_trail_enabled": true,
-        "aggressive_trail_activation_pct": 50.0,
+        "aggressive_trail_activation_pct": 50,
         "aggressive_trail_pullback_pct": 3.5,
         "stop_min_improvement_points": 0.5,
-        "stop_confirmation_timeout_sec": 10.0,
-        "monitor_quote_max_age_sec": 5.0,
-        "monitor_quote_timeout_sec": 3.0,
+        "stop_confirmation_timeout_sec": 10,
+        "monitor_quote_max_age_sec": 5,
+        "monitor_quote_timeout_sec": 3,
         "structural_stops_enabled": true,
         "structural_reference_reclaim_required": true,
         "enable_structural_wick_stop": true,
         "runner_trailing_enabled": true,
-        "runner_activation_pct": 15.0,
+        "runner_activation_pct": 15,
         "continuous_ratchet_enabled": true,
         "trail_pullback_pct": 3.5,
         "progressive_floor_tiers": [
           {
-            "gain_pct": 15.0,
-            "floor_pct": 0.0
+            "gain_pct": 15,
+            "floor_pct": 0
           },
           {
-            "gain_pct": 20.0,
-            "floor_pct": 10.0
+            "gain_pct": 20,
+            "floor_pct": 10
           },
           {
-            "gain_pct": 30.0,
-            "floor_pct": 20.0
+            "gain_pct": 30,
+            "floor_pct": 20
           },
           {
-            "gain_pct": 40.0,
-            "floor_pct": 30.0
+            "gain_pct": 40,
+            "floor_pct": 30
           }
         ],
         "lock_breakeven_on_runner": true,
-        "min_invalidation_buffer_pts": 25.0,
+        "min_invalidation_buffer_pts": 25,
         "morning_progressive_trail_enabled": true,
         "morning_progressive_trail_start": "09:15",
         "morning_progressive_trail_end": "11:30",
-        "morning_soft_sl_activation_pct": 5.0,
-        "morning_soft_sl_floor_pct": -8.0,
-        "morning_be_activation_pct": 10.0,
-        "morning_be_floor_pct": 1.0,
-        "morning_runner_activation_pct": 15.0,
-        "morning_runner_floor_pct": 10.0,
-        "morning_runner_pullback_pct": 8.0,
+        "morning_soft_sl_activation_pct": 5,
+        "morning_soft_sl_floor_pct": -8,
+        "morning_be_activation_pct": 10,
+        "morning_be_floor_pct": 1,
+        "morning_runner_activation_pct": 15,
+        "morning_runner_floor_pct": 10,
+        "morning_runner_pullback_pct": 8,
         "midday_micro_trail_enabled": true,
         "midday_micro_trail_start": "11:30",
         "midday_micro_trail_end": "13:15",
-        "midday_micro_trail_activation_pct": 5.0,
-        "midday_micro_trail_floor_pct": 3.0,
+        "midday_micro_trail_activation_pct": 5,
+        "midday_micro_trail_floor_pct": 3,
         "midday_micro_trail_pullback_pct": 1.5
       },
       "compounding": {
         "enabled": true,
         "mode": "step_ladder",
-        "baseline_capital": 10000.0,
+        "baseline_capital": 10000,
         "max_lots_cap": 10,
         "max_order_quantity": 650,
         "milestones": [
           {
-            "min_capital": 0.0,
+            "min_capital": 0,
             "lots": 2
           },
           {
-            "min_capital": 20000.0,
+            "min_capital": 20000,
             "lots": 4
           },
           {
-            "min_capital": 40000.0,
+            "min_capital": 40000,
             "lots": 6
           },
           {
-            "min_capital": 70000.0,
+            "min_capital": 70000,
             "lots": 8
           },
           {
-            "min_capital": 100000.0,
+            "min_capital": 100000,
             "lots": 10
           }
         ]
