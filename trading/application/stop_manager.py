@@ -7,6 +7,7 @@ from entry_policy import timestamp
 from execution_safety import ReconciliationError, TERMINAL, remaining, status
 from market_clock import MarketClock
 from trading.domain.prices import round_tick
+from trading.domain.unified_stop_policy import unified_floor
 
 logger = logging.getLogger("NiftyAI")
 
@@ -71,10 +72,24 @@ class StopManager:
 
     def floor(self, state):
         balances = state.get("entry_balances", {})
-        return max(
+        existing = max(
             [float(s.get("trigger_price") or 0) for s in state["stops"] if balances.get(self.ref(s), 0) > 0]
             + [float(state.get("desired_stop_trigger") or 0)]
         )
+        options = getattr(self.owner, "trading_cfg", {}).get("r01_policy", {})
+        if options.get("enabled") is not True or options.get("unified_stop_enabled") is not True:
+            return existing
+
+        # Never loosen any confirmed broker stop. Price gains require the
+        # existing monitoring quote to have been verified; quote failure
+        # cannot turn an unknown bid into a profit ratchet.
+        entry = state.get("entry_price")
+        highest = state.get("peak_bid") if state.get("quote_verified") else entry
+        proposal = unified_floor(
+            entry, highest, existing, MarketClock.now_ist().strftime("%H:%M"),
+            initial_loss_pct=getattr(self.owner, "trading_cfg", {}).get("risk", {})
+            .get("option_hard_stop_pct", 25))
+        return max(existing, float(proposal.trigger_floor)) if proposal else existing
 
     def place(self, state, ref, trigger):
         if not self.owner.refresh_monitor_quote(state, reuse=True):
