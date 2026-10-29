@@ -59,10 +59,31 @@ python -m tools.checks
 python -m tools.quality
 ```
 
-The main outstanding design issue is journal concurrency across **multiple
-processes**, not just multiple threads. The current process-local lock is not a
-shared filesystem lock; simultaneous independent writers can race. Do not run
-multiple independently writing gateway processes on one journal without a
-separately designed, reviewed ownership/locking change. Likewise, the existing
-risk configuration discrepancies in `docs/ARCHITECTURE_REVIEW.md` still require
-explicit product-policy decisions.
+**R02 follow-on (unmerged and untested):** `GatewayJournal.put` now acquires
+an OS-level writer lock on `<journal>.writer.lock` for the entire
+reload/validate/modify/atomic-save transaction. It always rereads the
+persisted journal after acquiring ownership and does not rely on an old
+mtime cache. This prevents lost-update races for **cooperating journal
+writers using the same path and lock**, not competing BUYs across independent
+live schedulers. The writer lock remains a file after release (an orphaned
+lock file is harmless; the OS-held handle is authoritative). An unsuccessful
+lock acquisition must block the write. Do not create alternate writer code
+that bypasses this journal boundary.
+
+R02 also extracts the pure per-entry SELL-fill balance calculation to
+`trading/application/reconciliation.py` and stop-floor formulas to
+`trading/domain/protection.py` while preserving the `PositionLifecycle` and
+`StopManager` call signatures and existing strategy stop percentages.
+The user-directed shared stop policy (POL-06) remains unspecified and
+is **not** activated by this structural extraction.
+
+Account-level **single OMS process per broker account** or an equivalent
+broker-backed durable ownership design is still required. Journal locking
+only protects JSON writes; it cannot prevent two independent instances
+from concurrently deciding that an entry is eligible, reading old funds,
+and both submitting a BUY. Broker-specific UAT, crash/partial-fill
+replay and offline parity checks remain outstanding.
+
+Policy corrections already landed in ancestor branch
+`refactor/pol01-sizing-and-layout-20261029`; this R02 increment does not
+further change lot tiers, risk thresholds or session cutoffs.
