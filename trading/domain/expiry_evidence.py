@@ -9,6 +9,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Iterable, Mapping
 
+from market_clock import IST_TZ
+
 
 class ExpiryEvidenceError(ValueError):
     pass
@@ -83,7 +85,7 @@ def listed_expiry_contracts(
         raise ExpiryEvidenceError("EXPIRY_EVIDENCE_INVALID")
     if not isinstance(quote_asof, datetime) or quote_asof.tzinfo is None:
         raise ExpiryEvidenceError("EXPIRY_CLOCK_INVALID")
-    if quote_asof.date() != trade_date:
+    if quote_asof.astimezone(IST_TZ).date() != trade_date:
         raise ExpiryEvidenceError("EXPIRY_QUOTE_DATE_MISMATCH")
     if trade_date not in evidence.session_dates:
         raise ExpiryEvidenceError("NOT_AN_EXCHANGE_SESSION")
