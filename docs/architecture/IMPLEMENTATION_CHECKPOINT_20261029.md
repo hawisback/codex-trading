@@ -46,3 +46,8 @@ On `refactor/r03-account-ownership-intent-model-20261029`, the live scheduler no
 The new pure `IntentPhase` contract is partially adopted for checking unresolved phases before submissions; strict transition enforcement is deliberately **not** wired into journal writes. Offline tests, account-concurrency drills and broker UAT remain undone. Neither journal locking nor an account lease can prove zero exposure after a lost acknowledgement.
 
 All changes are unmerged and not live-certified.
+
+
+### R04 — Native mutation-boundary fencing (unmerged)
+
+Kite/Breeze gateway writes now require a verified account-scoped OS lease **bound to that gateway instance** and the existing OMS submission context. Both are checked after pacing, before HTTP mutations. An atomic validated journal phase transition API is added for subsequent migration; existing writes remain compatible. Legacy standalone order scripts and proxy server require separate coordination. Tests remain unrun, and the branch is not live-ready. See `docs/architecture/R04_GATEWAY_MUTATION_FENCING.md`.

@@ -80,3 +80,8 @@ New `tests/test_intent_states.py`, registered in `tests/test_regression.py`, cov
 - Preserve external research/legacy wrappers until their broker and filesystem side effects are verified.
 
 **Do not describe this branch as end-to-end race-free or production-ready.**
+
+
+## R04 gateway-level continuation
+
+The next unmerged branch now binds the previously scheduler-held lease to native gateways and checks it again after rate-limit/payload waits. Native low-level HTTP mutations also require the gateway's OMS submission context. All changes are untested; proxy/legacy scripts and multiple-host execution remain outside this protection. See `docs/architecture/R04_GATEWAY_MUTATION_FENCING.md`.

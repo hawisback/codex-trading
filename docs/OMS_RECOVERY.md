@@ -105,3 +105,8 @@ the broker, or write the real active-position state. Scenarios include timeout
 recovery across restarts, partial fills, cancellation races, multiple stops,
 partial ratchet failure, unfilled exits, scope mismatch, corrupt/failed state
 writes, the session cutoff and cross-process lock exclusion.
+
+
+## R04 native mutation ownership (review branch only)
+
+Kite and Breeze live HTTP writes now require the same verified account lease acquired by the live scheduler and a high-level gateway mutation context. Missing/released/mismatched ownership blocks new network mutations, including protective STOP, EXIT, CANCEL or MODIFY: operators must have a documented original-owner or broker-console recovery procedure. This is **not a guarantee of safe emergency exits when lock ownership fails**. A strict `GatewayJournal.transition` API is also available but old journal writers are not yet migrated. No tests or broker UAT were run. The proxy service and legacy direct broker scripts are not covered. See `docs/architecture/R04_GATEWAY_MUTATION_FENCING.md`.
