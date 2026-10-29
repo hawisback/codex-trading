@@ -2,7 +2,7 @@
 
 **Change class:** POLICY SPECIFICATION (documentation only).  
 **Repository branch:** `refactor/r00-r01-policy-foundations-20261029`.  
-**Status:** user-provided desired behavior captured; implementation remains pending review and precise definitions. No live configuration, strategy code, stop logic, or broker execution was changed in response to these directions. No tests were run.
+**Status:** POL-01/POL-04 lot sizing and POL-02 configuration alignment implemented on unmerged refactoring branch; NOT TESTED, merged, deployed or broker validated. Other policy thresholds remain unresolved. No tests/live broker operations were run.
 
 ## POL-01 — Broker capital-based maximum lot ladder
 
@@ -20,9 +20,9 @@ This is the owner's stated ladder interpretation: e.g., ₹20,000 is 2-lot tier,
 
 A tier is a **ceiling, not a minimum**. Candidate selection may use NIFTY **underlying spot** to determine strike and an appropriate option contract; buying power must be checked against the selected option's **fresh executable ask/approved limit premium**, actual broker-verified available margin, and the existing ₹150 fee reserve. No historical LTP or NIFTY spot index level should substitute for executable option premium in funding arithmetic. For positive finite limit price P and broker available margin B, a conceptual *maximum affordable* whole-lot count is floor(max(0, B - ₹150) / (P × current lot size)); actual order quantity is capped by the bracket maximum, available and risk-approved broker funds, broker ceilings, hard limits, and the consultation veto. This is **policy documentation**, not a replacement algorithm authorized by this note.
 
-**Open:** what exactly defines bracket “capital” (verified available margin, total account equity, or net liquidation)? If it differs from available margin used for order funding, document both broker fields and their update/failure semantics. Clarify owner's “spot price” term (underlying spot for strike selection vs option premium for affordability).
+**Confirmed:** bracket capital is authenticated broker available margin; NIFTY spot is for strike selection, while the executable option price determines affordability.
 
-**Existing behavior differs:** `config/strategies.json` active MACD milestone floor values 0/20k/40k/70k/100k with 2/4/6/8/10 lots. The owner wants upper-bound bands ending at 20k/40k/60k/80k. Do not edit the active milestone list without approved boundary cases and a full simulation of possible exposure increases/decreases.
+**Existing behavior differs:** `config/strategies.json` active MACD milestone floor values 0/20k/40k/70k/100k with 2/4/6/8/10 lots. The owner wants upper-bound bands ending at 20k/40k/60k/80k. The owner approved the new global available-margin ladder; see ADR-001. Legacy strategy-local milestone lists remain for historical compatibility only; live calculator no longer uses them.
 
 ## POL-02 — Session cutoffs
 
@@ -62,7 +62,7 @@ Proposed architecture: use a current authoritative exchange holiday/session sche
 
 ## Open owner clarifications, in priority order
 
-1. **POL-01:** Does “capital” in tier selection mean broker **available margin** (purchasing power), or broker **total equity/net liquidation**, with separate available-margin affordability? Does “spot price” mean underlying NIFTY spot for strike selection?
+1. **POL-01:** Resolved: authenticated broker available margin for tier, option executable premium for affordability; NIFTY spot for strike selection.
 2. **POL-05:** Which loss threshold triggers a ban on new entries: ₹ amount, percentage of broker-reported start-of-day equity, R multiples, consecutive losses, or the first of several? Include unrealized P&L?
 3. **POL-03:** Precisely which instrument price and 0DTE conditions should use ₹12 vs ₹30? Or should the current filter remain until a broker/market-data study?
 4. **POL-06:** Confirm initial stop and trailing time windows/thresholds across strategies; this requires a behavior-impact analysis, not a mechanical extract.
