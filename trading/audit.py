@@ -8,6 +8,7 @@ import sys
 import uuid
 
 from market_clock import MarketClock
+from trading.domain.audit_redaction import redact_for_audit
 
 logger = logging.getLogger("TradeAudit")
 
@@ -34,7 +35,7 @@ def event(name, owner=None, **details):
             "scope": getattr(owner, "execution_scope", {}),
             **details,
         }
-        logger.info("[AUDIT] %s", name, extra={"audit_event": copy.deepcopy(payload)})
+        logger.info("[AUDIT] %s", name, extra={"audit_event": redact_for_audit(copy.deepcopy(payload))})
     except Exception as exc:
         # Diagnostics must not raise into a stop/exit path, even during disk failure.
         _failure(name, exc)
