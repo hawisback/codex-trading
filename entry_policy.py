@@ -63,6 +63,7 @@ class EntryPolicy:
     candidate_age: float = 15.0
     min_premium: float = 15.0
     max_premium: float = 70.0
+    price_only_bounds_disabled: bool = False
     max_spread_pct: float = 3.0
     order_timeout: float = 10.0
 
@@ -83,6 +84,8 @@ class EntryPolicy:
             candidate_age=number(execution.get("max_entry_candidate_age_seconds", 15)),
             min_premium=number(selection.get("min_option_premium", 15)),
             max_premium=number(selection.get("max_option_premium", 70)),
+            price_only_bounds_disabled=(config.get("r01_policy", {}).get("enabled") is True and
+                                        config.get("r01_policy", {}).get("price_only_veto_disabled") is True),
             max_spread_pct=number(selection.get("max_bid_ask_spread_pct", 3)),
             order_timeout=number(risk.get("entry_order_timeout_sec", 10)))
         if (not 0 <= policy.climax_buffer_pct <= policy.buffer_pct <= 100 or
@@ -100,10 +103,16 @@ class EntryPolicy:
             raise EntryBlocked("INVALID_ENTRY_REFERENCE")
         pct = self.climax_buffer_pct if setup_type == "CLIMAX_SPRING" else self.buffer_pct
         base = Decimal(str(reference))
-        upper = tick_price(min(base * (1 + Decimal(str(pct)) / 100),
-                               base + Decimal(str(self.max_points)), Decimal(str(self.max_premium))))
-        lower = tick_price(max(base * (1 - Decimal(str(self.downside_pct)) / 100),
-                               Decimal(str(self.min_premium))), up=True)
+        # The real AI approval envelope, slippage and minimum valid tick remain.
+        # R01 disables only arbitrary absolute option-premium bands.
+        upper_limit = min(base * (1 + Decimal(str(pct)) / 100),
+                          base + Decimal(str(self.max_points)))
+        lower_limit = base * (1 - Decimal(str(self.downside_pct)) / 100)
+        if not self.price_only_bounds_disabled:
+            upper_limit = min(upper_limit, Decimal(str(self.max_premium)))
+            lower_limit = max(lower_limit, Decimal(str(self.min_premium)))
+        upper = tick_price(upper_limit)
+        lower = tick_price(max(lower_limit, TICK), up=True)
         if not lower <= reference <= upper:
             raise EntryBlocked("ENTRY_REFERENCE_OUTSIDE_POLICY")
         return lower, upper
