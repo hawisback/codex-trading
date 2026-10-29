@@ -37,3 +37,12 @@
 7. Approve a supervised rollout/rollback plan with a fully reconciled broker book. A previously open position must never be assumed flat.
 
 This checkpoint is a record of code on a review branch, **not** production readiness.
+
+
+### R03 continuation — account ownership remains an incomplete security boundary
+
+On `refactor/r03-account-ownership-intent-model-20261029`, the live scheduler now holds an OS advisory lease keyed to verified broker/account identity in a per-user cross-workspace directory (or `TRADING_ACCOUNT_LOCK_DIR`). This excludes only **cooperating schedulers on the same host/share**; standalone scripts, separately deployed proxy processes, other hosts/users and non-cooperating old binaries still require stronger fencing or operational exclusion. Ownership acquisition failure blocks the scheduler from trading. See `docs/architecture/R03_ACCOUNT_OWNERSHIP_AND_INTENTS.md`.
+
+The new pure `IntentPhase` contract is partially adopted for checking unresolved phases before submissions; strict transition enforcement is deliberately **not** wired into journal writes. Offline tests, account-concurrency drills and broker UAT remain undone. Neither journal locking nor an account lease can prove zero exposure after a lost acknowledgement.
+
+All changes are unmerged and not live-certified.

@@ -72,3 +72,8 @@ Before merge: run `python -m tools.checks`, `python -m tools.quality`, dedicated
 5. Approve POL-06 shared stop percentages/time windows and POL-05 loss gating before changing their live behavior.
 
 **The current branch is NOT production-certified.**
+
+
+### R03 follow-on
+
+The scheduler has added a local OS-held account lease for verified LIVE broker-account identity and a pure intent phase model. This improves isolation across cooperating local checkouts and fails closed for unknown journal phase values, but does **not** solve remote, proxy-server or manual gateway writers. Journal phases are not newly persisted or migrated. Tests and broker UAT have not run. See `docs/architecture/R03_ACCOUNT_OWNERSHIP_AND_INTENTS.md` for precise scope and acceptance criteria.
