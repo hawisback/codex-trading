@@ -2,6 +2,7 @@
 
 import os
 from trading.domain.limits import FEE_RESERVE, LOT_SIZE
+from trading.domain.owner_ladder import owner_ladder_decision
 
 
 def calculate_compounding_quantity(
@@ -30,6 +31,17 @@ def calculate_compounding_quantity(
 
     if not comp_cfg.get("enabled", False):
         return min(quantity, platform_max_qty)
+
+    # Explicit opt-in only. No existing strategy currently selects this mode.
+    # available_margin is broker-verified at entry submission, and contract_price
+    # is the approved limit computed from a fresh executable option quote.
+    if comp_cfg.get("mode") == "owner_capital_ladder_v1":
+        return owner_ladder_decision(
+            available_margin,
+            contract_price,
+            max_lots_cap=comp_cfg.get("max_lots_cap", 10),
+            max_order_quantity=platform_max_qty,
+        ).quantity
 
     milestones = comp_cfg.get(
         "milestones",

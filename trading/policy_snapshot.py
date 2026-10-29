@@ -184,6 +184,13 @@ def build_policy_snapshot(
     )
     if cap is not _MISSING:
         _validate_scalar("risk.max_order_quantity", cap, diagnostics)
+    observations.append(PolicyObservation(
+        "selected_strategy.compounding.mode", _freeze(compounding.get("mode")),
+        f"config/strategies.json:strategies.{chosen_strategy}.compounding.mode",
+        "owner_capital_ladder_v1 is a separately reviewed, explicit opt-in in trading/domain/sizing.py; all other modes retain legacy sizing.",
+        "trading/domain/sizing.py; trading/domain/owner_ladder.py",
+        "The owner mode is implemented but not enabled for the active strategy. This report does not authorize or simulate live exposure.",
+    ))
     strategy_cap = compounding.get("max_order_quantity")
     observations.append(PolicyObservation(
         "selected_strategy.compounding.max_order_quantity", _freeze(strategy_cap),
