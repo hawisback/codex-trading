@@ -336,6 +336,11 @@ class KiteExecutionGateway(BaseBrokerGateway):
             "available_margin": finite(balance),
             "cash": finite(available["cash"]),
             "used_margin": finite(utilised["debits"]),
+            # Local receipt time of an authenticated direct broker read,
+            # never misrepresented as an exchange-origin timestamp.
+            "funds_asof": MarketClock.now_ist().isoformat(),
+            "account_id": self.get_account_id(),
+            "source": "kite:user/margins:authenticated-receipt",
         }
 
     def get_contract_quote(self, instrument_id, *, timeout_sec=1.0):

@@ -8,6 +8,7 @@ from trading.domain.limits import FEE_RESERVE, HARD_ENTRY_CUTOFF, HARD_SQUARE_OF
 from trading.domain.states import PositionStatus
 from trading.domain.owner_lot_policy import preview_owner_lot_ceiling
 from trading.domain.daily_loss_policy import daily_loss_decision
+from trading.domain.broker_contracts import BrokerContractError, BrokerFundsView
 
 import copy
 import json
@@ -650,13 +651,22 @@ class PositionLifecycle:
         r01 = (self.trading_cfg.get("r01_policy", {}).get("enabled") is True
                and self.execution_scope.get("mode") == "LIVE")
         if r01:
+            try:
+                broker_funds = BrokerFundsView.validated(
+                    funds,
+                    account_id=self.execution_scope.get("account_id"),
+                    now=MarketClock.now_ist(),
+                )
+            except BrokerContractError as exc:
+                return {"error": True, "detail": str(exc)}
+            # The validated broker funds record, rather than a static
+            # config value, supplies both bracket capital and order limit.
+            margin = float(broker_funds.available_margin)
             result = daily_loss_decision(
                 funds, self.execution_scope, MarketClock.now_ist(),
                 self.trading_cfg.get("risk", {}).get("max_daily_loss_pct", 1.5))
             if not result.allowed:
                 return {"error": True, "detail": result.reason}
-            if funds.get("account_id") != self.execution_scope.get("account_id"):
-                return {"error": True, "detail": "R01_FUNDS_ACCOUNT_MISMATCH"}
         spot_quote = None
         quote_reader = getattr(self, "quote_reader", self.client)
         batch_quotes = getattr(quote_reader, "get_entry_quotes", None)
@@ -684,9 +694,7 @@ class PositionLifecycle:
         if r01:
             # This value must come from an authenticated broker adapter, not
             # from a guessed platform default or an arbitrary config cap.
-            broker_limit = funds.get("max_single_order_quantity")
-            if type(broker_limit) is not int or broker_limit <= 0:
-                return {"error": True, "detail": "R01_BROKER_QUANTITY_LIMIT_UNVERIFIED"}
+            broker_limit = broker_funds.max_single_order_quantity
             preview = preview_owner_lot_ceiling(
                 capital_basis="available_margin",
                 bracket_capital=margin, available_margin=margin,
@@ -739,6 +747,22 @@ class PositionLifecycle:
         # Atomic persistence can also stall. A pre-submit failure is a known non-order,
         # unlike a lost POST response, and is safe to discard after saving its rejection.
         def preflight():
+            if r01:
+                # Also validate the snapshot at the actual mutation boundary:
+                # a submission delayed by broker pacing cannot reuse expired
+                # funds or a P&L gate that has aged out.
+                try:
+                    BrokerFundsView.validated(
+                        funds, account_id=self.execution_scope.get("account_id"),
+                        now=MarketClock.now_ist(),
+                    )
+                except BrokerContractError as exc:
+                    raise EntryBlocked(str(exc)) from exc
+                latest_loss = daily_loss_decision(
+                    funds, self.execution_scope, MarketClock.now_ist(),
+                    self.trading_cfg.get("risk", {}).get("max_daily_loss_pct", 1.5))
+                if not latest_loss.allowed:
+                    raise EntryBlocked(latest_loss.reason)
             if MarketClock.now_ist().strftime("%H:%M") >= HARD_ENTRY_CUTOFF:
                 raise EntryBlocked("ENTRY_TIME_WINDOW_CLOSED")
             if entry_limit(decision, quote, policy) != price:

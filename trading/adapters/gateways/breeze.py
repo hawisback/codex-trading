@@ -480,7 +480,15 @@ class BreezeExecutionGateway(BaseBrokerGateway):
         if allocated < 0 or blocked < 0:
             raise ReconciliationError("Invalid Breeze F&O funds")
         # Bank cash and other segment allocations cannot fund these orders.
-        return {"available_margin": max(0.0, allocated - blocked), "cash": allocated, "used_margin": blocked}
+        return {
+            "available_margin": max(0.0, allocated - blocked),
+            "cash": allocated,
+            "used_margin": blocked,
+            # Timestamp is the verified API response receipt, NOT broker P&L.
+            "funds_asof": MarketClock.now_ist().isoformat(),
+            "account_id": self.get_account_id(),
+            "source": "breeze:funds:authenticated-receipt",
+        }
 
     def get_contract_quote(self, instrument_id, *, timeout_sec=1.0):
         started = time.monotonic()
