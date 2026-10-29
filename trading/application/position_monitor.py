@@ -3,6 +3,7 @@
 from trading.domain.limits import HARD_SQUARE_OFF
 from trading.domain.states import is_exiting
 from trading.domain.trailing import runner_trigger, session_trigger
+from trading.domain.structural_exit import existing_structural_breach
 from trading.domain.volatility import vix_exit_settings
 import logging
 from market_clock import MarketClock
@@ -148,12 +149,8 @@ class PositionMonitor:
                 exit_reason = f"SESSION HARD SQUARE-OFF: Current time {now_time} IST >= 15:15 cutoff. Enforcing flat book overnight."
 
             # 0b. Structural Invalidation (Spot breached technical invalidation level)
-            elif (
-                t.get("invalidation_level") is not None
-                and (
-                    (is_ce and spot and spot <= float(t["invalidation_level"]))
-                    or (is_pe and spot and spot >= float(t["invalidation_level"]))
-                )
+            elif existing_structural_breach(
+                spot, t.get("invalidation_level"), "CE" if is_ce else "PE" if is_pe else ""
             ):
                 inval_level = float(t["invalidation_level"])
                 exit_reason = f"STRUCTURAL INVALIDATION: Spot ({spot:.1f}) breached invalidation level ({inval_level:.1f}). Cutting trade early to protect capital."
