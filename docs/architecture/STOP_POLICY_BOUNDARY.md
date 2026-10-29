@@ -25,3 +25,8 @@ Future solution should keep a versioned common `StopPolicySnapshot` identified o
 - Move `position_lifecycle.py` while recovery/state-path dependencies remain ambiguous.
 
 **Safety rule:** structural extraction may relocate the *calculation* but must not authorize a new network mutation or relax an existing preflight.
+
+
+## R06 versioned migration
+
+New positions are tagged `POL06_V1` and use `trading/domain/unified_exit.py` for common session floors and confirmed structural exits, independent of strategy name. The stop-manager enforces a new initial 20% premium protection for those positions, keeping any tighter broker-confirmed floor. Existing positions lacking this version retain previous stop handling. The active MACD signal can continue a recent crossover for up to eight completed observations, and LIVE entries now require the actual Chat Companion, not deterministic playbook mode. Full regression/replay and broker UAT remain outstanding.

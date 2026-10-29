@@ -76,8 +76,14 @@ class MacdSwingContinuationTests(unittest.TestCase):
 
     def test_old_cross_missing_cross_and_opposing_momentum_are_blocked(self):
         self.assertEqual("NEUTRAL", self.check([0.3]*10, [0]*10, [0.3]*10).signal)
+        # Once strength disappears, a past cross is not a tradable continuation.
         self.assertEqual("NEUTRAL", self.check([-0.2, 0.3, 0.01], [0, 0, 0], [-0.2, 0.3, 0.01]).signal)
         self.assertEqual("NEUTRAL", self.check([-0.2, 0.3], [0, 0], [-0.2, 0.01]).signal)
+
+    def test_cross_older_than_continuation_window_fails(self):
+        macd = [-0.3, 0.4] + [0.4] * 9
+        signal = [0.0] * len(macd)
+        self.assertEqual("NEUTRAL", self.check(macd, signal, macd).signal)
 
 
 class SharedProfitProtectionTests(unittest.TestCase):

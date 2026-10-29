@@ -36,3 +36,8 @@
 - Trading JSON parse errors: current loader logs and substitutes an empty dict; making this fatal is a separate behavioral choice.
 
 See `docs/architecture/POLICY_USAGE_MAP.md` for the static trace and `docs/adr/ADR_TEMPLATE.md` for the required policy ADR format.
+
+
+### POL-06 R06 specification (unmerged)
+
+Recent cross **or** up to eight continuing completed observations of the same 2m MACD swing; VWAP/EMAs advisory; real Chat Companion `chat` approval mandatory for LIVE entries; all new positions versioned under shared 20% premium protection, hybrid spot invalidation and common time-dependent profit floors. Legacy already-open positions retain older stop management. See `docs/adr/ADR-006-macd-swing-companion-unified-stops.md`. No tests run, not deployed.
