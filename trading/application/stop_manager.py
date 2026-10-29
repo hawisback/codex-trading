@@ -138,7 +138,7 @@ class StopManager:
             if qty <= 0 or active:
                 continue
             trigger = initial_stop_trigger(
-                state["entry_price"], min(float(self.cfg.get("initial_stop_pct", 30)), 20.0), self.floor(state)
+                state["entry_price"], (20.0 if state.get("exit_policy_version") == "POL06_V1" else min(float(self.cfg.get("initial_stop_pct", 30)), 20.0)), self.floor(state)
             )
             self.place(state, ref, trigger)
             if state.get("risk_exit_required"):

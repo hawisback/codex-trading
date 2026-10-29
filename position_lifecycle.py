@@ -715,6 +715,7 @@ class PositionLifecycle:
                  "quantity": 0, "status": PositionStatus.ENTRY_PENDING.value, "entries": [entry], "stops": [], "exits": [],
                  "entry_price": price, "last_bid": quote["best_bid"], "peak_bid": quote["best_bid"],
                  "entry_time": MarketClock.now_ist().isoformat(),
+                 "exit_policy_version": "POL06_V1",
                  "today_entry_number": today_entries + 1,
                  "setup_type": decision.get("setup_type", "TREND_PULLBACK"),
                  "invalidation_level": decision.get("invalidation_level"), "entry_execution": evidence}

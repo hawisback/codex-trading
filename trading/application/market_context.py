@@ -204,6 +204,7 @@ class MarketContextService:
             **({"vix": snapshot["vix"]} if "vix" in snapshot else {}),
             **({"sectors": snapshot["sectors"]} if "sectors" in snapshot else {}),
             "spot": spot_price,
+            "spot_observed_at": snapshot.get("underlying", {}).get("timestamp"),
             "last_1m_high": last_1m_high,
             "last_1m_low": last_1m_low,
             "day_open": day_open,
