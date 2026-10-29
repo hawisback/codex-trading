@@ -9,6 +9,7 @@ REGRESSION_MODULES = (
     "test_self_healing_exit",
     "tests.test_staged_refactor",
     "tests.test_replay_and_configuration",
+    "tests.test_policy_snapshot",
     "tests.test_daily_logs",
     "tests.test_gateways",
     "tests.test_breeze_gateway",
