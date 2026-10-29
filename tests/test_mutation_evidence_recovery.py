@@ -140,7 +140,14 @@ class GatewayRecoveryTests(unittest.TestCase):
             "STOP", action="CANCEL")
         self.server.orders["S1"].update(status="CANCELLED", filled_quantity=5,
                                         average_price=46)
-        report = self.gateway.reconcile_pending_mutations()
+        # Deliberately inconsistent broker position: a partial-fill
+        # cancellation cannot clear the journal without matching exposure.
+        from unittest.mock import patch
+        with patch.object(self.gateway, "get_positions", return_value={
+            "positions": [dict(symbol=self.gateway.get_order("S1")["symbol"],
+                               quantity=65, mode="LIVE", account_id="TEST_ACCOUNT")]
+        }):
+            report = self.gateway.reconcile_pending_mutations()
         self.assertEqual([], report["resolved"])
         self.assertEqual("UNKNOWN", self.mutations()[0]["phase"])
         self.server.orders.pop("S1")

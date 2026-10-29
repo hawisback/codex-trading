@@ -181,6 +181,13 @@ def verified_partial_cancel_exposure(
                 sells += fill
     if order_id not in seen or active:
         return None  # An outstanding order can change exposure after this read.
+    # The target must be the *same* normalized record in the verified complete
+    # book, not a stale caller-supplied copy with an identical order ID.
+    book_target = next(o for o in orders if o.get("order_id") == order_id)
+    for field in ("request_id", "kind", "symbol", "status", "quantity",
+                  "filled_quantity", "entry_order_id", "parent_order_id"):
+        if target.get(field) != book_target.get(field):
+            return None
     residual = buys - sells
     if residual < 0:
         raise ReconciliationError("Over-sold broker fills during partial cancellation")

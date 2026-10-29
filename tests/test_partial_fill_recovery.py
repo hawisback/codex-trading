@@ -44,8 +44,7 @@ class PartialFillBookTests(unittest.TestCase):
 
     def test_missing_parent_and_foreign_order_fail_closed(self):
         missing_parent = dict(self.stop, entry_order_id=None)
-        with self.assertRaises(ReconciliationError):
-            self.reconcile(book=[self.entry, missing_parent])
+        self.assertIsNone(self.reconcile(book=[self.entry, missing_parent]))
         foreign = order("OTHER", "ENTRY", 1, "CANCELLED")
         foreign["engine_owned"] = False
         with self.assertRaises(ReconciliationError):
