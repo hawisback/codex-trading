@@ -42,6 +42,7 @@ class SessionEntryTests(unittest.TestCase):
             opening_range_filter_enabled=True,
             vwap_climax_pts=50,
         )
+        self.cfg["entry"]["midday_dead_zone_filter"]["enabled"] = True
         self.cfg["entry"]["midday_dead_zone_filter"]["min_15m_range_pts"] = 24
 
     def evaluate(self, direction="CE", count=64, histogram=0.2, changes=None, bars_change=None):
