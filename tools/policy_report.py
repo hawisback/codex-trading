@@ -42,7 +42,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="Preview market-data selection; no network reads")
     parser.add_argument("--format", choices=("text", "json"), default="text")
     parser.add_argument("--validate-config", action="store_true",
-                        help="Check known inventoried fields only; not full runtime certification")
+                        help="Check a subset of inventoried fields only; not full runtime certification")
     args = parser.parse_args(argv)
 
     try:
@@ -81,7 +81,7 @@ def main(argv: list[str] | None = None) -> int:
             for issue in snapshot.diagnostics:
                 print(f"- {issue}")
     if args.validate_config:
-        print("Validation scope: known inventoried keys only, NOT every strategy or live preflight.",
+        print("Validation scope: selected inventoried keys only, NOT every strategy or live preflight.",
               file=__import__("sys").stderr)
     return 1 if snapshot.diagnostics else 0
 

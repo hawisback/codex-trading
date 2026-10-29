@@ -13,7 +13,7 @@ python -m tools.policy_report --validate-config --strategy macd_momentum
 python -m tools.policy_report --format json --broker kite --ai-mode rules
 ```
 
-`--validate-config` checks **only known inventoried keys and selected CLI/JSON fields**. A zero exit status does **not** certify live trading safety, configuration completeness, broker correctness, or successful risk enforcement.
+`--validate-config` checks **only a documented subset of inventoried keys and selected CLI/JSON fields**. A zero exit status does **not** certify live trading safety, configuration completeness, broker correctness, or successful risk enforcement.
 
 Report contains immutable `TradingPolicySnapshot` / `PolicyObservation` records, a stable SHA256 of **inspected nonsecret values only**, source/provenance, code-observed guardrails and caveats. It reports possible caps, not guaranteed effective live positions. The digest is **not** wired into OMS intents or live risk evaluation; future runtime integration requires an ADR and parity evidence. It writes nothing.
 
@@ -44,7 +44,7 @@ The command reports static source-backed rules, not the dynamic result of a live
 
 ## R01 status
 
-- R01.1 configuration map: **implemented as this map + read-only inspection**; remainder of unreferenced JSON keys is still to be audited.
+- R01.1 configuration map: **implemented for high-risk keys as this map + read-only inspection**; remainder of unreferenced JSON keys is still to be audited.
 - R01.2 POL-01..08: **pending explicit owner approval**. See `POLICY_DECISIONS.md`.
 - R01.3 typed immutable inspection view: **implemented in isolation**, NOT wired into live per-cycle policy or event hashes.
 - R01.4 read-only `python -m tools.policy_report` with `--validate-config`: **implemented for inventoried keys only**; deliberately not a new scheduler flag.

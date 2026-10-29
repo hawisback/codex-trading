@@ -55,6 +55,14 @@ class PolicyInventoryTests(unittest.TestCase):
         self.assertIn("risk.max_order_quantity", snapshot.diagnostics[0])
         self.assertIn("session.no_new_trade_after", snapshot.diagnostics[1])
 
+    def test_snapshot_does_not_retain_mutable_json_collection(self):
+        snapshot = build_policy_snapshot(self.trading, self.strategies)
+        fields = {row.key: row for row in snapshot.observations}
+        self.trading["option_selection"]["exchange_holidays"].append("2026-11-01")
+        self.assertEqual(
+            ("2026-10-20",), fields["option_selection.exchange_holidays"].configured
+        )
+
     def test_digest_is_deterministic_for_identical_allowlisted_policy(self):
         first = build_policy_snapshot(self.trading, self.strategies)
         second = build_policy_snapshot(self.trading, self.strategies)
