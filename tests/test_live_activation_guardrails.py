@@ -11,6 +11,7 @@ import unittest
 from execution_safety import ReconciliationError
 from trading.adapters.gateways.base import BaseBrokerGateway
 from trading.domain.broker_contracts import BrokerContractError, BrokerFundsView
+from trading.domain.daily_loss_policy import daily_loss_decision
 from market_clock import IST_TZ
 from datetime import datetime
 
@@ -101,6 +102,15 @@ class LiveFundsProofTests(unittest.TestCase):
         )
         with self.assertRaises(BrokerContractError):
             BrokerFundsView.validated(sample, account_id="DEMO-ACCOUNT", now=now)
+        # Receipt provenance + margin is NOT evidence of a current-day
+        # verified P&L baseline; do not mistake it for daily-loss approval.
+        self.assertFalse(
+            daily_loss_decision(
+                sample,
+                {"mode": "LIVE", "account_id": "DEMO-ACCOUNT"},
+                now,
+            ).allowed
+        )
         sample["max_single_order_quantity"] = 65
         self.assertEqual(
             65,
