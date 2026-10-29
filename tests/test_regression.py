@@ -18,6 +18,7 @@ REGRESSION_MODULES = (
     "tests.test_oms_intent_contracts",
     "tests.test_broker_expiry_contracts",
     "tests.test_refactor_safety_contracts",
+    "tests.test_oms_lease_readiness",
     "tests.test_daily_logs",
     "tests.test_gateways",
     "tests.test_breeze_gateway",
