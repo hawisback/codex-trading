@@ -54,9 +54,17 @@ class DurableGatewayJournalTests(unittest.TestCase):
     def test_sequential_process_views_do_not_erase_other_intents(self):
         # A lock is now acquired on EVERY journal put; two independent
         # gateway objects must reload before appending.
-        with tempfile.TemporaryDirectory() as directory:
-            # GatewayJournal requires the workspace sandbox for durable state.
-            pass
+        workspace = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory(prefix=".journal-contract-", dir=workspace) as directory:
+            path = Path(directory) / "orders.json"
+            first = GatewayJournal(path, "kite")
+            second = GatewayJournal(path, "kite")
+            first.bind("TEST-ACCOUNT")
+            second.bind("TEST-ACCOUNT")
+            first.put("request-A", phase="PREPARED", kind="ENTRY", symbol="NIFTY-TEST")
+            second.put("request-B", phase="PREPARED", kind="ENTRY", symbol="NIFTY-TEST")
+            self.assertEqual({"request-A", "request-B"}, set(first.records))
+            self.assertEqual({"request-A", "request-B"}, set(second.records))
 
 
 if __name__ == "__main__":
