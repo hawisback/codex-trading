@@ -48,6 +48,8 @@ def needs_reconciliation(phase: str | None) -> bool:
     regular OMS broker reconciliation. This particular predicate concerns
     unresolved *submission outcome*, not flatness or exit completion.
     """
+    if not isinstance(phase, str):
+        return True
     return phase not in {
         IntentPhase.ACKNOWLEDGED.value,
         IntentPhase.REJECTED.value,

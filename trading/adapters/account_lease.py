@@ -34,6 +34,8 @@ def account_lock_path(
         root = Path(os.environ["TRADING_ACCOUNT_LOCK_DIR"])
     else:
         root = Path.home() / ".codex-trading" / "account-locks"
+    if not root.is_absolute():
+        raise ValueError("Account ownership lock directory must be absolute")
     key = f"{broker.lower()}:{account_id.strip()}"
     digest = hashlib.sha256(key.encode("utf-8")).hexdigest()
     return (root.expanduser().resolve() / f"account-{digest}.lock")

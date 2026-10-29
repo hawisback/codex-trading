@@ -47,6 +47,10 @@ class AccountExecutionLeaseTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         AccountExecutionLease(broker, account, directory=directory)
 
+    def test_relative_lock_directory_is_not_safe_across_checkouts(self):
+        with self.assertRaisesRegex(ValueError, "absolute"):
+            account_lock_path("kite", "ACCOUNT-ONE", directory="logs/locks")
+
     def test_reentry_is_forbidden_until_released(self):
         with tempfile.TemporaryDirectory(prefix=".r03-lease-", dir=ROOT) as directory:
             lease = AccountExecutionLease("proxy", "PAPER-OWNER", directory=directory)
@@ -59,7 +63,7 @@ class AccountExecutionLeaseTests(unittest.TestCase):
 
 class IntentPhaseTests(unittest.TestCase):
     def test_unknown_and_missing_phase_must_not_authorize_new_order(self):
-        for value in (None, "PREPARED", "SENT", "UNKNOWN", "UNRECOGNIZED", ""):
+        for value in (None, "PREPARED", "SENT", "UNKNOWN", "UNRECOGNIZED", "", [], {}):
             with self.subTest(value=value):
                 self.assertTrue(needs_reconciliation(value))
         for value in ("ACKNOWLEDGED", "REJECTED", "RECONCILED"):
