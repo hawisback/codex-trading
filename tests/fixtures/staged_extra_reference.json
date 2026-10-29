@@ -1,0 +1,118 @@
+{
+  "climax_spring": {
+    "decision": {
+      "signal": "BUY_CE",
+      "strategy": "ai_opportunity_radar",
+      "setup_type": "CLIMAX_SPRING",
+      "invalidation_level": 22938.0,
+      "bull_score": 1,
+      "bear_score": 0,
+      "instrument_id": "TEST-23000-CE",
+      "symbol": "NIFTY-TEST-23000-CE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "AI RADAR [CLIMAX_SPRING | Conviction: 92%]: Oversold capitulation flush to 22940.0. Violent +20.0 pt spring candle confirms buyer absorption.",
+        "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 0.9 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 69.0,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-CE",
+      "entry_setup_type": "CLIMAX_SPRING",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": 22938.0
+    }
+  },
+  "climax_upthrust": {
+    "decision": {
+      "signal": "BUY_PE",
+      "strategy": "ai_opportunity_radar",
+      "setup_type": "CLIMAX_SPRING",
+      "invalidation_level": 23062.0,
+      "bull_score": 0,
+      "bear_score": 1,
+      "instrument_id": "TEST-23050-PE",
+      "symbol": "NIFTY-TEST-23050-PE",
+      "ltp": 67,
+      "target_strike": 23050,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "AI RADAR [CLIMAX_SPRING | Conviction: 90%]: Overbought euphoric spike to 23060.0. Violent -20.0 pt rejection candle confirms seller absorption.",
+        "STRIKE SELECTION: Strict ITM strike 23050 selected (resilient to theta decay)."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 0.9 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 69.0,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23050-PE",
+      "entry_setup_type": "CLIMAX_SPRING",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": 23062.0
+    }
+  },
+  "margin_fallback": {
+    "decision": {
+      "signal": "BUY_CE",
+      "strategy": "ai_opportunity_radar",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 1,
+      "bear_score": 0,
+      "instrument_id": "TEST-23050-CE",
+      "symbol": "NIFTY-TEST-23050-CE",
+      "ltp": 30,
+      "target_strike": 23050,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "AI RADAR [TREND_PULLBACK | Conviction: 88%]: Institutional bullish trend confirmed. Clean pullback to 5m EMA9 (23003.0 holding above 23000.0).",
+        "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay).",
+        "MARGIN BUDGET OPTIMIZATION: ITM strike 23000 (₹200.0 x 0 = ₹0) exceeds safe policy (Budget: ₹4850, Max Premium: ₹135.0). Falling back to ATM 23000.",
+        "MARGIN BUDGET OPTIMIZATION: ATM strike exceeded policy; selected 1-strike OTM 23050 (₹30.0 x 65 = ₹1950 <= ₹4850)."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 6.5 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 31.5,
+      "min_entry_price": 27.6,
+      "reference_entry_price": 30.0,
+      "entry_instrument_id": "TEST-23050-CE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  }
+}

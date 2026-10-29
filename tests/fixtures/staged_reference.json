@@ -1,0 +1,3656 @@
+{
+  "contexts": {
+    "normal": {
+      "result": {
+        "spot": 23004,
+        "last_1m_high": 23013.0,
+        "last_1m_low": 22989.0,
+        "day_open": 22985,
+        "day_high": 23080,
+        "day_low": 22900,
+        "day_change": 0.1,
+        "ema_9": 23000,
+        "ema_20": 22994,
+        "ema_50": 22980,
+        "rsi_14": 52.5,
+        "macd": 3,
+        "macd_hist": 1,
+        "hist_expanding_pos": true,
+        "hist_expanding_neg": false,
+        "session_vwap": 22996.5,
+        "session_vwap_basis": "NIFTY_SPOT_INTRADAY",
+        "atm_strike": 23000,
+        "pcr_oi": 1.1,
+        "pcr_vol": 1.2,
+        "box_high_15m": 23013.0,
+        "box_low_15m": 22986.2,
+        "box_spread_15m": 26.8,
+        "is_consolidation_box": true,
+        "order_flow": {
+          "atm_call_oi": 100000,
+          "atm_call_oi_chg": 0,
+          "atm_put_oi": 100000,
+          "atm_put_oi_chg": 0,
+          "next_call_strike": 23050,
+          "next_call_oi": 100000,
+          "next_call_oi_chg": 0,
+          "next_put_strike": 22950,
+          "next_put_oi": 100000,
+          "next_put_oi_chg": 0
+        },
+        "strikes": [
+          {
+            "strike": 22950,
+            "call": {
+              "instrument_id": "TEST-22950-CE",
+              "symbol": "NIFTY-TEST-22950-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-22950-PE",
+              "symbol": "NIFTY-TEST-22950-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23000,
+            "call": {
+              "instrument_id": "TEST-23000-CE",
+              "symbol": "NIFTY-TEST-23000-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23000-PE",
+              "symbol": "NIFTY-TEST-23000-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23050,
+            "call": {
+              "instrument_id": "TEST-23050-CE",
+              "symbol": "NIFTY-TEST-23050-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23050-PE",
+              "symbol": "NIFTY-TEST-23050-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          }
+        ],
+        "heavyweights": {
+          "stocks": [
+            {
+              "symbol": "HDFCBANK",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "RELIANCE",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "ICICIBANK",
+              "change_pct": 0.1
+            }
+          ],
+          "advancing": 3,
+          "declining": 0,
+          "hdfc_chg": 0.1,
+          "reliance_chg": 0.1,
+          "icici_chg": 0.1
+        },
+        "candles_1m": [
+          {
+            "start_time": "2026-10-19T09:15:00+05:30",
+            "open": 22992.0,
+            "high": 23004.0,
+            "low": 22980.0,
+            "close": 22990.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:16:00+05:30",
+            "open": 22992.2,
+            "high": 23004.2,
+            "low": 22980.2,
+            "close": 22994.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:17:00+05:30",
+            "open": 22992.4,
+            "high": 23004.4,
+            "low": 22980.4,
+            "close": 22990.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:18:00+05:30",
+            "open": 22992.6,
+            "high": 23004.6,
+            "low": 22980.6,
+            "close": 22994.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:19:00+05:30",
+            "open": 22992.8,
+            "high": 23004.8,
+            "low": 22980.8,
+            "close": 22990.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:20:00+05:30",
+            "open": 22993.0,
+            "high": 23005.0,
+            "low": 22981.0,
+            "close": 22995.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:21:00+05:30",
+            "open": 22993.2,
+            "high": 23005.2,
+            "low": 22981.2,
+            "close": 22991.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:22:00+05:30",
+            "open": 22993.4,
+            "high": 23005.4,
+            "low": 22981.4,
+            "close": 22995.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:23:00+05:30",
+            "open": 22993.6,
+            "high": 23005.6,
+            "low": 22981.6,
+            "close": 22991.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:24:00+05:30",
+            "open": 22993.8,
+            "high": 23005.8,
+            "low": 22981.8,
+            "close": 22995.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:25:00+05:30",
+            "open": 22994.0,
+            "high": 23006.0,
+            "low": 22982.0,
+            "close": 22992.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:26:00+05:30",
+            "open": 22994.2,
+            "high": 23006.2,
+            "low": 22982.2,
+            "close": 22996.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:27:00+05:30",
+            "open": 22994.4,
+            "high": 23006.4,
+            "low": 22982.4,
+            "close": 22992.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:28:00+05:30",
+            "open": 22994.6,
+            "high": 23006.6,
+            "low": 22982.6,
+            "close": 22996.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:29:00+05:30",
+            "open": 22994.8,
+            "high": 23006.8,
+            "low": 22982.8,
+            "close": 22992.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:30:00+05:30",
+            "open": 22995.0,
+            "high": 23007.0,
+            "low": 22983.0,
+            "close": 22997.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:31:00+05:30",
+            "open": 22995.2,
+            "high": 23007.2,
+            "low": 22983.2,
+            "close": 22993.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:32:00+05:30",
+            "open": 22995.4,
+            "high": 23007.4,
+            "low": 22983.4,
+            "close": 22997.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:33:00+05:30",
+            "open": 22995.6,
+            "high": 23007.6,
+            "low": 22983.6,
+            "close": 22993.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:34:00+05:30",
+            "open": 22995.8,
+            "high": 23007.8,
+            "low": 22983.8,
+            "close": 22997.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:35:00+05:30",
+            "open": 22996.0,
+            "high": 23008.0,
+            "low": 22984.0,
+            "close": 22994.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:36:00+05:30",
+            "open": 22996.2,
+            "high": 23008.2,
+            "low": 22984.2,
+            "close": 22998.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:37:00+05:30",
+            "open": 22996.4,
+            "high": 23008.4,
+            "low": 22984.4,
+            "close": 22994.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:38:00+05:30",
+            "open": 22996.6,
+            "high": 23008.6,
+            "low": 22984.6,
+            "close": 22998.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:39:00+05:30",
+            "open": 22996.8,
+            "high": 23008.8,
+            "low": 22984.8,
+            "close": 22994.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:40:00+05:30",
+            "open": 22997.0,
+            "high": 23009.0,
+            "low": 22985.0,
+            "close": 22999.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:41:00+05:30",
+            "open": 22997.2,
+            "high": 23009.2,
+            "low": 22985.2,
+            "close": 22995.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:42:00+05:30",
+            "open": 22997.4,
+            "high": 23009.4,
+            "low": 22985.4,
+            "close": 22999.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:43:00+05:30",
+            "open": 22997.6,
+            "high": 23009.6,
+            "low": 22985.6,
+            "close": 22995.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:44:00+05:30",
+            "open": 22997.8,
+            "high": 23009.8,
+            "low": 22985.8,
+            "close": 22999.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:45:00+05:30",
+            "open": 22998.0,
+            "high": 23010.0,
+            "low": 22986.0,
+            "close": 22996.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:46:00+05:30",
+            "open": 22998.2,
+            "high": 23010.2,
+            "low": 22986.2,
+            "close": 23000.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:47:00+05:30",
+            "open": 22998.4,
+            "high": 23010.4,
+            "low": 22986.4,
+            "close": 22996.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:48:00+05:30",
+            "open": 22998.6,
+            "high": 23010.6,
+            "low": 22986.6,
+            "close": 23000.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:49:00+05:30",
+            "open": 22998.8,
+            "high": 23010.8,
+            "low": 22986.8,
+            "close": 22996.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:50:00+05:30",
+            "open": 22999.0,
+            "high": 23011.0,
+            "low": 22987.0,
+            "close": 23001.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:51:00+05:30",
+            "open": 22999.2,
+            "high": 23011.2,
+            "low": 22987.2,
+            "close": 22997.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:52:00+05:30",
+            "open": 22999.4,
+            "high": 23011.4,
+            "low": 22987.4,
+            "close": 23001.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:53:00+05:30",
+            "open": 22999.6,
+            "high": 23011.6,
+            "low": 22987.6,
+            "close": 22997.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:54:00+05:30",
+            "open": 22999.8,
+            "high": 23011.8,
+            "low": 22987.8,
+            "close": 23001.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:55:00+05:30",
+            "open": 23000.0,
+            "high": 23012.0,
+            "low": 22988.0,
+            "close": 22998.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:56:00+05:30",
+            "open": 23000.2,
+            "high": 23012.2,
+            "low": 22988.2,
+            "close": 23002.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:57:00+05:30",
+            "open": 23000.4,
+            "high": 23012.4,
+            "low": 22988.4,
+            "close": 22998.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:58:00+05:30",
+            "open": 23000.6,
+            "high": 23012.6,
+            "low": 22988.6,
+            "close": 23002.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:59:00+05:30",
+            "open": 23000.8,
+            "high": 23012.8,
+            "low": 22988.8,
+            "close": 22998.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T10:00:00+05:30",
+            "open": 23001.0,
+            "high": 23013.0,
+            "low": 22989.0,
+            "close": 23003.0,
+            "volume": 1000
+          }
+        ],
+        "available_margin": 10000.0,
+        "expiry": "2026-10-22"
+      },
+      "calls": [
+        [
+          "/nifty/snapshot",
+          {}
+        ],
+        [
+          "/nifty/technicals?interval=5m&limit=50",
+          {}
+        ],
+        [
+          "/nifty/candles?interval=1m&limit=375",
+          {}
+        ],
+        [
+          "/nifty/options?strike_window=10",
+          {}
+        ],
+        [
+          "/heavyweights",
+          {}
+        ],
+        [
+          "funds",
+          {}
+        ]
+      ]
+    },
+    "empty_candles": {
+      "result": {
+        "spot": 23004,
+        "last_1m_high": 23004,
+        "last_1m_low": 23004,
+        "day_open": 22985,
+        "day_high": 23080,
+        "day_low": 22900,
+        "day_change": 0.1,
+        "ema_9": 23000,
+        "ema_20": 22994,
+        "ema_50": 22980,
+        "rsi_14": 55,
+        "macd": 3,
+        "macd_hist": 1,
+        "hist_expanding_pos": true,
+        "hist_expanding_neg": false,
+        "session_vwap": 23004,
+        "session_vwap_basis": "NIFTY_SPOT_FALLBACK",
+        "atm_strike": 23000,
+        "pcr_oi": 1.1,
+        "pcr_vol": 1.2,
+        "box_high_15m": 23004,
+        "box_low_15m": 23004,
+        "box_spread_15m": 0,
+        "is_consolidation_box": false,
+        "order_flow": {
+          "atm_call_oi": 100000,
+          "atm_call_oi_chg": 0,
+          "atm_put_oi": 100000,
+          "atm_put_oi_chg": 0,
+          "next_call_strike": 23050,
+          "next_call_oi": 100000,
+          "next_call_oi_chg": 0,
+          "next_put_strike": 22950,
+          "next_put_oi": 100000,
+          "next_put_oi_chg": 0
+        },
+        "strikes": [
+          {
+            "strike": 22950,
+            "call": {
+              "instrument_id": "TEST-22950-CE",
+              "symbol": "NIFTY-TEST-22950-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-22950-PE",
+              "symbol": "NIFTY-TEST-22950-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23000,
+            "call": {
+              "instrument_id": "TEST-23000-CE",
+              "symbol": "NIFTY-TEST-23000-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23000-PE",
+              "symbol": "NIFTY-TEST-23000-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23050,
+            "call": {
+              "instrument_id": "TEST-23050-CE",
+              "symbol": "NIFTY-TEST-23050-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23050-PE",
+              "symbol": "NIFTY-TEST-23050-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          }
+        ],
+        "heavyweights": {
+          "stocks": [
+            {
+              "symbol": "HDFCBANK",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "RELIANCE",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "ICICIBANK",
+              "change_pct": 0.1
+            }
+          ],
+          "advancing": 3,
+          "declining": 0,
+          "hdfc_chg": 0.1,
+          "reliance_chg": 0.1,
+          "icici_chg": 0.1
+        },
+        "candles_1m": [],
+        "available_margin": 10000.0,
+        "expiry": "2026-10-22"
+      },
+      "calls": [
+        [
+          "/nifty/snapshot",
+          {}
+        ],
+        [
+          "/nifty/technicals?interval=5m&limit=50",
+          {}
+        ],
+        [
+          "/nifty/candles?interval=1m&limit=375",
+          {}
+        ],
+        [
+          "/nifty/options?strike_window=10",
+          {}
+        ],
+        [
+          "/heavyweights",
+          {}
+        ],
+        [
+          "funds",
+          {}
+        ]
+      ]
+    },
+    "missing_ema": {
+      "result": {
+        "spot": 23004,
+        "last_1m_high": 23013.0,
+        "last_1m_low": 22989.0,
+        "day_open": 22985,
+        "day_high": 23080,
+        "day_low": 22900,
+        "day_change": 0.1,
+        "ema_9": 22997.52,
+        "ema_20": 22994.69,
+        "ema_50": null,
+        "rsi_14": 52.5,
+        "macd": null,
+        "macd_hist": null,
+        "hist_expanding_pos": false,
+        "hist_expanding_neg": false,
+        "session_vwap": 22996.5,
+        "session_vwap_basis": "NIFTY_SPOT_INTRADAY",
+        "atm_strike": 23000,
+        "pcr_oi": 1.1,
+        "pcr_vol": 1.2,
+        "box_high_15m": 23013.0,
+        "box_low_15m": 22986.2,
+        "box_spread_15m": 26.8,
+        "is_consolidation_box": true,
+        "order_flow": {
+          "atm_call_oi": 100000,
+          "atm_call_oi_chg": 0,
+          "atm_put_oi": 100000,
+          "atm_put_oi_chg": 0,
+          "next_call_strike": 23050,
+          "next_call_oi": 100000,
+          "next_call_oi_chg": 0,
+          "next_put_strike": 22950,
+          "next_put_oi": 100000,
+          "next_put_oi_chg": 0
+        },
+        "strikes": [
+          {
+            "strike": 22950,
+            "call": {
+              "instrument_id": "TEST-22950-CE",
+              "symbol": "NIFTY-TEST-22950-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-22950-PE",
+              "symbol": "NIFTY-TEST-22950-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23000,
+            "call": {
+              "instrument_id": "TEST-23000-CE",
+              "symbol": "NIFTY-TEST-23000-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23000-PE",
+              "symbol": "NIFTY-TEST-23000-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23050,
+            "call": {
+              "instrument_id": "TEST-23050-CE",
+              "symbol": "NIFTY-TEST-23050-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23050-PE",
+              "symbol": "NIFTY-TEST-23050-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          }
+        ],
+        "heavyweights": {
+          "stocks": [
+            {
+              "symbol": "HDFCBANK",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "RELIANCE",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "ICICIBANK",
+              "change_pct": 0.1
+            }
+          ],
+          "advancing": 3,
+          "declining": 0,
+          "hdfc_chg": 0.1,
+          "reliance_chg": 0.1,
+          "icici_chg": 0.1
+        },
+        "candles_1m": [
+          {
+            "start_time": "2026-10-19T09:15:00+05:30",
+            "open": 22992.0,
+            "high": 23004.0,
+            "low": 22980.0,
+            "close": 22990.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:16:00+05:30",
+            "open": 22992.2,
+            "high": 23004.2,
+            "low": 22980.2,
+            "close": 22994.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:17:00+05:30",
+            "open": 22992.4,
+            "high": 23004.4,
+            "low": 22980.4,
+            "close": 22990.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:18:00+05:30",
+            "open": 22992.6,
+            "high": 23004.6,
+            "low": 22980.6,
+            "close": 22994.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:19:00+05:30",
+            "open": 22992.8,
+            "high": 23004.8,
+            "low": 22980.8,
+            "close": 22990.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:20:00+05:30",
+            "open": 22993.0,
+            "high": 23005.0,
+            "low": 22981.0,
+            "close": 22995.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:21:00+05:30",
+            "open": 22993.2,
+            "high": 23005.2,
+            "low": 22981.2,
+            "close": 22991.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:22:00+05:30",
+            "open": 22993.4,
+            "high": 23005.4,
+            "low": 22981.4,
+            "close": 22995.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:23:00+05:30",
+            "open": 22993.6,
+            "high": 23005.6,
+            "low": 22981.6,
+            "close": 22991.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:24:00+05:30",
+            "open": 22993.8,
+            "high": 23005.8,
+            "low": 22981.8,
+            "close": 22995.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:25:00+05:30",
+            "open": 22994.0,
+            "high": 23006.0,
+            "low": 22982.0,
+            "close": 22992.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:26:00+05:30",
+            "open": 22994.2,
+            "high": 23006.2,
+            "low": 22982.2,
+            "close": 22996.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:27:00+05:30",
+            "open": 22994.4,
+            "high": 23006.4,
+            "low": 22982.4,
+            "close": 22992.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:28:00+05:30",
+            "open": 22994.6,
+            "high": 23006.6,
+            "low": 22982.6,
+            "close": 22996.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:29:00+05:30",
+            "open": 22994.8,
+            "high": 23006.8,
+            "low": 22982.8,
+            "close": 22992.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:30:00+05:30",
+            "open": 22995.0,
+            "high": 23007.0,
+            "low": 22983.0,
+            "close": 22997.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:31:00+05:30",
+            "open": 22995.2,
+            "high": 23007.2,
+            "low": 22983.2,
+            "close": 22993.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:32:00+05:30",
+            "open": 22995.4,
+            "high": 23007.4,
+            "low": 22983.4,
+            "close": 22997.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:33:00+05:30",
+            "open": 22995.6,
+            "high": 23007.6,
+            "low": 22983.6,
+            "close": 22993.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:34:00+05:30",
+            "open": 22995.8,
+            "high": 23007.8,
+            "low": 22983.8,
+            "close": 22997.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:35:00+05:30",
+            "open": 22996.0,
+            "high": 23008.0,
+            "low": 22984.0,
+            "close": 22994.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:36:00+05:30",
+            "open": 22996.2,
+            "high": 23008.2,
+            "low": 22984.2,
+            "close": 22998.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:37:00+05:30",
+            "open": 22996.4,
+            "high": 23008.4,
+            "low": 22984.4,
+            "close": 22994.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:38:00+05:30",
+            "open": 22996.6,
+            "high": 23008.6,
+            "low": 22984.6,
+            "close": 22998.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:39:00+05:30",
+            "open": 22996.8,
+            "high": 23008.8,
+            "low": 22984.8,
+            "close": 22994.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:40:00+05:30",
+            "open": 22997.0,
+            "high": 23009.0,
+            "low": 22985.0,
+            "close": 22999.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:41:00+05:30",
+            "open": 22997.2,
+            "high": 23009.2,
+            "low": 22985.2,
+            "close": 22995.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:42:00+05:30",
+            "open": 22997.4,
+            "high": 23009.4,
+            "low": 22985.4,
+            "close": 22999.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:43:00+05:30",
+            "open": 22997.6,
+            "high": 23009.6,
+            "low": 22985.6,
+            "close": 22995.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:44:00+05:30",
+            "open": 22997.8,
+            "high": 23009.8,
+            "low": 22985.8,
+            "close": 22999.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:45:00+05:30",
+            "open": 22998.0,
+            "high": 23010.0,
+            "low": 22986.0,
+            "close": 22996.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:46:00+05:30",
+            "open": 22998.2,
+            "high": 23010.2,
+            "low": 22986.2,
+            "close": 23000.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:47:00+05:30",
+            "open": 22998.4,
+            "high": 23010.4,
+            "low": 22986.4,
+            "close": 22996.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:48:00+05:30",
+            "open": 22998.6,
+            "high": 23010.6,
+            "low": 22986.6,
+            "close": 23000.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:49:00+05:30",
+            "open": 22998.8,
+            "high": 23010.8,
+            "low": 22986.8,
+            "close": 22996.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:50:00+05:30",
+            "open": 22999.0,
+            "high": 23011.0,
+            "low": 22987.0,
+            "close": 23001.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:51:00+05:30",
+            "open": 22999.2,
+            "high": 23011.2,
+            "low": 22987.2,
+            "close": 22997.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:52:00+05:30",
+            "open": 22999.4,
+            "high": 23011.4,
+            "low": 22987.4,
+            "close": 23001.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:53:00+05:30",
+            "open": 22999.6,
+            "high": 23011.6,
+            "low": 22987.6,
+            "close": 22997.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:54:00+05:30",
+            "open": 22999.8,
+            "high": 23011.8,
+            "low": 22987.8,
+            "close": 23001.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:55:00+05:30",
+            "open": 23000.0,
+            "high": 23012.0,
+            "low": 22988.0,
+            "close": 22998.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:56:00+05:30",
+            "open": 23000.2,
+            "high": 23012.2,
+            "low": 22988.2,
+            "close": 23002.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:57:00+05:30",
+            "open": 23000.4,
+            "high": 23012.4,
+            "low": 22988.4,
+            "close": 22998.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:58:00+05:30",
+            "open": 23000.6,
+            "high": 23012.6,
+            "low": 22988.6,
+            "close": 23002.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:59:00+05:30",
+            "open": 23000.8,
+            "high": 23012.8,
+            "low": 22988.8,
+            "close": 22998.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T10:00:00+05:30",
+            "open": 23001.0,
+            "high": 23013.0,
+            "low": 22989.0,
+            "close": 23003.0,
+            "volume": 1000
+          }
+        ],
+        "available_margin": 10000.0,
+        "expiry": "2026-10-22"
+      },
+      "calls": [
+        [
+          "/nifty/snapshot",
+          {}
+        ],
+        [
+          "/nifty/technicals?interval=5m&limit=50",
+          {}
+        ],
+        [
+          "/nifty/candles?interval=1m&limit=375",
+          {}
+        ],
+        [
+          "/nifty/options?strike_window=10",
+          {}
+        ],
+        [
+          "/heavyweights",
+          {}
+        ],
+        [
+          "funds",
+          {}
+        ],
+        [
+          "/nifty/candles?interval=5m&limit=50",
+          {}
+        ]
+      ]
+    },
+    "heavyweights_error": {
+      "result": {
+        "spot": 23004,
+        "last_1m_high": 23013.0,
+        "last_1m_low": 22989.0,
+        "day_open": 22985,
+        "day_high": 23080,
+        "day_low": 22900,
+        "day_change": 0.1,
+        "ema_9": 23000,
+        "ema_20": 22994,
+        "ema_50": 22980,
+        "rsi_14": 52.5,
+        "macd": 3,
+        "macd_hist": 1,
+        "hist_expanding_pos": true,
+        "hist_expanding_neg": false,
+        "session_vwap": 22996.5,
+        "session_vwap_basis": "NIFTY_SPOT_INTRADAY",
+        "atm_strike": 23000,
+        "pcr_oi": 1.1,
+        "pcr_vol": 1.2,
+        "box_high_15m": 23013.0,
+        "box_low_15m": 22986.2,
+        "box_spread_15m": 26.8,
+        "is_consolidation_box": true,
+        "order_flow": {
+          "atm_call_oi": 100000,
+          "atm_call_oi_chg": 0,
+          "atm_put_oi": 100000,
+          "atm_put_oi_chg": 0,
+          "next_call_strike": 23050,
+          "next_call_oi": 100000,
+          "next_call_oi_chg": 0,
+          "next_put_strike": 22950,
+          "next_put_oi": 100000,
+          "next_put_oi_chg": 0
+        },
+        "strikes": [
+          {
+            "strike": 22950,
+            "call": {
+              "instrument_id": "TEST-22950-CE",
+              "symbol": "NIFTY-TEST-22950-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-22950-PE",
+              "symbol": "NIFTY-TEST-22950-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23000,
+            "call": {
+              "instrument_id": "TEST-23000-CE",
+              "symbol": "NIFTY-TEST-23000-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23000-PE",
+              "symbol": "NIFTY-TEST-23000-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23050,
+            "call": {
+              "instrument_id": "TEST-23050-CE",
+              "symbol": "NIFTY-TEST-23050-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23050-PE",
+              "symbol": "NIFTY-TEST-23050-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          }
+        ],
+        "heavyweights": {
+          "stocks": [],
+          "advancing": 0,
+          "declining": 0,
+          "hdfc_chg": 0.0,
+          "reliance_chg": 0.0,
+          "icici_chg": 0.0
+        },
+        "candles_1m": [
+          {
+            "start_time": "2026-10-19T09:15:00+05:30",
+            "open": 22992.0,
+            "high": 23004.0,
+            "low": 22980.0,
+            "close": 22990.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:16:00+05:30",
+            "open": 22992.2,
+            "high": 23004.2,
+            "low": 22980.2,
+            "close": 22994.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:17:00+05:30",
+            "open": 22992.4,
+            "high": 23004.4,
+            "low": 22980.4,
+            "close": 22990.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:18:00+05:30",
+            "open": 22992.6,
+            "high": 23004.6,
+            "low": 22980.6,
+            "close": 22994.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:19:00+05:30",
+            "open": 22992.8,
+            "high": 23004.8,
+            "low": 22980.8,
+            "close": 22990.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:20:00+05:30",
+            "open": 22993.0,
+            "high": 23005.0,
+            "low": 22981.0,
+            "close": 22995.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:21:00+05:30",
+            "open": 22993.2,
+            "high": 23005.2,
+            "low": 22981.2,
+            "close": 22991.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:22:00+05:30",
+            "open": 22993.4,
+            "high": 23005.4,
+            "low": 22981.4,
+            "close": 22995.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:23:00+05:30",
+            "open": 22993.6,
+            "high": 23005.6,
+            "low": 22981.6,
+            "close": 22991.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:24:00+05:30",
+            "open": 22993.8,
+            "high": 23005.8,
+            "low": 22981.8,
+            "close": 22995.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:25:00+05:30",
+            "open": 22994.0,
+            "high": 23006.0,
+            "low": 22982.0,
+            "close": 22992.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:26:00+05:30",
+            "open": 22994.2,
+            "high": 23006.2,
+            "low": 22982.2,
+            "close": 22996.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:27:00+05:30",
+            "open": 22994.4,
+            "high": 23006.4,
+            "low": 22982.4,
+            "close": 22992.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:28:00+05:30",
+            "open": 22994.6,
+            "high": 23006.6,
+            "low": 22982.6,
+            "close": 22996.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:29:00+05:30",
+            "open": 22994.8,
+            "high": 23006.8,
+            "low": 22982.8,
+            "close": 22992.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:30:00+05:30",
+            "open": 22995.0,
+            "high": 23007.0,
+            "low": 22983.0,
+            "close": 22997.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:31:00+05:30",
+            "open": 22995.2,
+            "high": 23007.2,
+            "low": 22983.2,
+            "close": 22993.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:32:00+05:30",
+            "open": 22995.4,
+            "high": 23007.4,
+            "low": 22983.4,
+            "close": 22997.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:33:00+05:30",
+            "open": 22995.6,
+            "high": 23007.6,
+            "low": 22983.6,
+            "close": 22993.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:34:00+05:30",
+            "open": 22995.8,
+            "high": 23007.8,
+            "low": 22983.8,
+            "close": 22997.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:35:00+05:30",
+            "open": 22996.0,
+            "high": 23008.0,
+            "low": 22984.0,
+            "close": 22994.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:36:00+05:30",
+            "open": 22996.2,
+            "high": 23008.2,
+            "low": 22984.2,
+            "close": 22998.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:37:00+05:30",
+            "open": 22996.4,
+            "high": 23008.4,
+            "low": 22984.4,
+            "close": 22994.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:38:00+05:30",
+            "open": 22996.6,
+            "high": 23008.6,
+            "low": 22984.6,
+            "close": 22998.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:39:00+05:30",
+            "open": 22996.8,
+            "high": 23008.8,
+            "low": 22984.8,
+            "close": 22994.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:40:00+05:30",
+            "open": 22997.0,
+            "high": 23009.0,
+            "low": 22985.0,
+            "close": 22999.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:41:00+05:30",
+            "open": 22997.2,
+            "high": 23009.2,
+            "low": 22985.2,
+            "close": 22995.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:42:00+05:30",
+            "open": 22997.4,
+            "high": 23009.4,
+            "low": 22985.4,
+            "close": 22999.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:43:00+05:30",
+            "open": 22997.6,
+            "high": 23009.6,
+            "low": 22985.6,
+            "close": 22995.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:44:00+05:30",
+            "open": 22997.8,
+            "high": 23009.8,
+            "low": 22985.8,
+            "close": 22999.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:45:00+05:30",
+            "open": 22998.0,
+            "high": 23010.0,
+            "low": 22986.0,
+            "close": 22996.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:46:00+05:30",
+            "open": 22998.2,
+            "high": 23010.2,
+            "low": 22986.2,
+            "close": 23000.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:47:00+05:30",
+            "open": 22998.4,
+            "high": 23010.4,
+            "low": 22986.4,
+            "close": 22996.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:48:00+05:30",
+            "open": 22998.6,
+            "high": 23010.6,
+            "low": 22986.6,
+            "close": 23000.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:49:00+05:30",
+            "open": 22998.8,
+            "high": 23010.8,
+            "low": 22986.8,
+            "close": 22996.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:50:00+05:30",
+            "open": 22999.0,
+            "high": 23011.0,
+            "low": 22987.0,
+            "close": 23001.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:51:00+05:30",
+            "open": 22999.2,
+            "high": 23011.2,
+            "low": 22987.2,
+            "close": 22997.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:52:00+05:30",
+            "open": 22999.4,
+            "high": 23011.4,
+            "low": 22987.4,
+            "close": 23001.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:53:00+05:30",
+            "open": 22999.6,
+            "high": 23011.6,
+            "low": 22987.6,
+            "close": 22997.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:54:00+05:30",
+            "open": 22999.8,
+            "high": 23011.8,
+            "low": 22987.8,
+            "close": 23001.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:55:00+05:30",
+            "open": 23000.0,
+            "high": 23012.0,
+            "low": 22988.0,
+            "close": 22998.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:56:00+05:30",
+            "open": 23000.2,
+            "high": 23012.2,
+            "low": 22988.2,
+            "close": 23002.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:57:00+05:30",
+            "open": 23000.4,
+            "high": 23012.4,
+            "low": 22988.4,
+            "close": 22998.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:58:00+05:30",
+            "open": 23000.6,
+            "high": 23012.6,
+            "low": 22988.6,
+            "close": 23002.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:59:00+05:30",
+            "open": 23000.8,
+            "high": 23012.8,
+            "low": 22988.8,
+            "close": 22998.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T10:00:00+05:30",
+            "open": 23001.0,
+            "high": 23013.0,
+            "low": 22989.0,
+            "close": 23003.0,
+            "volume": 1000
+          }
+        ],
+        "available_margin": 10000.0,
+        "expiry": "2026-10-22"
+      },
+      "calls": [
+        [
+          "/nifty/snapshot",
+          {}
+        ],
+        [
+          "/nifty/technicals?interval=5m&limit=50",
+          {}
+        ],
+        [
+          "/nifty/candles?interval=1m&limit=375",
+          {}
+        ],
+        [
+          "/nifty/options?strike_window=10",
+          {}
+        ],
+        [
+          "/heavyweights",
+          {}
+        ],
+        [
+          "funds",
+          {}
+        ]
+      ]
+    },
+    "funds_error": {
+      "result": {
+        "spot": 23004,
+        "last_1m_high": 23013.0,
+        "last_1m_low": 22989.0,
+        "day_open": 22985,
+        "day_high": 23080,
+        "day_low": 22900,
+        "day_change": 0.1,
+        "ema_9": 23000,
+        "ema_20": 22994,
+        "ema_50": 22980,
+        "rsi_14": 52.5,
+        "macd": 3,
+        "macd_hist": 1,
+        "hist_expanding_pos": true,
+        "hist_expanding_neg": false,
+        "session_vwap": 22996.5,
+        "session_vwap_basis": "NIFTY_SPOT_INTRADAY",
+        "atm_strike": 23000,
+        "pcr_oi": 1.1,
+        "pcr_vol": 1.2,
+        "box_high_15m": 23013.0,
+        "box_low_15m": 22986.2,
+        "box_spread_15m": 26.8,
+        "is_consolidation_box": true,
+        "order_flow": {
+          "atm_call_oi": 100000,
+          "atm_call_oi_chg": 0,
+          "atm_put_oi": 100000,
+          "atm_put_oi_chg": 0,
+          "next_call_strike": 23050,
+          "next_call_oi": 100000,
+          "next_call_oi_chg": 0,
+          "next_put_strike": 22950,
+          "next_put_oi": 100000,
+          "next_put_oi_chg": 0
+        },
+        "strikes": [
+          {
+            "strike": 22950,
+            "call": {
+              "instrument_id": "TEST-22950-CE",
+              "symbol": "NIFTY-TEST-22950-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-22950-PE",
+              "symbol": "NIFTY-TEST-22950-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23000,
+            "call": {
+              "instrument_id": "TEST-23000-CE",
+              "symbol": "NIFTY-TEST-23000-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23000-PE",
+              "symbol": "NIFTY-TEST-23000-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          },
+          {
+            "strike": 23050,
+            "call": {
+              "instrument_id": "TEST-23050-CE",
+              "symbol": "NIFTY-TEST-23050-CE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            },
+            "put": {
+              "instrument_id": "TEST-23050-PE",
+              "symbol": "NIFTY-TEST-23050-PE",
+              "ltp": 67,
+              "open_interest": 100000,
+              "oi_change": 0
+            }
+          }
+        ],
+        "heavyweights": {
+          "stocks": [
+            {
+              "symbol": "HDFCBANK",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "RELIANCE",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "ICICIBANK",
+              "change_pct": 0.1
+            }
+          ],
+          "advancing": 3,
+          "declining": 0,
+          "hdfc_chg": 0.1,
+          "reliance_chg": 0.1,
+          "icici_chg": 0.1
+        },
+        "candles_1m": [
+          {
+            "start_time": "2026-10-19T09:15:00+05:30",
+            "open": 22992.0,
+            "high": 23004.0,
+            "low": 22980.0,
+            "close": 22990.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:16:00+05:30",
+            "open": 22992.2,
+            "high": 23004.2,
+            "low": 22980.2,
+            "close": 22994.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:17:00+05:30",
+            "open": 22992.4,
+            "high": 23004.4,
+            "low": 22980.4,
+            "close": 22990.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:18:00+05:30",
+            "open": 22992.6,
+            "high": 23004.6,
+            "low": 22980.6,
+            "close": 22994.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:19:00+05:30",
+            "open": 22992.8,
+            "high": 23004.8,
+            "low": 22980.8,
+            "close": 22990.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:20:00+05:30",
+            "open": 22993.0,
+            "high": 23005.0,
+            "low": 22981.0,
+            "close": 22995.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:21:00+05:30",
+            "open": 22993.2,
+            "high": 23005.2,
+            "low": 22981.2,
+            "close": 22991.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:22:00+05:30",
+            "open": 22993.4,
+            "high": 23005.4,
+            "low": 22981.4,
+            "close": 22995.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:23:00+05:30",
+            "open": 22993.6,
+            "high": 23005.6,
+            "low": 22981.6,
+            "close": 22991.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:24:00+05:30",
+            "open": 22993.8,
+            "high": 23005.8,
+            "low": 22981.8,
+            "close": 22995.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:25:00+05:30",
+            "open": 22994.0,
+            "high": 23006.0,
+            "low": 22982.0,
+            "close": 22992.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:26:00+05:30",
+            "open": 22994.2,
+            "high": 23006.2,
+            "low": 22982.2,
+            "close": 22996.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:27:00+05:30",
+            "open": 22994.4,
+            "high": 23006.4,
+            "low": 22982.4,
+            "close": 22992.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:28:00+05:30",
+            "open": 22994.6,
+            "high": 23006.6,
+            "low": 22982.6,
+            "close": 22996.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:29:00+05:30",
+            "open": 22994.8,
+            "high": 23006.8,
+            "low": 22982.8,
+            "close": 22992.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:30:00+05:30",
+            "open": 22995.0,
+            "high": 23007.0,
+            "low": 22983.0,
+            "close": 22997.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:31:00+05:30",
+            "open": 22995.2,
+            "high": 23007.2,
+            "low": 22983.2,
+            "close": 22993.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:32:00+05:30",
+            "open": 22995.4,
+            "high": 23007.4,
+            "low": 22983.4,
+            "close": 22997.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:33:00+05:30",
+            "open": 22995.6,
+            "high": 23007.6,
+            "low": 22983.6,
+            "close": 22993.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:34:00+05:30",
+            "open": 22995.8,
+            "high": 23007.8,
+            "low": 22983.8,
+            "close": 22997.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:35:00+05:30",
+            "open": 22996.0,
+            "high": 23008.0,
+            "low": 22984.0,
+            "close": 22994.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:36:00+05:30",
+            "open": 22996.2,
+            "high": 23008.2,
+            "low": 22984.2,
+            "close": 22998.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:37:00+05:30",
+            "open": 22996.4,
+            "high": 23008.4,
+            "low": 22984.4,
+            "close": 22994.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:38:00+05:30",
+            "open": 22996.6,
+            "high": 23008.6,
+            "low": 22984.6,
+            "close": 22998.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:39:00+05:30",
+            "open": 22996.8,
+            "high": 23008.8,
+            "low": 22984.8,
+            "close": 22994.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:40:00+05:30",
+            "open": 22997.0,
+            "high": 23009.0,
+            "low": 22985.0,
+            "close": 22999.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:41:00+05:30",
+            "open": 22997.2,
+            "high": 23009.2,
+            "low": 22985.2,
+            "close": 22995.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:42:00+05:30",
+            "open": 22997.4,
+            "high": 23009.4,
+            "low": 22985.4,
+            "close": 22999.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:43:00+05:30",
+            "open": 22997.6,
+            "high": 23009.6,
+            "low": 22985.6,
+            "close": 22995.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:44:00+05:30",
+            "open": 22997.8,
+            "high": 23009.8,
+            "low": 22985.8,
+            "close": 22999.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:45:00+05:30",
+            "open": 22998.0,
+            "high": 23010.0,
+            "low": 22986.0,
+            "close": 22996.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:46:00+05:30",
+            "open": 22998.2,
+            "high": 23010.2,
+            "low": 22986.2,
+            "close": 23000.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:47:00+05:30",
+            "open": 22998.4,
+            "high": 23010.4,
+            "low": 22986.4,
+            "close": 22996.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:48:00+05:30",
+            "open": 22998.6,
+            "high": 23010.6,
+            "low": 22986.6,
+            "close": 23000.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:49:00+05:30",
+            "open": 22998.8,
+            "high": 23010.8,
+            "low": 22986.8,
+            "close": 22996.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:50:00+05:30",
+            "open": 22999.0,
+            "high": 23011.0,
+            "low": 22987.0,
+            "close": 23001.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:51:00+05:30",
+            "open": 22999.2,
+            "high": 23011.2,
+            "low": 22987.2,
+            "close": 22997.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:52:00+05:30",
+            "open": 22999.4,
+            "high": 23011.4,
+            "low": 22987.4,
+            "close": 23001.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:53:00+05:30",
+            "open": 22999.6,
+            "high": 23011.6,
+            "low": 22987.6,
+            "close": 22997.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:54:00+05:30",
+            "open": 22999.8,
+            "high": 23011.8,
+            "low": 22987.8,
+            "close": 23001.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:55:00+05:30",
+            "open": 23000.0,
+            "high": 23012.0,
+            "low": 22988.0,
+            "close": 22998.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:56:00+05:30",
+            "open": 23000.2,
+            "high": 23012.2,
+            "low": 22988.2,
+            "close": 23002.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:57:00+05:30",
+            "open": 23000.4,
+            "high": 23012.4,
+            "low": 22988.4,
+            "close": 22998.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:58:00+05:30",
+            "open": 23000.6,
+            "high": 23012.6,
+            "low": 22988.6,
+            "close": 23002.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:59:00+05:30",
+            "open": 23000.8,
+            "high": 23012.8,
+            "low": 22988.8,
+            "close": 22998.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T10:00:00+05:30",
+            "open": 23001.0,
+            "high": 23013.0,
+            "low": 22989.0,
+            "close": 23003.0,
+            "volume": 1000
+          }
+        ],
+        "available_margin": 0.0,
+        "expiry": "2026-10-22"
+      },
+      "calls": [
+        [
+          "/nifty/snapshot",
+          {}
+        ],
+        [
+          "/nifty/technicals?interval=5m&limit=50",
+          {}
+        ],
+        [
+          "/nifty/candles?interval=1m&limit=375",
+          {}
+        ],
+        [
+          "/nifty/options?strike_window=10",
+          {}
+        ],
+        [
+          "/heavyweights",
+          {}
+        ],
+        [
+          "funds",
+          {}
+        ]
+      ]
+    },
+    "monitor": {
+      "result": {
+        "spot": 23004,
+        "last_1m_high": 23013.0,
+        "last_1m_low": 22989.0,
+        "day_open": 22985,
+        "day_high": 23080,
+        "day_low": 22900,
+        "day_change": 0.1,
+        "ema_9": 23000,
+        "ema_20": 22994,
+        "ema_50": 22980,
+        "rsi_14": 52.5,
+        "macd": 3,
+        "macd_hist": 1,
+        "hist_expanding_pos": true,
+        "hist_expanding_neg": false,
+        "session_vwap": 22996.5,
+        "session_vwap_basis": "NIFTY_SPOT_INTRADAY",
+        "atm_strike": null,
+        "pcr_oi": null,
+        "pcr_vol": null,
+        "box_high_15m": 23013.0,
+        "box_low_15m": 22986.2,
+        "box_spread_15m": 26.8,
+        "is_consolidation_box": true,
+        "order_flow": {
+          "atm_call_oi": 0,
+          "atm_call_oi_chg": 0,
+          "atm_put_oi": 0,
+          "atm_put_oi_chg": 0,
+          "next_call_strike": 0,
+          "next_call_oi": 0,
+          "next_call_oi_chg": 0,
+          "next_put_strike": 0,
+          "next_put_oi": 0,
+          "next_put_oi_chg": 0
+        },
+        "strikes": [],
+        "heavyweights": {
+          "stocks": [
+            {
+              "symbol": "HDFCBANK",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "RELIANCE",
+              "change_pct": 0.1
+            },
+            {
+              "symbol": "ICICIBANK",
+              "change_pct": 0.1
+            }
+          ],
+          "advancing": 3,
+          "declining": 0,
+          "hdfc_chg": 0.1,
+          "reliance_chg": 0.1,
+          "icici_chg": 0.1
+        },
+        "candles_1m": [
+          {
+            "start_time": "2026-10-19T09:15:00+05:30",
+            "open": 22992.0,
+            "high": 23004.0,
+            "low": 22980.0,
+            "close": 22990.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:16:00+05:30",
+            "open": 22992.2,
+            "high": 23004.2,
+            "low": 22980.2,
+            "close": 22994.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:17:00+05:30",
+            "open": 22992.4,
+            "high": 23004.4,
+            "low": 22980.4,
+            "close": 22990.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:18:00+05:30",
+            "open": 22992.6,
+            "high": 23004.6,
+            "low": 22980.6,
+            "close": 22994.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:19:00+05:30",
+            "open": 22992.8,
+            "high": 23004.8,
+            "low": 22980.8,
+            "close": 22990.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:20:00+05:30",
+            "open": 22993.0,
+            "high": 23005.0,
+            "low": 22981.0,
+            "close": 22995.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:21:00+05:30",
+            "open": 22993.2,
+            "high": 23005.2,
+            "low": 22981.2,
+            "close": 22991.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:22:00+05:30",
+            "open": 22993.4,
+            "high": 23005.4,
+            "low": 22981.4,
+            "close": 22995.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:23:00+05:30",
+            "open": 22993.6,
+            "high": 23005.6,
+            "low": 22981.6,
+            "close": 22991.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:24:00+05:30",
+            "open": 22993.8,
+            "high": 23005.8,
+            "low": 22981.8,
+            "close": 22995.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:25:00+05:30",
+            "open": 22994.0,
+            "high": 23006.0,
+            "low": 22982.0,
+            "close": 22992.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:26:00+05:30",
+            "open": 22994.2,
+            "high": 23006.2,
+            "low": 22982.2,
+            "close": 22996.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:27:00+05:30",
+            "open": 22994.4,
+            "high": 23006.4,
+            "low": 22982.4,
+            "close": 22992.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:28:00+05:30",
+            "open": 22994.6,
+            "high": 23006.6,
+            "low": 22982.6,
+            "close": 22996.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:29:00+05:30",
+            "open": 22994.8,
+            "high": 23006.8,
+            "low": 22982.8,
+            "close": 22992.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:30:00+05:30",
+            "open": 22995.0,
+            "high": 23007.0,
+            "low": 22983.0,
+            "close": 22997.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:31:00+05:30",
+            "open": 22995.2,
+            "high": 23007.2,
+            "low": 22983.2,
+            "close": 22993.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:32:00+05:30",
+            "open": 22995.4,
+            "high": 23007.4,
+            "low": 22983.4,
+            "close": 22997.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:33:00+05:30",
+            "open": 22995.6,
+            "high": 23007.6,
+            "low": 22983.6,
+            "close": 22993.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:34:00+05:30",
+            "open": 22995.8,
+            "high": 23007.8,
+            "low": 22983.8,
+            "close": 22997.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:35:00+05:30",
+            "open": 22996.0,
+            "high": 23008.0,
+            "low": 22984.0,
+            "close": 22994.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:36:00+05:30",
+            "open": 22996.2,
+            "high": 23008.2,
+            "low": 22984.2,
+            "close": 22998.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:37:00+05:30",
+            "open": 22996.4,
+            "high": 23008.4,
+            "low": 22984.4,
+            "close": 22994.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:38:00+05:30",
+            "open": 22996.6,
+            "high": 23008.6,
+            "low": 22984.6,
+            "close": 22998.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:39:00+05:30",
+            "open": 22996.8,
+            "high": 23008.8,
+            "low": 22984.8,
+            "close": 22994.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:40:00+05:30",
+            "open": 22997.0,
+            "high": 23009.0,
+            "low": 22985.0,
+            "close": 22999.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:41:00+05:30",
+            "open": 22997.2,
+            "high": 23009.2,
+            "low": 22985.2,
+            "close": 22995.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:42:00+05:30",
+            "open": 22997.4,
+            "high": 23009.4,
+            "low": 22985.4,
+            "close": 22999.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:43:00+05:30",
+            "open": 22997.6,
+            "high": 23009.6,
+            "low": 22985.6,
+            "close": 22995.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:44:00+05:30",
+            "open": 22997.8,
+            "high": 23009.8,
+            "low": 22985.8,
+            "close": 22999.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:45:00+05:30",
+            "open": 22998.0,
+            "high": 23010.0,
+            "low": 22986.0,
+            "close": 22996.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:46:00+05:30",
+            "open": 22998.2,
+            "high": 23010.2,
+            "low": 22986.2,
+            "close": 23000.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:47:00+05:30",
+            "open": 22998.4,
+            "high": 23010.4,
+            "low": 22986.4,
+            "close": 22996.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:48:00+05:30",
+            "open": 22998.6,
+            "high": 23010.6,
+            "low": 22986.6,
+            "close": 23000.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:49:00+05:30",
+            "open": 22998.8,
+            "high": 23010.8,
+            "low": 22986.8,
+            "close": 22996.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:50:00+05:30",
+            "open": 22999.0,
+            "high": 23011.0,
+            "low": 22987.0,
+            "close": 23001.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:51:00+05:30",
+            "open": 22999.2,
+            "high": 23011.2,
+            "low": 22987.2,
+            "close": 22997.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:52:00+05:30",
+            "open": 22999.4,
+            "high": 23011.4,
+            "low": 22987.4,
+            "close": 23001.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:53:00+05:30",
+            "open": 22999.6,
+            "high": 23011.6,
+            "low": 22987.6,
+            "close": 22997.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:54:00+05:30",
+            "open": 22999.8,
+            "high": 23011.8,
+            "low": 22987.8,
+            "close": 23001.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:55:00+05:30",
+            "open": 23000.0,
+            "high": 23012.0,
+            "low": 22988.0,
+            "close": 22998.0,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:56:00+05:30",
+            "open": 23000.2,
+            "high": 23012.2,
+            "low": 22988.2,
+            "close": 23002.2,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:57:00+05:30",
+            "open": 23000.4,
+            "high": 23012.4,
+            "low": 22988.4,
+            "close": 22998.4,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:58:00+05:30",
+            "open": 23000.6,
+            "high": 23012.6,
+            "low": 22988.6,
+            "close": 23002.6,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T09:59:00+05:30",
+            "open": 23000.8,
+            "high": 23012.8,
+            "low": 22988.8,
+            "close": 22998.8,
+            "volume": 1000
+          },
+          {
+            "start_time": "2026-10-19T10:00:00+05:30",
+            "open": 23001.0,
+            "high": 23013.0,
+            "low": 22989.0,
+            "close": 23003.0,
+            "volume": 1000
+          }
+        ],
+        "available_margin": 0.0,
+        "expiry": null
+      },
+      "calls": [
+        [
+          "/nifty/snapshot",
+          {
+            "timeout": 2
+          }
+        ],
+        [
+          "/nifty/technicals?interval=5m&limit=50",
+          {
+            "timeout": 2
+          }
+        ],
+        [
+          "/nifty/candles?interval=1m&limit=375",
+          {
+            "timeout": 2
+          }
+        ],
+        [
+          "/heavyweights",
+          {
+            "timeout": 2
+          }
+        ]
+      ]
+    },
+    "snapshot_error": {
+      "error": "TimeoutError",
+      "detail": "fixture",
+      "calls": [
+        [
+          "/nifty/snapshot",
+          {}
+        ]
+      ]
+    }
+  },
+  "decisions": {
+    "legacy_scalper:bull": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "legacy_scalper",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": "TEST-23000-CE",
+        "symbol": "NIFTY-TEST-23000-CE",
+        "ltp": 67,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: ATM strike 23000 selected."
+        ]
+      },
+      "verdict": {
+        "is_approved": true,
+        "action": "APPROVED",
+        "confidence_score": 80,
+        "trap_detected": null,
+        "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 6.5 pts from VWAP.",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": 70.35,
+        "min_entry_price": 61.65,
+        "reference_entry_price": 67.0,
+        "entry_instrument_id": "TEST-23000-CE",
+        "entry_setup_type": "TREND_PULLBACK",
+        "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+        "entry_approved_at": "2026-10-19T10:00:00+05:30",
+        "entry_valid_until": "2026-10-19T10:00:15+05:30",
+        "entry_invalidation_level": null
+      }
+    },
+    "legacy_scalper:bear": {
+      "decision": {
+        "signal": "BUY_PE",
+        "strategy": "legacy_scalper",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 1,
+        "instrument_id": "TEST-23000-PE",
+        "symbol": "NIFTY-TEST-23000-PE",
+        "ltp": 67,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bear: Spot (22996.0) < 5m EMA9 (23000.0) < EMA20 (23006.0) & < VWAP (23010.0)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (-4.0 pts); optimal risk/reward entry.",
+          "STRIKE SELECTION: ATM strike 23000 selected."
+        ]
+      },
+      "verdict": {
+        "is_approved": false,
+        "action": "VETOED",
+        "confidence_score": 90,
+        "trap_detected": "Trap 7: Counter-Trend VWAP Slope Trap",
+        "reasoning": "Direction PE is fighting active institutional VWAP trajectory (+0.104 pts/min) without confirmed inflection alignment. Never trade counter-trend against a steeply sloping session benchmark.",
+        "recommended_trailing": "tight_ema20",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": null,
+        "min_entry_price": null,
+        "reference_entry_price": null,
+        "entry_instrument_id": null,
+        "entry_setup_type": null,
+        "entry_candidate_at": null,
+        "entry_approved_at": null,
+        "entry_valid_until": null,
+        "entry_invalidation_level": null
+      }
+    },
+    "legacy_scalper:missing_indicators": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "legacy_scalper",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Incomplete indicators for trend classification."
+        ]
+      },
+      "verdict": null
+    },
+    "legacy_scalper:unaffordable": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "legacy_scalper",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: ATM strike 23000 selected.",
+          "MARGIN BUDGET OPTIMIZATION: ITM strike 23000 (₹67.0 x 65 = ₹4355) exceeds safe policy (Budget: ₹0, Max Premium: ₹135.0). Falling back to ATM 23000.",
+          "INSUFFICIENT FUNDS VETO: Contract (NIFTY-TEST-23000-CE) requires ₹4355.00 (₹67.00 x 65 qty), exceeding safe margin ₹0.00 (Shortfall: ₹4355.00, Broker Avail: ₹100.00). Zero-shortfall rule enforced: Order blocked from submission!"
+        ]
+      },
+      "verdict": null
+    },
+    "legacy_scalper:overextended": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "legacy_scalper",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23120.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE BLOCKED: Spot is overextended (+120.0 pts above 5m EMA9, RSI 85.0). Awaiting pullback to value."
+        ]
+      },
+      "verdict": null
+    },
+    "legacy_scalper:box_ceiling": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "legacy_scalper",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": "TEST-23000-CE",
+        "symbol": "NIFTY-TEST-23000-CE",
+        "ltp": 67,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: ATM strike 23000 selected."
+        ]
+      },
+      "verdict": {
+        "is_approved": true,
+        "action": "APPROVED",
+        "confidence_score": 80,
+        "trap_detected": null,
+        "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 6.5 pts from VWAP.",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": 70.35,
+        "min_entry_price": 61.65,
+        "reference_entry_price": 67.0,
+        "entry_instrument_id": "TEST-23000-CE",
+        "entry_setup_type": "TREND_PULLBACK",
+        "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+        "entry_approved_at": "2026-10-19T10:00:00+05:30",
+        "entry_valid_until": "2026-10-19T10:00:15+05:30",
+        "entry_invalidation_level": null
+      }
+    },
+    "legacy_scalper:no_contracts": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "legacy_scalper",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: ATM strike 23000 selected."
+        ]
+      },
+      "verdict": {
+        "is_approved": false,
+        "action": "VETOED",
+        "confidence_score": 80,
+        "trap_detected": "Safety Default: Invalid Entry Envelope",
+        "reasoning": "INVALID_ENTRY_REFERENCE",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": null,
+        "min_entry_price": null,
+        "reference_entry_price": null,
+        "entry_instrument_id": null,
+        "entry_setup_type": null,
+        "entry_candidate_at": null,
+        "entry_approved_at": null,
+        "entry_valid_until": null,
+        "entry_invalidation_level": null
+      }
+    },
+    "structural_runner:bull": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "structural_runner",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": "TEST-23000-CE",
+        "symbol": "NIFTY-TEST-23000-CE",
+        "ltp": 67,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: ATM strike 23000 selected."
+        ]
+      },
+      "verdict": {
+        "is_approved": true,
+        "action": "APPROVED",
+        "confidence_score": 80,
+        "trap_detected": null,
+        "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 6.5 pts from VWAP.",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": 70.35,
+        "min_entry_price": 61.65,
+        "reference_entry_price": 67.0,
+        "entry_instrument_id": "TEST-23000-CE",
+        "entry_setup_type": "TREND_PULLBACK",
+        "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+        "entry_approved_at": "2026-10-19T10:00:00+05:30",
+        "entry_valid_until": "2026-10-19T10:00:15+05:30",
+        "entry_invalidation_level": null
+      }
+    },
+    "structural_runner:bear": {
+      "decision": {
+        "signal": "BUY_PE",
+        "strategy": "structural_runner",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 1,
+        "instrument_id": "TEST-23000-PE",
+        "symbol": "NIFTY-TEST-23000-PE",
+        "ltp": 67,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bear: Spot (22996.0) < 5m EMA9 (23000.0) < EMA20 (23006.0) & < VWAP (23010.0)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (-4.0 pts); optimal risk/reward entry.",
+          "STRIKE SELECTION: ATM strike 23000 selected."
+        ]
+      },
+      "verdict": {
+        "is_approved": false,
+        "action": "VETOED",
+        "confidence_score": 90,
+        "trap_detected": "Trap 7: Counter-Trend VWAP Slope Trap",
+        "reasoning": "Direction PE is fighting active institutional VWAP trajectory (+0.104 pts/min) without confirmed inflection alignment. Never trade counter-trend against a steeply sloping session benchmark.",
+        "recommended_trailing": "tight_ema20",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": null,
+        "min_entry_price": null,
+        "reference_entry_price": null,
+        "entry_instrument_id": null,
+        "entry_setup_type": null,
+        "entry_candidate_at": null,
+        "entry_approved_at": null,
+        "entry_valid_until": null,
+        "entry_invalidation_level": null
+      }
+    },
+    "structural_runner:missing_indicators": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "structural_runner",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Incomplete indicators for trend classification."
+        ]
+      },
+      "verdict": null
+    },
+    "structural_runner:unaffordable": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "structural_runner",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: ATM strike 23000 selected.",
+          "MARGIN BUDGET OPTIMIZATION: ITM strike 23000 (₹67.0 x 65 = ₹4355) exceeds safe policy (Budget: ₹0, Max Premium: ₹135.0). Falling back to ATM 23000.",
+          "INSUFFICIENT FUNDS VETO: Contract (NIFTY-TEST-23000-CE) requires ₹4355.00 (₹67.00 x 65 qty), exceeding safe margin ₹0.00 (Shortfall: ₹4355.00, Broker Avail: ₹100.00). Zero-shortfall rule enforced: Order blocked from submission!"
+        ]
+      },
+      "verdict": null
+    },
+    "structural_runner:overextended": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "structural_runner",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23120.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE BLOCKED: Spot is overextended (+120.0 pts above 5m EMA9, RSI 85.0). Awaiting pullback to value."
+        ]
+      },
+      "verdict": null
+    },
+    "structural_runner:box_ceiling": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "structural_runner",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "REGIME BLOCKED: Spot (23004.0) is at CEILING of 15m box (22991.0 - 23006.0, spread 15.0 pts). Awaiting breakout or pullback."
+        ]
+      },
+      "verdict": null
+    },
+    "structural_runner:no_contracts": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "structural_runner",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5)",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: ATM strike 23000 selected."
+        ]
+      },
+      "verdict": {
+        "is_approved": false,
+        "action": "VETOED",
+        "confidence_score": 80,
+        "trap_detected": "Safety Default: Invalid Entry Envelope",
+        "reasoning": "INVALID_ENTRY_REFERENCE",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": null,
+        "min_entry_price": null,
+        "reference_entry_price": null,
+        "entry_instrument_id": null,
+        "entry_setup_type": null,
+        "entry_candidate_at": null,
+        "entry_approved_at": null,
+        "entry_valid_until": null,
+        "entry_invalidation_level": null
+      }
+    },
+    "institutional_pullback:bull": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "institutional_pullback",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": "TEST-23000-CE",
+        "symbol": "NIFTY-TEST-23000-CE",
+        "ltp": 67,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull & Pullback Confirmed: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5); 1m low (22989.0) retested within 4.0 pts of 5m EMA9.",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+        ]
+      },
+      "verdict": {
+        "is_approved": true,
+        "action": "APPROVED",
+        "confidence_score": 80,
+        "trap_detected": null,
+        "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 6.5 pts from VWAP.",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": 70.35,
+        "min_entry_price": 61.65,
+        "reference_entry_price": 67.0,
+        "entry_instrument_id": "TEST-23000-CE",
+        "entry_setup_type": "TREND_PULLBACK",
+        "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+        "entry_approved_at": "2026-10-19T10:00:00+05:30",
+        "entry_valid_until": "2026-10-19T10:00:15+05:30",
+        "entry_invalidation_level": null
+      }
+    },
+    "institutional_pullback:bear": {
+      "decision": {
+        "signal": "BUY_PE",
+        "strategy": "institutional_pullback",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 1,
+        "instrument_id": "TEST-23000-PE",
+        "symbol": "NIFTY-TEST-23000-PE",
+        "ltp": 67,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bear & Pullback Confirmed: Spot (22996.0) < 5m EMA9 (23000.0) < EMA20 (23006.0) & < VWAP (23010.0); 1m high (23002.0) retested within 4.0 pts of 5m EMA9.",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (-4.0 pts); optimal risk/reward entry.",
+          "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+        ]
+      },
+      "verdict": {
+        "is_approved": false,
+        "action": "VETOED",
+        "confidence_score": 90,
+        "trap_detected": "Trap 7: Counter-Trend VWAP Slope Trap",
+        "reasoning": "Direction PE is fighting active institutional VWAP trajectory (+0.104 pts/min) without confirmed inflection alignment. Never trade counter-trend against a steeply sloping session benchmark.",
+        "recommended_trailing": "tight_ema20",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": null,
+        "min_entry_price": null,
+        "reference_entry_price": null,
+        "entry_instrument_id": null,
+        "entry_setup_type": null,
+        "entry_candidate_at": null,
+        "entry_approved_at": null,
+        "entry_valid_until": null,
+        "entry_invalidation_level": null
+      }
+    },
+    "institutional_pullback:missing_indicators": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "institutional_pullback",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Incomplete indicators for trend classification."
+        ]
+      },
+      "verdict": null
+    },
+    "institutional_pullback:unaffordable": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "institutional_pullback",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": 23000,
+        "quantity": 0,
+        "order_qty": 0,
+        "reasons": [
+          "Trend Aligned Bull & Pullback Confirmed: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5); 1m low (22989.0) retested within 4.0 pts of 5m EMA9.",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay).",
+          "MARGIN BUDGET OPTIMIZATION: ITM strike 23000 (₹67.0 x 0 = ₹0) exceeds safe policy (Budget: ₹0, Max Premium: ₹135.0). Falling back to ATM 23000.",
+          "INSUFFICIENT FUNDS VETO: Contract (NIFTY-TEST-23000-CE) requires ₹0.00 (₹67.00 x 0 qty), exceeding safe margin ₹0.00 (Shortfall: ₹0.00, Broker Avail: ₹100.00). Zero-shortfall rule enforced: Order blocked from submission!"
+        ]
+      },
+      "verdict": null
+    },
+    "institutional_pullback:overextended": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "institutional_pullback",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull & Pullback Confirmed: Spot (23120.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5); 1m low (22989.0) retested within 4.0 pts of 5m EMA9.",
+          "VALUE BLOCKED: Spot is overextended (+120.0 pts above 5m EMA9, RSI 85.0). Awaiting pullback to value."
+        ]
+      },
+      "verdict": null
+    },
+    "institutional_pullback:box_ceiling": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "institutional_pullback",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull & Pullback Confirmed: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5); 1m low (22989.0) retested within 4.0 pts of 5m EMA9.",
+          "REGIME BLOCKED: Spot (23004.0) is at CEILING of 15m box (22991.0 - 23006.0, spread 15.0 pts). Awaiting breakout or pullback."
+        ]
+      },
+      "verdict": null
+    },
+    "institutional_pullback:no_contracts": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "institutional_pullback",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "Trend Aligned Bull & Pullback Confirmed: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22996.5); 1m low (22989.0) retested within 4.0 pts of 5m EMA9.",
+          "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+          "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+          "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+        ]
+      },
+      "verdict": {
+        "is_approved": false,
+        "action": "VETOED",
+        "confidence_score": 80,
+        "trap_detected": "Safety Default: Invalid Entry Envelope",
+        "reasoning": "INVALID_ENTRY_REFERENCE",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": null,
+        "min_entry_price": null,
+        "reference_entry_price": null,
+        "entry_instrument_id": null,
+        "entry_setup_type": null,
+        "entry_candidate_at": null,
+        "entry_approved_at": null,
+        "entry_valid_until": null,
+        "entry_invalidation_level": null
+      }
+    },
+    "ai_opportunity_radar:bull": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "ai_opportunity_radar",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": "TEST-23000-CE",
+        "symbol": "NIFTY-TEST-23000-CE",
+        "ltp": 67,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "AI RADAR [TREND_PULLBACK | Conviction: 88%]: Institutional bullish trend confirmed. Clean pullback to 5m EMA9 (23003.0 holding above 23000.0).",
+          "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+        ]
+      },
+      "verdict": {
+        "is_approved": true,
+        "action": "APPROVED",
+        "confidence_score": 80,
+        "trap_detected": null,
+        "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 6.5 pts from VWAP.",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": 70.35,
+        "min_entry_price": 61.65,
+        "reference_entry_price": 67.0,
+        "entry_instrument_id": "TEST-23000-CE",
+        "entry_setup_type": "TREND_PULLBACK",
+        "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+        "entry_approved_at": "2026-10-19T10:00:00+05:30",
+        "entry_valid_until": "2026-10-19T10:00:15+05:30",
+        "entry_invalidation_level": null
+      }
+    },
+    "ai_opportunity_radar:bear": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "ai_opportunity_radar",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "AI RADAR STAND ASIDE: No high-conviction institutional setup detected."
+        ]
+      },
+      "verdict": null
+    },
+    "ai_opportunity_radar:missing_indicators": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "ai_opportunity_radar",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "AI RADAR STAND ASIDE: No high-conviction institutional setup detected."
+        ]
+      },
+      "verdict": null
+    },
+    "ai_opportunity_radar:unaffordable": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "ai_opportunity_radar",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": 23000,
+        "quantity": 0,
+        "order_qty": 0,
+        "reasons": [
+          "AI RADAR [TREND_PULLBACK | Conviction: 88%]: Institutional bullish trend confirmed. Clean pullback to 5m EMA9 (23003.0 holding above 23000.0).",
+          "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay).",
+          "MARGIN BUDGET OPTIMIZATION: ITM strike 23000 (₹67.0 x 0 = ₹0) exceeds safe policy (Budget: ₹0, Max Premium: ₹135.0). Falling back to ATM 23000.",
+          "INSUFFICIENT FUNDS VETO: Contract (NIFTY-TEST-23000-CE) requires ₹0.00 (₹67.00 x 0 qty), exceeding safe margin ₹0.00 (Shortfall: ₹0.00, Broker Avail: ₹100.00). Zero-shortfall rule enforced: Order blocked from submission!"
+        ]
+      },
+      "verdict": null
+    },
+    "ai_opportunity_radar:overextended": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "ai_opportunity_radar",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "AI RADAR STAND ASIDE: No high-conviction institutional setup detected."
+        ]
+      },
+      "verdict": null
+    },
+    "ai_opportunity_radar:box_ceiling": {
+      "decision": {
+        "signal": "NEUTRAL",
+        "strategy": "ai_opportunity_radar",
+        "setup_type": "NONE",
+        "invalidation_level": null,
+        "bull_score": 0,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": null,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "AI RADAR STAND ASIDE: No high-conviction institutional setup detected."
+        ]
+      },
+      "verdict": null
+    },
+    "ai_opportunity_radar:no_contracts": {
+      "decision": {
+        "signal": "BUY_CE",
+        "strategy": "ai_opportunity_radar",
+        "setup_type": "TREND_PULLBACK",
+        "invalidation_level": null,
+        "bull_score": 1,
+        "bear_score": 0,
+        "instrument_id": null,
+        "symbol": null,
+        "ltp": null,
+        "target_strike": 23000,
+        "quantity": 65,
+        "order_qty": 65,
+        "reasons": [
+          "AI RADAR [TREND_PULLBACK | Conviction: 88%]: Institutional bullish trend confirmed. Clean pullback to 5m EMA9 (23003.0 holding above 23000.0).",
+          "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+        ]
+      },
+      "verdict": {
+        "is_approved": false,
+        "action": "VETOED",
+        "confidence_score": 80,
+        "trap_detected": "Safety Default: Invalid Entry Envelope",
+        "reasoning": "INVALID_ENTRY_REFERENCE",
+        "recommended_trailing": "standard",
+        "timestamp": "<host-wall-clock>",
+        "max_entry_price": null,
+        "min_entry_price": null,
+        "reference_entry_price": null,
+        "entry_instrument_id": null,
+        "entry_setup_type": null,
+        "entry_candidate_at": null,
+        "entry_approved_at": null,
+        "entry_valid_until": null,
+        "entry_invalidation_level": null
+      }
+    }
+  },
+  "verdicts": {
+    "normal": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 10.0 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.0,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:05+05:30",
+      "entry_invalidation_level": null
+    },
+    "vwap_blender": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 10.0 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.0,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:05+05:30",
+      "entry_invalidation_level": null
+    },
+    "penny_0dte": {
+      "is_approved": false,
+      "action": "VETOED",
+      "confidence_score": 95,
+      "trap_detected": "Trap 2: 0DTE Penny Option Gamma Trap",
+      "reasoning": "0DTE option premium is too cheap (₹10.00 < ₹12.0). Pure delta-decay lottery ticket with instant wipeout risk.",
+      "recommended_trailing": "tight_ema20",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": null,
+      "min_entry_price": null,
+      "reference_entry_price": null,
+      "entry_instrument_id": null,
+      "entry_setup_type": null,
+      "entry_candidate_at": null,
+      "entry_approved_at": null,
+      "entry_valid_until": null,
+      "entry_invalidation_level": null
+    },
+    "v_reversal": {
+      "is_approved": false,
+      "action": "VETOED",
+      "confidence_score": 85,
+      "trap_detected": "Trap 3: V-Reversal Counter-Trend Short Trap",
+      "reasoning": "1m RSI is 65.0 (> 55) showing aggressive bullish rebound without confirmed strong bear trend. Avoid buying Puts into a rebound.",
+      "recommended_trailing": "tight_ema20",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": null,
+      "min_entry_price": null,
+      "reference_entry_price": null,
+      "entry_instrument_id": null,
+      "entry_setup_type": null,
+      "entry_candidate_at": null,
+      "entry_approved_at": null,
+      "entry_valid_until": null,
+      "entry_invalidation_level": null
+    },
+    "box_ceiling": {
+      "is_approved": false,
+      "action": "VETOED",
+      "confidence_score": 85,
+      "trap_detected": "Trap 4: 15-Minute Consolidation Ceiling/Floor Trap",
+      "reasoning": "Buying CE directly at 50.0% boundary of narrow 30m range (60.0 pts) without expansion breakout.",
+      "recommended_trailing": "tight_ema20",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": null,
+      "min_entry_price": null,
+      "reference_entry_price": null,
+      "entry_instrument_id": null,
+      "entry_setup_type": null,
+      "entry_candidate_at": null,
+      "entry_approved_at": null,
+      "entry_valid_until": null,
+      "entry_invalidation_level": null
+    },
+    "preserve_capital": {
+      "is_approved": false,
+      "action": "VETOED",
+      "confidence_score": 90,
+      "trap_detected": "Trap 5: Capital Preservation Mode",
+      "reasoning": "Account has locked +₹0.00 today with 330m remaining. Standing aside to protect daily alpha.",
+      "recommended_trailing": "runner_ema9",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": null,
+      "min_entry_price": null,
+      "reference_entry_price": null,
+      "entry_instrument_id": null,
+      "entry_setup_type": null,
+      "entry_candidate_at": null,
+      "entry_approved_at": null,
+      "entry_valid_until": null,
+      "entry_invalidation_level": null
+    },
+    "compressed_ribbon_current_policy": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 10.0 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.0,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:05+05:30",
+      "entry_invalidation_level": null
+    },
+    "counter_flow": {
+      "is_approved": false,
+      "action": "VETOED",
+      "confidence_score": 90,
+      "trap_detected": "Trap 7: Counter-Trend VWAP Slope Trap",
+      "reasoning": "Direction CE is fighting active institutional VWAP trajectory (+0.200 pts/min) without confirmed inflection alignment. Never trade counter-trend against a steeply sloping session benchmark.",
+      "recommended_trailing": "tight_ema20",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": null,
+      "min_entry_price": null,
+      "reference_entry_price": null,
+      "entry_instrument_id": null,
+      "entry_setup_type": null,
+      "entry_candidate_at": null,
+      "entry_approved_at": null,
+      "entry_valid_until": null,
+      "entry_invalidation_level": null
+    },
+    "climax_cap": {
+      "is_approved": false,
+      "action": "VETOED",
+      "confidence_score": 90,
+      "trap_detected": "Trap 8: Climax Overextension Cap (>= 75 pts)",
+      "reasoning": "Spot is 80.0 pts extended from VWAP (>= 75 pts). Rubber band is at extreme stretch with violent mean-reversion risk.",
+      "recommended_trailing": "tight_ema20",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": null,
+      "min_entry_price": null,
+      "reference_entry_price": null,
+      "entry_instrument_id": null,
+      "entry_setup_type": null,
+      "entry_candidate_at": null,
+      "entry_approved_at": null,
+      "entry_valid_until": null,
+      "entry_invalidation_level": null
+    },
+    "late_day": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 10.0 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.0,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:05+05:30",
+      "entry_invalidation_level": null
+    }
+  }
+}

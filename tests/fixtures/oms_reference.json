@@ -1,0 +1,525 @@
+{
+  "filled": {
+    "result": {
+      "status": "SUCCESS",
+      "order_id": "E0",
+      "stop_order_ids": [
+        "S1"
+      ]
+    },
+    "calls": [
+      [
+        "GET",
+        "/execution/status",
+        null
+      ],
+      [
+        "GET",
+        "/execution/positions",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders",
+        null
+      ],
+      [
+        "GET",
+        "http://invalid.test/account/funds",
+        null
+      ],
+      [
+        "GET",
+        "/market/quote/TEST",
+        null
+      ],
+      [
+        "POST",
+        "/execution/orders",
+        {
+          "request_id": "AI-ENTRY-REFERENCE-1",
+          "instrument_id": "TEST",
+          "quantity": 65,
+          "limit_price": 68.25
+        }
+      ],
+      [
+        "GET",
+        "/execution/orders/E0",
+        null
+      ],
+      [
+        "GET",
+        "/execution/status",
+        null
+      ],
+      [
+        "GET",
+        "/execution/positions",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders/E0",
+        null
+      ],
+      [
+        "POST",
+        "/execution/stops",
+        {
+          "request_id": "AI-STOP-REFERENCE-2",
+          "entry_order_id": "E0",
+          "trigger_price": 47.75,
+          "limit_price": 46.8
+        }
+      ],
+      [
+        "GET",
+        "/execution/orders/S1",
+        null
+      ]
+    ],
+    "state": {
+      "symbol": "NIFTY-TEST-CE",
+      "instrument_id": "TEST",
+      "scope": {
+        "mode": "LIVE"
+      },
+      "quantity": 65,
+      "status": "OPEN",
+      "entries": [
+        {
+          "request_id": "AI-ENTRY-REFERENCE-1",
+          "quantity": 65,
+          "status": "FILLED",
+          "kind": "ENTRY",
+          "limit_price": 68.25,
+          "cancel_after": "2026-10-19T10:00:05+05:30",
+          "order_id": "E0",
+          "symbol": "NIFTY-TEST-CE",
+          "mode": "LIVE",
+          "created_at": "2026-10-19T10:00:00+05:30",
+          "filled_quantity": 65,
+          "average_price": 68.2
+        }
+      ],
+      "stops": [
+        {
+          "request_id": "AI-STOP-REFERENCE-2",
+          "entry_order_id": "E0",
+          "quantity": 65,
+          "kind": "STOP",
+          "trigger_price": 47.75,
+          "limit_price": 46.8,
+          "status": "TRIGGER_PENDING",
+          "modifications": 0,
+          "order_id": "S1",
+          "symbol": "NIFTY-TEST-CE",
+          "mode": "LIVE",
+          "created_at": "2026-10-19T10:00:00+05:30",
+          "filled_quantity": 0
+        }
+      ],
+      "exits": [],
+      "entry_price": 68.2,
+      "last_bid": 120.0,
+      "peak_bid": 120.0,
+      "entry_time": "2026-10-19T10:00:00+05:30",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "entry_execution": {
+        "ai_verdict": {
+          "is_approved": true,
+          "action": "APPROVED",
+          "confidence_score": 80,
+          "trap_detected": null,
+          "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 10.0 pts from VWAP.",
+          "recommended_trailing": "standard",
+          "timestamp": "2026-10-19T23:36:47.164260",
+          "max_entry_price": 70.0,
+          "min_entry_price": 61.65,
+          "reference_entry_price": 67.0,
+          "entry_instrument_id": "TEST",
+          "entry_setup_type": "TREND_PULLBACK",
+          "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+          "entry_approved_at": "2026-10-19T10:00:00+05:30",
+          "entry_valid_until": "2026-10-19T10:00:05+05:30",
+          "entry_invalidation_level": null
+        },
+        "quote": {
+          "instrument_id": "TEST",
+          "best_bid": 68.15,
+          "best_ask": 68.2,
+          "best_bid_qty": 650,
+          "best_ask_qty": 650,
+          "timestamp": "2026-10-19T10:00:00+05:30",
+          "request_started_monotonic": 100
+        },
+        "spot_quote": null,
+        "effective_band": [
+          61.65,
+          70.0
+        ],
+        "final_limit": 68.25,
+        "quantity": 65,
+        "quote_check_duration_ms": 0,
+        "prepared_at": "2026-10-19T10:00:00+05:30",
+        "quote_age_ms_at_submit": 0.0,
+        "submitted_at": "2026-10-19T10:00:00+05:30",
+        "acknowledged_at": "2026-10-19T10:00:00+05:30",
+        "submission_duration_ms": 0,
+        "fill_observed_at": "2026-10-19T10:00:00+05:30"
+      },
+      "schema_version": 2,
+      "entry_order_ids": [
+        "E0"
+      ],
+      "stop_order_ids": [
+        "S1"
+      ],
+      "entry_order_id": "E0",
+      "trade_id": "E0",
+      "stop_order_id": "S1",
+      "entry_balances": {
+        "E0": 65
+      },
+      "protection_confirmed": true
+    }
+  },
+  "partial_cancelled": {
+    "result": {
+      "status": "SUCCESS",
+      "order_id": "E0",
+      "stop_order_ids": [
+        "S1"
+      ]
+    },
+    "calls": [
+      [
+        "GET",
+        "/execution/status",
+        null
+      ],
+      [
+        "GET",
+        "/execution/positions",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders",
+        null
+      ],
+      [
+        "GET",
+        "http://invalid.test/account/funds",
+        null
+      ],
+      [
+        "GET",
+        "/market/quote/TEST",
+        null
+      ],
+      [
+        "POST",
+        "/execution/orders",
+        {
+          "request_id": "AI-ENTRY-REFERENCE-1",
+          "instrument_id": "TEST",
+          "quantity": 130,
+          "limit_price": 68.25
+        }
+      ],
+      [
+        "GET",
+        "/execution/orders/E0",
+        null
+      ],
+      [
+        "GET",
+        "/execution/status",
+        null
+      ],
+      [
+        "GET",
+        "/execution/positions",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders/E0",
+        null
+      ],
+      [
+        "DELETE",
+        "/execution/orders/E0",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders/E0",
+        null
+      ],
+      [
+        "GET",
+        "/execution/positions",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders/E0",
+        null
+      ],
+      [
+        "POST",
+        "/execution/stops",
+        {
+          "request_id": "AI-STOP-REFERENCE-2",
+          "entry_order_id": "E0",
+          "trigger_price": 47.75,
+          "limit_price": 46.8
+        }
+      ],
+      [
+        "GET",
+        "/execution/orders/S1",
+        null
+      ]
+    ],
+    "state": {
+      "symbol": "NIFTY-TEST-CE",
+      "instrument_id": "TEST",
+      "scope": {
+        "mode": "LIVE"
+      },
+      "quantity": 65,
+      "status": "OPEN",
+      "entries": [
+        {
+          "request_id": "AI-ENTRY-REFERENCE-1",
+          "quantity": 130,
+          "status": "CANCELLED",
+          "kind": "ENTRY",
+          "limit_price": 68.25,
+          "cancel_after": "2026-10-19T10:00:05+05:30",
+          "order_id": "E0",
+          "symbol": "NIFTY-TEST-CE",
+          "mode": "LIVE",
+          "created_at": "2026-10-19T10:00:00+05:30",
+          "filled_quantity": 65,
+          "average_price": 68.2,
+          "cancel_requested_at": "2026-10-19T10:00:00+05:30"
+        }
+      ],
+      "stops": [
+        {
+          "request_id": "AI-STOP-REFERENCE-2",
+          "entry_order_id": "E0",
+          "quantity": 65,
+          "kind": "STOP",
+          "trigger_price": 47.75,
+          "limit_price": 46.8,
+          "status": "TRIGGER_PENDING",
+          "modifications": 0,
+          "order_id": "S1",
+          "symbol": "NIFTY-TEST-CE",
+          "mode": "LIVE",
+          "created_at": "2026-10-19T10:00:00+05:30",
+          "filled_quantity": 0
+        }
+      ],
+      "exits": [],
+      "entry_price": 68.2,
+      "last_bid": 120.0,
+      "peak_bid": 120.0,
+      "entry_time": "2026-10-19T10:00:00+05:30",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "entry_execution": {
+        "ai_verdict": {
+          "is_approved": true,
+          "action": "APPROVED",
+          "confidence_score": 80,
+          "trap_detected": null,
+          "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 10.0 pts from VWAP.",
+          "recommended_trailing": "standard",
+          "timestamp": "2026-10-19T23:36:47.284503",
+          "max_entry_price": 70.0,
+          "min_entry_price": 61.65,
+          "reference_entry_price": 67.0,
+          "entry_instrument_id": "TEST",
+          "entry_setup_type": "TREND_PULLBACK",
+          "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+          "entry_approved_at": "2026-10-19T10:00:00+05:30",
+          "entry_valid_until": "2026-10-19T10:00:05+05:30",
+          "entry_invalidation_level": null
+        },
+        "quote": {
+          "instrument_id": "TEST",
+          "best_bid": 68.15,
+          "best_ask": 68.2,
+          "best_bid_qty": 650,
+          "best_ask_qty": 650,
+          "timestamp": "2026-10-19T10:00:00+05:30",
+          "request_started_monotonic": 100
+        },
+        "spot_quote": null,
+        "effective_band": [
+          61.65,
+          70.0
+        ],
+        "final_limit": 68.25,
+        "quantity": 130,
+        "quote_check_duration_ms": 0,
+        "prepared_at": "2026-10-19T10:00:00+05:30",
+        "quote_age_ms_at_submit": 0.0,
+        "submitted_at": "2026-10-19T10:00:00+05:30",
+        "acknowledged_at": "2026-10-19T10:00:00+05:30",
+        "submission_duration_ms": 0
+      },
+      "schema_version": 2,
+      "entry_order_ids": [
+        "E0"
+      ],
+      "stop_order_ids": [
+        "S1"
+      ],
+      "entry_order_id": "E0",
+      "trade_id": "E0",
+      "stop_order_id": "S1",
+      "entry_balances": {
+        "E0": 65
+      },
+      "protection_confirmed": true
+    }
+  },
+  "unknown_submit": {
+    "result": {
+      "error": true,
+      "detail": "timed out",
+      "outcome_unknown": true
+    },
+    "calls": [
+      [
+        "GET",
+        "/execution/status",
+        null
+      ],
+      [
+        "GET",
+        "/execution/positions",
+        null
+      ],
+      [
+        "GET",
+        "/execution/orders",
+        null
+      ],
+      [
+        "GET",
+        "http://invalid.test/account/funds",
+        null
+      ],
+      [
+        "GET",
+        "/market/quote/TEST",
+        null
+      ],
+      [
+        "POST",
+        "/execution/orders",
+        {
+          "request_id": "AI-ENTRY-REFERENCE-1",
+          "instrument_id": "TEST",
+          "quantity": 65,
+          "limit_price": 68.25
+        }
+      ]
+    ],
+    "state": {
+      "symbol": "NIFTY-TEST-CE",
+      "instrument_id": "TEST",
+      "scope": {
+        "mode": "LIVE"
+      },
+      "quantity": 0,
+      "status": "ENTRY_PENDING",
+      "entries": [
+        {
+          "request_id": "AI-ENTRY-REFERENCE-1",
+          "quantity": 65,
+          "status": "UNKNOWN",
+          "kind": "ENTRY",
+          "limit_price": 68.25,
+          "cancel_after": "2026-10-19T10:00:05+05:30"
+        }
+      ],
+      "stops": [],
+      "exits": [],
+      "entry_price": 68.25,
+      "last_bid": 68.15,
+      "peak_bid": 68.15,
+      "entry_time": "2026-10-19T10:00:00+05:30",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "entry_execution": {
+        "ai_verdict": {
+          "is_approved": true,
+          "action": "APPROVED",
+          "confidence_score": 80,
+          "trap_detected": null,
+          "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 10.0 pts from VWAP.",
+          "recommended_trailing": "standard",
+          "timestamp": "2026-10-19T23:36:47.461481",
+          "max_entry_price": 70.0,
+          "min_entry_price": 61.65,
+          "reference_entry_price": 67.0,
+          "entry_instrument_id": "TEST",
+          "entry_setup_type": "TREND_PULLBACK",
+          "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+          "entry_approved_at": "2026-10-19T10:00:00+05:30",
+          "entry_valid_until": "2026-10-19T10:00:05+05:30",
+          "entry_invalidation_level": null
+        },
+        "quote": {
+          "instrument_id": "TEST",
+          "best_bid": 68.15,
+          "best_ask": 68.2,
+          "best_bid_qty": 650,
+          "best_ask_qty": 650,
+          "timestamp": "2026-10-19T10:00:00+05:30",
+          "request_started_monotonic": 100
+        },
+        "spot_quote": null,
+        "effective_band": [
+          61.65,
+          70.0
+        ],
+        "final_limit": 68.25,
+        "quantity": 65,
+        "quote_check_duration_ms": 0,
+        "prepared_at": "2026-10-19T10:00:00+05:30",
+        "quote_age_ms_at_submit": 0.0,
+        "submitted_at": "2026-10-19T10:00:00+05:30",
+        "acknowledged_at": "2026-10-19T10:00:00+05:30",
+        "submission_duration_ms": 0
+      },
+      "schema_version": 2,
+      "entry_order_ids": [],
+      "stop_order_ids": [],
+      "entry_order_id": null,
+      "trade_id": "RECONCILIATION-PENDING",
+      "stop_order_id": null
+    }
+  }
+}

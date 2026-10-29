@@ -1,0 +1,3 @@
+# Optional. The REST runtime and offline tests do not require KiteTicker.
+# Install into a workspace-local virtual environment. This does not buy data access.
+kiteconnect==5.2.2

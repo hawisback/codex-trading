@@ -1,0 +1,315 @@
+{
+  "legacy_scalper:approved_bull": {
+    "decision": {
+      "signal": "BUY_CE",
+      "strategy": "legacy_scalper",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 1,
+      "bear_score": 0,
+      "instrument_id": "TEST-23000-CE",
+      "symbol": "NIFTY-TEST-23000-CE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22976.0)",
+        "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+        "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+        "STRIKE SELECTION: ATM strike 23000 selected."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 26.2 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.35,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-CE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  },
+  "legacy_scalper:approved_bear": {
+    "decision": {
+      "signal": "BUY_PE",
+      "strategy": "legacy_scalper",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 0,
+      "bear_score": 1,
+      "instrument_id": "TEST-23000-PE",
+      "symbol": "NIFTY-TEST-23000-PE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "Trend Aligned Bear: Spot (22996.0) < 5m EMA9 (23000.0) < EMA20 (23006.0) & < VWAP (23024.0)",
+        "VALUE CONFIRMED: Spot near 5m EMA9 (-4.0 pts); optimal risk/reward entry.",
+        "STRIKE SELECTION: ATM strike 23000 selected."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 26.2 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.35,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-PE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  },
+  "structural_runner:approved_bull": {
+    "decision": {
+      "signal": "BUY_CE",
+      "strategy": "structural_runner",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 1,
+      "bear_score": 0,
+      "instrument_id": "TEST-23000-CE",
+      "symbol": "NIFTY-TEST-23000-CE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "Trend Aligned Bull: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22976.0)",
+        "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+        "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+        "STRIKE SELECTION: ATM strike 23000 selected."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 26.2 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.35,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-CE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  },
+  "structural_runner:approved_bear": {
+    "decision": {
+      "signal": "BUY_PE",
+      "strategy": "structural_runner",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 0,
+      "bear_score": 1,
+      "instrument_id": "TEST-23000-PE",
+      "symbol": "NIFTY-TEST-23000-PE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "Trend Aligned Bear: Spot (22996.0) < 5m EMA9 (23000.0) < EMA20 (23006.0) & < VWAP (23024.0)",
+        "VALUE CONFIRMED: Spot near 5m EMA9 (-4.0 pts); optimal risk/reward entry.",
+        "STRIKE SELECTION: ATM strike 23000 selected."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 26.2 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.35,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-PE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  },
+  "institutional_pullback:approved_bull": {
+    "decision": {
+      "signal": "BUY_CE",
+      "strategy": "institutional_pullback",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 1,
+      "bear_score": 0,
+      "instrument_id": "TEST-23000-CE",
+      "symbol": "NIFTY-TEST-23000-CE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "Trend Aligned Bull & Pullback Confirmed: Spot (23004.0) > 5m EMA9 (23000.0) > EMA20 (22994.0) & > VWAP (22976.0); 1m low (22998.5) retested within 4.0 pts of 5m EMA9.",
+        "VALUE CONFIRMED: Spot near 5m EMA9 (+4.0 pts); optimal risk/reward entry.",
+        "ORDER FLOW CONFIRMED: Overhead Call writers unwinding at 23050 (0.0M OI). Runway clear!",
+        "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 26.2 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.35,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-CE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  },
+  "institutional_pullback:approved_bear": {
+    "decision": {
+      "signal": "BUY_PE",
+      "strategy": "institutional_pullback",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 0,
+      "bear_score": 1,
+      "instrument_id": "TEST-23000-PE",
+      "symbol": "NIFTY-TEST-23000-PE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "Trend Aligned Bear & Pullback Confirmed: Spot (22996.0) < 5m EMA9 (23000.0) < EMA20 (23006.0) & < VWAP (23024.0); 1m high (23001.5) retested within 4.0 pts of 5m EMA9.",
+        "VALUE CONFIRMED: Spot near 5m EMA9 (-4.0 pts); optimal risk/reward entry.",
+        "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 26.2 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.35,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-PE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  },
+  "ai_opportunity_radar:approved_bull": {
+    "decision": {
+      "signal": "BUY_CE",
+      "strategy": "ai_opportunity_radar",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 1,
+      "bear_score": 0,
+      "instrument_id": "TEST-23000-CE",
+      "symbol": "NIFTY-TEST-23000-CE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "AI RADAR [TREND_PULLBACK | Conviction: 88%]: Institutional bullish trend confirmed. Clean pullback to 5m EMA9 (23003.5 holding above 23000.0).",
+        "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 26.2 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.35,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-CE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  },
+  "ai_opportunity_radar:approved_bear": {
+    "decision": {
+      "signal": "BUY_PE",
+      "strategy": "ai_opportunity_radar",
+      "setup_type": "TREND_PULLBACK",
+      "invalidation_level": null,
+      "bull_score": 0,
+      "bear_score": 1,
+      "instrument_id": "TEST-23000-PE",
+      "symbol": "NIFTY-TEST-23000-PE",
+      "ltp": 67,
+      "target_strike": 23000,
+      "quantity": 65,
+      "order_qty": 65,
+      "reasons": [
+        "AI RADAR [TREND_PULLBACK | Conviction: 88%]: Institutional bearish trend confirmed. Clean pullback to 5m EMA9 (22996.5 holding below 23000.0).",
+        "STRIKE SELECTION: Strict ITM strike 23000 selected (resilient to theta decay)."
+      ]
+    },
+    "verdict": {
+      "is_approved": true,
+      "action": "APPROVED",
+      "confidence_score": 80,
+      "trap_detected": null,
+      "reasoning": "Technical signal verified. No institutional traps detected. Spot holding 26.2 pts from VWAP.",
+      "recommended_trailing": "standard",
+      "timestamp": "<host-wall-clock>",
+      "max_entry_price": 70.35,
+      "min_entry_price": 61.65,
+      "reference_entry_price": 67.0,
+      "entry_instrument_id": "TEST-23000-PE",
+      "entry_setup_type": "TREND_PULLBACK",
+      "entry_candidate_at": "2026-10-19T10:00:00+05:30",
+      "entry_approved_at": "2026-10-19T10:00:00+05:30",
+      "entry_valid_until": "2026-10-19T10:00:15+05:30",
+      "entry_invalidation_level": null
+    }
+  }
+}

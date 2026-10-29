@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+config/*_credentials.json
+!config/*.example
+logs/
+__pycache__/
+*.pyc
+
+# Local market data and generated audit output
+data/
+option_candles_today.json
+scratch/*.json
+
+# Local environments and editor state
+.venv/
+venv/
+.pytest_cache/
+.vscode/
+.idea/
+.tools/
+.ruff_cache/
+.mypy_cache/
