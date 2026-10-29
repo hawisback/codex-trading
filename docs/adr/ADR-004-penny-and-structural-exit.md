@@ -15,7 +15,7 @@
 - For **all newly executed strategies**, require a supplied positive, quote-validated `invalidation_level`. If absent, do not BUY; do not infer an invalidation from spot/EMA or guess a level.
 - Whenever an OPEN position has an existing `invalidation_level`, an adverse verified spot breach triggers the current managed exit path regardless of strategy `enable_structural_wick_stop` flags.
 - Structural-level discovery (VWAP, swing or EMA hierarchy) and whether to wait for a candle close or act on a wick remain **separate future POL-06 decisions**. This increments only the already-existing immediate spot breach semantics with a universal strategy gate.
-- Retain existing protective broker stop orders, AI stop, pre-existing tighter stop floors, partial-fill and cancel/replace management. Do **not** remove the premium safety stop or weaken already-open exposure management. Initial stop percentages and time-dependent trailing remain unchanged until we agree them.
+- Retain existing protective broker stop orders, AI stop, pre-existing tighter stop floors, partial-fill and cancel/replace management. Do **not** remove the premium safety stop or weaken already-open exposure management. Initial broker protective stops and option-premium monitor fallback are now capped at 20% for newly managed positions; any previously tighter initial setting or existing tighter stop floor remains authoritative. Time-dependent trailing and initial structure selection remain unchanged.
 - If structural spot context is unavailable, the monitor cannot claim an early structural exit; broker-side stop protection stays mandatory.
 
 ## Risk and rollout

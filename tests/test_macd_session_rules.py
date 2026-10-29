@@ -316,9 +316,9 @@ class EntryLimitRecoveryTests(unittest.TestCase):
         return trader
 
     def test_daily_cap_is_checked_before_any_order_side_effect(self):
-        self.assertEqual("DAILY_ENTRY_CAP", self.trader._submit_entry({}, today_entries=2)["detail"])
+        self.assertEqual("DAILY_ENTRY_CAP", self.trader._submit_entry({"invalidation_level": 23000}, today_entries=10)["detail"])
         with MarketClock.at("2026-10-27T09:29:59+05:30"):
-            self.assertEqual("ENTRY_ACTIVATION_PENDING", self.trader._submit_entry({})["detail"])
+            self.assertEqual("ENTRY_ACTIVATION_PENDING", self.trader._submit_entry({"invalidation_level": 23000})["detail"])
 
     def test_cooldown_persists_across_restart_without_resetting_on_reconciliation(self):
         with MarketClock.at("2026-10-27T10:05:30+05:30"):
@@ -355,4 +355,4 @@ class EntryLimitRecoveryTests(unittest.TestCase):
             self.assertIsNone(restarted._entry_limit_block(1))
             broker.add("ENTRY", "E2", 65, "FILLED", average_price=100)
             broker.add("EXIT", "X2", 65, "FILLED", "E2")
-            self.assertEqual("DAILY_ENTRY_CAP", restarted.execute_trade({})["detail"])
+            self.assertEqual("ENTRY_SPACING_COOLDOWN", restarted.execute_trade({})["detail"])

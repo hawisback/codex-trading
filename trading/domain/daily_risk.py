@@ -99,10 +99,6 @@ def broker_filled_day_pnl(
         price = money(order.get("average_price"))
         if price <= 0:
             raise ReconciliationError("Broker average fill price invalid")
-        if filled % LOT_SIZE:
-            # A partial fill can be smaller than a lot on some APIs. Preserve
-            # true contracts and never infer quantity; no divisibility gate.
-            pass
         delta = filled if kind == "ENTRY" else -filled
         quantities[symbol] = quantities.get(symbol, 0) + delta
         net -= Decimal(delta) * price
