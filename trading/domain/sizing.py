@@ -21,6 +21,28 @@ def calculate_compounding_quantity(
     - Respects maximum lots cap and broker platform single-order ceiling (default 65 contracts / 1 lot)
       to ensure 100% compatibility with broker execution limits (avoids QUANTITY_LIMIT_EXCEEDED).
     """
+    # R01 candidate sizing is only a PREVIEW based on available broker margin.
+    # The actual submission re-evaluates the executable ask, broker quantity
+    # ceiling, fresh P&L and account identity; no historical LTP authorizes BUY.
+    if trading_cfg.get("r01_policy", {}).get("enabled") is True:
+        from decimal import Decimal, InvalidOperation
+        from trading.domain.owner_lot_policy import owner_ladder_max_lots
+        from trading.domain.limits import MAX_POSITION_QUANTITY
+        try:
+            margin_value = Decimal(str(available_margin))
+            premium = Decimal(str(contract_price))
+            if not margin_value.is_finite() or not premium.is_finite():
+                return 0
+            if margin_value <= 0 or premium <= 0:
+                return 0
+            safe = max(Decimal(0), margin_value - Decimal(str(FEE_RESERVE)))
+            affordable = int(safe // (premium * LOT_SIZE))
+        except (TypeError, ValueError, InvalidOperation, ArithmeticError):
+            return 0
+        lots = min(owner_ladder_max_lots(margin_value), affordable,
+                   MAX_POSITION_QUANTITY // LOT_SIZE)
+        return max(0, lots) * LOT_SIZE
+
     comp_cfg = strategy_cfg.get("compounding", {})
     platform_max_qty = int(
         comp_cfg.get("max_order_quantity")
