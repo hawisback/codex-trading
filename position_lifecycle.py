@@ -79,7 +79,7 @@ class PositionLifecycle:
             atomic_save(path, dict(identity, flat_since=MarketClock.now_ist().isoformat()))
 
     def _entry_limit_block(self, today_entries):
-        r01 = self.trading_cfg.get("r01_policy", {}).get("enabled") is True
+        r01 = getattr(self, "trading_cfg", {}).get("r01_policy", {}).get("enabled") is True
         if r01 and today_entries >= 10:
             return "R01_DAILY_ENTRY_CAP"
         if getattr(self, "strategy_mode", None) != "macd_momentum":
@@ -724,9 +724,10 @@ class PositionLifecycle:
                  "entry_price": price, "last_bid": quote["best_bid"], "peak_bid": quote["best_bid"],
                  "entry_time": MarketClock.now_ist().isoformat(),
                  "today_entry_number": today_entries + 1,
-                 "r01_policy_version": "r01-owner-20261029-v1" if r01 else None,
                  "setup_type": decision.get("setup_type", "TREND_PULLBACK"),
                  "invalidation_level": decision.get("invalidation_level"), "entry_execution": evidence}
+        if r01:
+            state["r01_policy_version"] = "r01-owner-20261029-v1"
         if decision.get("stop_loss_context") is not None:
             state["entry_market_context"] = copy.deepcopy(decision["stop_loss_context"])
         if decision.get("stop_loss_policy"):
