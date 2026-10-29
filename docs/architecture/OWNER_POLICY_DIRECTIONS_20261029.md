@@ -28,9 +28,11 @@ A tier is a **ceiling, not a minimum**. Candidate selection may use NIFTY **unde
 
 Owner agrees to **14:15 IST hard new-entry cutoff** and **15:15 IST mandatory square-off trigger**. Preserve all existing earlier gates (e.g. strategy entry start), pre-send recheck and broker reconciliation. If a broker is unreachable, an initiated square-off is not a verified flat position; retain incident and exposure management. Configuration and documentation should eventually converge on these rules after parity review.
 
-## POL-03 — 0DTE penny-option thresholds
+## POL-03 — No penny-option veto or price-band bias (owner clarification)
 
-Owner is open to **₹12 or ₹30**; no final threshold was selected. Decide whether this is a minimum executable option price, option LTP, strike/expiry filter or a conditional rule by time/liquidity. Current `option_selection.max_option_premium=135` governs a **different upper-bound selection rule** and should not be changed under the guise of choosing a penny-option veto. Note `use_current_expiry_on_0dte=false` in current trading JSON. Preserve the existing gate until the decision is explicit.
+**Owner decision confirmed 2026-10-29:** Trades must **not** be selected or rejected solely because of the underlying NIFTY spot level, or because an option is labeled a "penny option" at a fixed ₹12/₹30 threshold. **No new penny-option rule** and no replacement fixed minimum premium should be added. Spot remains market/context data where the strategy needs it; this decision is not a ban on reading the index or validating contract identity. The actual option execution premium and authenticated broker funds still determine **affordability**; quote age, spread, liquidity, expiry validity, independent risk, and the mandatory AI consultation/veto remain required.
+
+**Source conflict requiring a separate change:** `ai_consultant.py` implements a sub-₹12 0DTE Trap 2 veto, while `config/rules_playbook.md` describes it. `config/trading.json` has `option_selection.min_option_premium=15` and `max_option_premium=135`; `entry_policy.py` uses both for entry bounds, and `trading/application/selection.py` uses the maximum during candidate selection. The premium cap may also constrain trade selection independently of affordability. None of these existing LIVE checks has been removed in this documentation-only clarification. Inventory and safety review must distinguish unwanted fixed price bias from valid broker affordability and market-integrity controls. `use_current_expiry_on_0dte=false` remains unchanged.
 
 ## POL-04 — Real broker capital exclusively
 
@@ -64,8 +66,9 @@ Proposed architecture: use a current authoritative exchange holiday/session sche
 
 1. **POL-01:** Does “capital” in tier selection mean broker **available margin** (purchasing power), or broker **total equity/net liquidation**, with separate available-margin affordability? Does “spot price” mean underlying NIFTY spot for strike selection?
 2. **POL-05:** Which loss threshold triggers a ban on new entries: ₹ amount, percentage of broker-reported start-of-day equity, R multiples, consecutive losses, or the first of several? Include unrealized P&L?
-3. **POL-03:** Precisely which instrument price and 0DTE conditions should use ₹12 vs ₹30? Or should the current filter remain until a broker/market-data study?
-4. **POL-06:** Confirm initial stop and trailing time windows/thresholds across strategies; this requires a behavior-impact analysis, not a mechanical extract.
-5. **POL-07:** Should a production CLI missing explicit `--live` refuse startup rather than permit a proxy PAPER session? Preserve current behavior until an operator ADR.
+3. **POL-06:** Confirm initial stop and trailing time windows/thresholds across strategies; this requires a behavior-impact analysis, not a mechanical extract.
+4. **POL-07 (operational preference):** Should a production CLI missing explicit `--live` refuse startup rather than permit a proxy PAPER session? Preserve current behavior until an operator ADR.
+
+**POL-03 is no longer an open ₹12/₹30 approval question.** Owner rejects penny-option price thresholds; removal of old checks must be reviewed as a separate LIVE behavior change.
 
 **Next step:** review this document and raise individual policy ADRs (using `docs/adr/ADR_TEMPLATE.md`) for changes that alter trading exposure, lot counts, entry frequency or stop execution; tests and broker UAT later, per user request.
