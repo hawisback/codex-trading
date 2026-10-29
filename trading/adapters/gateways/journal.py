@@ -7,7 +7,7 @@ import threading
 from pathlib import Path
 from typing import Any
 
-from execution_safety import ReconciliationError, atomic_save
+from execution_safety import ReconciliationError, SchedulerLock, atomic_save
 
 WORKSPACE = Path(__file__).resolve().parents[3]
 
@@ -68,14 +68,14 @@ class GatewayJournal:
                 if order_id is not None:
                     order_ids.add(order_id)
 
-    def _reload(self):
+    def _reload(self, *, force=False):
         try:
             stamp = (self.path.stat().st_mtime_ns, self.path.stat().st_size) if self.path.exists() else None
         except OSError as exc:
             raise ReconciliationError("Unreadable gateway recovery journal") from exc
         if stamp is None and self._had_file:
             raise ReconciliationError("Gateway recovery journal was removed")
-        if stamp == self._stamp:
+        if stamp == self._stamp and not force:
             return
         try:
             data = (
@@ -98,7 +98,12 @@ class GatewayJournal:
             return copy.deepcopy(self.data["accounts"].get(f"{self.broker}:{self.account}", {}))
 
     def put(self, request_id, **updates):
-        with self._lock:
+        # Serialize read/modify/write across independent gateway processes.
+        # The thread mutex alone is insufficient for JSON journal writers.
+        # This lock is strictly scoped to the journal transaction: it does
+        # NOT grant concurrent processes authority to submit broker orders.
+        with self._lock, SchedulerLock(self.path.with_name(self.path.name + ".writer.lock")):
+            self._reload(force=True)  # Always re-read after acquiring OS ownership.
             return self._put(request_id, **updates)
 
     def _put(self, request_id, **updates):
