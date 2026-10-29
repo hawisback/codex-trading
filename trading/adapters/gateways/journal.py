@@ -7,7 +7,7 @@ import threading
 from pathlib import Path
 from typing import Any
 
-from execution_safety import ReconciliationError, atomic_save
+from execution_safety import ReconciliationError, SchedulerLock, atomic_save
 
 WORKSPACE = Path(__file__).resolve().parents[3]
 
@@ -98,7 +98,13 @@ class GatewayJournal:
             return copy.deepcopy(self.data["accounts"].get(f"{self.broker}:{self.account}", {}))
 
     def put(self, request_id, **updates):
-        with self._lock:
+        # The RLock only protects threads in one process. Every write must
+        # hold the same filesystem lock across gateway processes, reload the
+        # latest durable state, and then atomically replace it. The OS frees
+        # the lease after crashes; the journal itself is never deleted.
+        lease = self.path.with_name(self.path.name + ".writer.lock")
+        with SchedulerLock(lease), self._lock:
+            self._reload()
             return self._put(request_id, **updates)
 
     def _put(self, request_id, **updates):
