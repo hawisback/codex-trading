@@ -1,11 +1,11 @@
 # R01 owner policy decision register
 
 **Updated:** 2026-10-29, from owner's stated policy directions in ChatGPT.  
-**Status:** OWNER DIRECTIONS RECORDED; **NOT YET IMPLEMENTED**. No executable strategy/risk/configuration changes authorized by this document alone. Refer to `OWNER_POLICY_DIRECTIONS_20261029.md` for definitions, safety safeguards and open questions.
+**Status:** OWNER DIRECTIONS RECORDED; POL-01 inclusive lot ladder implemented as an **offline preview only** on `feature/r01-approved-policy-contracts-20261029`. No live strategy/risk/configuration changes authorized or applied. Refer to `OWNER_POLICY_DIRECTIONS_20261029.md`, `R01_POLICY_IMPLEMENTATION_STATUS.md` and `docs/adr/ADR-0001-OWNER-LOT-LADDER.md`.
 
 | ID | Owner direction (2026-10-29) | Status and remaining specification |
 | --- | --- | --- |
-| POL-01 | Broker-derived capital determines maximum lots: <=₹20k: 2; >₹20k–₹40k: 4; >₹40k–₹60k: 6; >₹60k–₹80k: 8; >₹80k: 10, 10 hard maximum. Actual lot count must still be affordable based on option execution price. | **Direction accepted.** Clarify whether bracket capital is available purchasing power, account equity/net liquidation, or another verified broker field; and confirm “spot price” refers to index spot for strike selection rather than the option premium for funding. |
+| POL-01 | Broker-derived capital determines maximum lots: <=₹20k: 2; >₹20k–₹40k: 4; >₹40k–₹60k: 6; >₹60k–₹80k: 8; >₹80k: 10, 10 hard maximum. Actual lot count must still be affordable based on option execution price. | **Offline implementation committed; LIVE not integrated.** Capital basis (available margin vs equity), broker identity/freshness and order cap still require approval; the instrument spot is never the executable option premium for funding. |
 | POL-02 | Retain current effective 14:15 IST new-entry cutoff and 15:15 IST square-off trigger. | **Direction accepted.** Unify documentation/config without weakening runtime guards; fills cannot be guaranteed during outages. |
 | POL-03 | ₹12 and ₹30 are candidate thresholds for the 0DTE penny-option trap. | **Threshold open.** Decide exact applicability and price/time rules; no silent selection. Current option premium selection cap ₹135 is a separate parameter with no authorized change. |
 | POL-04 | Never use static assumed capital for live decisions; obtain live available funds/equity from the authenticated broker. | **Direction accepted.** Distinguish bracket basis from per-order purchasing power; no static ₹10k/₹500k assumptions for live sizing. |
