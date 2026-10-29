@@ -77,7 +77,10 @@ class StopManager:
             + [float(state.get("desired_stop_trigger") or 0)]
         )
         options = getattr(self.owner, "trading_cfg", {}).get("r01_policy", {})
-        if options.get("enabled") is not True or options.get("unified_stop_enabled") is not True:
+        if (options.get("enabled") is not True or options.get("unified_stop_enabled") is not True
+                or state.get("r01_policy_version") != "r01-owner-20261029-v1"):
+            # Do not migrate an already-open legacy position just because
+            # the operator enables R01 mid-session.
             return existing
 
         # Never loosen any confirmed broker stop. Price gains require the
