@@ -108,6 +108,11 @@ class CandidateSelectionService:
                     else 185.0
                 )
 
+                r01 = self.trading_cfg.get("r01_policy", {})
+                if r01.get("enabled") is True and r01.get("price_only_veto_disabled") is True:
+                    # Buying-power and quote-quality vetoes remain independent.
+                    max_premium = float("inf")
+
                 # 1. If ITM exceeds safe budget or max premium policy, step down to ATM
                 if not strict_contract and target_ltp and (required_cost > safe_budget or order_qty == 0 or target_ltp > max_premium):
                     reasons.append(
