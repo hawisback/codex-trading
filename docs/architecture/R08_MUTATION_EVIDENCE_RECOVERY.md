@@ -43,3 +43,8 @@ The reconciliation pass is invoked before a native mutation and before a new BUY
 - Broker-position-verified handling of partial-fill cancel outcomes and protective-stop coverage with no competing SELLs.
 - Clear operator-facing action reports for unresolved intents and emergency broker-console handoff.
 - Validate that the trade lifecycle can manage emergency exits while mutation history is incomplete without bypassing broker identity, quantity or duplicate-SELL controls.
+
+
+### R09 follow-up: position-verified partial cancellations
+
+On `refactor/r09-partial-fill-emergency-recovery-20261029`, partially filled CANCELs can reconcile only after two stable, complete broker order books bracket an exact broker position read and account-wide same-instrument fills net to that position. Other active SELLs, mismatched or missing broker data and external fills remain unresolved. A read-only operator recovery inventory reports open orders, positions and unresolved mutation IDs without authorizing new SELLs or declaring the account flat. Tests are prepared but **not run**; emergency-exit liveness and broker UAT remain outstanding. See `docs/architecture/R09_PARTIAL_FILL_EMERGENCY_RECOVERY.md`.
