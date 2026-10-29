@@ -3,6 +3,13 @@
   "auto_trade_enabled": true,
   "system_armed": true,
   "kill_switch": false,
+  "r01_policy": {
+    "enabled": false,
+    "capital_basis": "available_margin",
+    "max_daily_entries": 10,
+    "price_only_veto_disabled": true,
+    "unified_stop_enabled": true
+  },
   "execution": {
     "entry_buffer_pct": 5.0,
     "climax_entry_buffer_pct": 3.0,
