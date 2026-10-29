@@ -5,6 +5,18 @@
 **Classification:** safety/behavioral hardening, not a strategy or risk-policy tuning PR.  
 **Status:** committed for review. **No tests, broker connections, order placement, or broker UAT performed.** Not approved for live deployment.
 
+## Deployment scope clarified by owner (2026-10-29)
+
+**Approved topology:** exactly one production machine and one authorized live trading process. Kite and Breeze authenticate via their existing broker credentials and their currently valid session/access token, renewed by the operator as each broker requires. **No new user login, MFA flow, proprietary identity provider, distributed lock service, multi-host fencing or additional account security system is authorized by this refactor.**
+
+**Keep separate from broker authentication:** the existing local file lease is a lightweight *duplicate-process exclusion mechanism*, not a second brokerage login or credential. Its purpose is preventing two accidentally launched local scheduler instances from simultaneously placing conflicting orders. Keep the local workspace journal lock, durable order IDs, broker-account/session identity consistency, error/unknown-order reconciliation, protective stop/exit recovery, explicit LIVE arming and mandatory consultation veto.
+
+**Session handling:** the process must only operate when the broker confirms a current authenticated session for the intended account. The operator can replace the daily/expiring token through the existing supported credential workflow; do not hardcode, log, commit, or silently manufacture tokens. Broker session expiry can vary by provider and must follow actual broker responses. A renewed token is **not** evidence that prior orders or positions are flat: always reconcile the broker book on restart.
+
+**Out of scope by owner decision:** design or engineering of remote multi-machine synchronization, distributed execution leadership, new account-level authentication/authorization layers, account-registration portals or secret-management platforms. The proxy and legacy execution entrypoints should be audited for *accidental second local order writers*, not expanded into a distributed security platform.
+
+**Scope caveat:** the account-lease implementation in this branch already exists. This note clarifies that the owner wants no additional login or identity infrastructure. Future simplification of redundant checks is a separate code change that must preserve protection against duplicate BUYs, unknown order outcomes, session expiry and failure of protective exits. The current branch remains untested/unmerged.
+
 ## 1. Native mutation requires a bound and held execution lease
 
 The local-host account lease introduced in R03 now becomes a **gateway-level precondition** for Kite/Breeze live order writes, not merely a scheduler startup convenience.
