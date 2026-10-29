@@ -486,13 +486,13 @@ class BaseBrokerGateway(ABC):
                 )
                 with self._submission(check=check):
                     response = send()
-            except EntryBlocked:
+            except EntryBlocked as exc:
                 if intent is not None:
                     try:
                         self.journal.transition(intent, "REJECTED")
                     except Exception:
                         return self._error("MUTATION_REJECTION_PERSISTENCE_FAILED", unknown=True)
-                raise
+                return self._error(str(exc))
             except Exception as exc:
                 # If prepare succeeded, the intent remains PREPARED and blocks
                 # retries; a network exception must not be assumed unfilled.
