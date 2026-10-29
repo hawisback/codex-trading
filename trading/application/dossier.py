@@ -112,11 +112,17 @@ class DossierService:
         if dossier.setup_type == "MACD_2M_MOMENTUM":
             # Match the completed 5m EMAs used by the strategy, rather than the
             # generic dossier's synthetic, potentially partial 5m candles.
-            dossier.ema9_5m = positive_price(ctx.get("ema_9"))
-            dossier.ema20_5m = positive_price(ctx.get("ema_20"))
-            dossier.ema_spread_5m = dossier.ema9_5m - dossier.ema20_5m
-            dossier.ribbon_compression_hazard = abs(dossier.ema_spread_5m) < 4
-            dossier.pullback_distance_pts = abs(positive_price(ctx.get("spot")) - dossier.ema9_5m)
+            try:
+                dossier.ema9_5m = positive_price(ctx.get("ema_9"))
+                dossier.ema20_5m = positive_price(ctx.get("ema_20"))
+                dossier.ema_spread_5m = dossier.ema9_5m - dossier.ema20_5m
+                dossier.ribbon_compression_hazard = abs(dossier.ema_spread_5m) < 4
+                dossier.pullback_distance_pts = abs(positive_price(ctx.get("spot")) - dossier.ema9_5m)
+            except (ValueError, TypeError, OverflowError):
+                # Do not fabricate 5m indicator alignment. The candidate
+                # remains available for Chat Companion to review, with a
+                # conspicuous data-gap warning rather than a false confirmation.
+                dossier.trap_advisories.append("Five-minute EMA alignment not verified from market source")
             self._attach_macd(dossier, candles, ctx.get("expiry"), ctx)
         dossier.order_flow = copy.deepcopy(ctx.get("order_flow", {}))
         if ctx.get("option_quote") is not None:

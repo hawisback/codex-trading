@@ -82,7 +82,17 @@ def _completed_candle(candle: Any, now: datetime) -> tuple[datetime, float] | No
 def _one_min_atr(candles: Any, now: datetime) -> float | None:
     if not isinstance(candles, list) or len(candles) < 15:
         return None
-    tail = candles[-15:]
+    # Exclude an in-progress latest 1m candle. ATR is computed from
+    # completed, contiguous observations, never from forming-candle highs.
+    completed = []
+    for candle in candles[-18:]:
+        if isinstance(candle, Mapping):
+            stamp = MarketClock.parse_to_ist(candle.get("start_time") or candle.get("date"))
+            if stamp is not None and now - stamp >= timedelta(minutes=1):
+                completed.append(candle)
+    if len(completed) < 15:
+        return None
+    tail = completed[-15:]
     times = []
     ranges = []
     previous_close = None
@@ -120,7 +130,13 @@ def structural_decision(
         return None, None
     candles = ctx.get("candles_1m")
     if isinstance(candles, list) and candles:
-        complete = _completed_candle(candles[-1], now)
+        # The market feed may append the currently forming minute. Inspect
+        # only the latest completed candle and never an old historic close.
+        complete = next(
+            (c for candle in reversed(candles[-3:])
+             if (c := _completed_candle(candle, now)) is not None),
+            None,
+        )
         if complete is not None:
             _, closing = complete
             if (closing <= level if side == "CE" else closing >= level):

@@ -35,6 +35,11 @@ class SessionEntryTests(unittest.TestCase):
             use_rolling_2m=False,
             prior_session_warmup_enabled=False,
             early_orb_required=False,
+            # Characterize the old explicit gates as compatibility behavior;
+            # the production R06 profile disables their hard vetoes.
+            require_candle_alignment=True,
+            require_vwap_alignment=True,
+            opening_range_filter_enabled=True,
             vwap_climax_pts=50,
         )
         self.cfg["entry"]["midday_dead_zone_filter"]["min_15m_range_pts"] = 24
@@ -95,7 +100,7 @@ class SessionEntryTests(unittest.TestCase):
                 self.evaluate(direction, changes={"session_vwap": 23000 - sign * 49.99}).signal,
             )
             self.assertIn(
-                "climax", self.evaluate(direction, changes={"session_vwap": 23000 - sign * 50}).reasons[0]
+                "extension", self.evaluate(direction, changes={"session_vwap": 23000 - sign * 50}).reasons[0]
             )
 
     def test_opening_range_buffer_inclusive_and_breakout_allowed(self):
