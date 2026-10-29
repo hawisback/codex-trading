@@ -214,6 +214,7 @@ class AIConsultant:
             pb_path = Path("config/rules_playbook.md")
         self.playbook_path = pb_path
         self.entry_policy = EntryPolicy.from_config(trading_config or {})
+        self.r01_no_price_only_veto = self.entry_policy.price_only_bounds_disabled
         self.sector_divergence_veto = (trading_config or {}).get("ai_context", {}).get("sector_divergence_veto", True)
         if self.mode in ("rules", "playbook"):
             logger.info(f"AI Consultant initialized in [{self.mode.upper()}] mode (Deterministic Rules Gateway)")
@@ -301,7 +302,7 @@ class AIConsultant:
         # -------------------------------------------------------------
         # Relaxed from ₹30 to ₹12: Allows viable ₹20-₹30 expiry afternoon runners (which often expand 3x-4x)
         # while still protecting against sub-₹12 lottery penny tickets.
-        if d.is_expiry_0dte and d.option_entry_price < 12.0:
+        if not self.r01_no_price_only_veto and d.is_expiry_0dte and d.option_entry_price < 12.0:
             return AIVerdict(
                 is_approved=False,
                 action="VETOED",
