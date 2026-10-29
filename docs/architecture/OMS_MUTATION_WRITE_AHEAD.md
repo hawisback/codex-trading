@@ -52,3 +52,8 @@ These tests have **not** been run. Prior to any merge, perform offline fixture/r
 2. Verify the new restrictions do not block emergency protection/mandatory square-off; add supervised operator recovery mechanisms.
 3. Consolidate remaining local proxy/legacy writers so exactly one process can mutate the account on the single machine, without additional authentication infrastructure.
 4. Continue the repository cleanup after entrypoint and recovery-file dependency inventory.
+
+
+### R08 evidence-backed resolution (unmerged)
+
+The follow-up branch `refactor/r08-mutation-evidence-reconciliation-20261029` adds read-only broker-state reconciliation for existing-order mutation intents. It stores immutable expected stop/exit prices and original quantities, verifies exact native broker identity, and advances PREPARED/UNKNOWN/ACKNOWLEDGED only when the broker demonstrates the requested cancellation or price state. An ACK alone never grants permission to retry. Zero-fill CANCELLED orders can be recognized; partial fills, stale/missing orders and previously unparameterized modifications remain unresolved for operator review. This does **not** prove positions flat or stop protection sufficient. No tests or broker UAT run. See `docs/architecture/R08_MUTATION_EVIDENCE_RECOVERY.md`.
