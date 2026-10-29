@@ -14,6 +14,7 @@ from typing import Any, Iterable, Optional
 from execution_safety import ReconciliationError, TERMINAL, filled, rows, same_scope, status, symbol_of
 from entry_policy import EntryBlocked
 from trading.adapters.gateways.journal import GatewayJournal
+from trading.domain.intent_state import needs_reconciliation
 from trading.adapters.gateways.rate_limiter import TokenBucketRateLimiter
 from trading.domain.prices import round_tick
 
@@ -257,7 +258,7 @@ class BaseBrokerGateway(ABC):
                 if len(matches) == 1:
                     return dict(matches[0], recovered=True)
             return self._error("SUBMISSION_OUTCOME_UNKNOWN", unknown=True)
-        if any(record.get("phase") in ("PREPARED", "UNKNOWN") for record in self.journal.records.values()):
+        if any(needs_reconciliation(record.get("phase")) for record in self.journal.records.values()):
             return self._error("ANOTHER_SUBMISSION_OUTCOME_UNKNOWN", unknown=True)
         self.journal.put(
             request_id,
