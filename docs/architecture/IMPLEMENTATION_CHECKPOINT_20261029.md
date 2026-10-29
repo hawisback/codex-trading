@@ -51,3 +51,7 @@ All changes are unmerged and not live-certified.
 ### R04 — Native mutation-boundary fencing (unmerged)
 
 Kite/Breeze gateway writes now require a verified account-scoped OS lease **bound to that gateway instance** and the existing OMS submission context. Both are checked after pacing, before HTTP mutations. An atomic validated journal phase transition API is added for subsequent migration; existing writes remain compatible. Legacy standalone order scripts and proxy server require separate coordination. Tests remain unrun, and the branch is not live-ready. See `docs/architecture/R04_GATEWAY_MUTATION_FENCING.md`.
+
+### OMS follow-on — Durable existing-order mutations
+
+The new review branch `refactor/oms-intent-recovery-consistency-20261029` adds atomic write-ahead intents for cancel, stop modify and exit reprice, then uses validated phase transitions for normal placement results. Unknown mutation outcomes block blind same-order retries. Original broker order IDs remain owned by their placement intents. Tests prepared but **not run**; emergency exit/stop recovery still needs broker UAT. See `docs/architecture/OMS_MUTATION_WRITE_AHEAD.md`.
