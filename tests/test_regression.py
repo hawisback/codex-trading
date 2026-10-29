@@ -24,6 +24,7 @@ REGRESSION_MODULES = (
     "tests.test_boundary_safety",
     "tests.test_oms_recovery_boundaries",
     "tests.test_intent_states",
+    "tests.test_journal_intent_transitions",
     "tests.test_trap7_refinement",
     "tests.test_path_a_safety",
     "tests.test_path_a_history",

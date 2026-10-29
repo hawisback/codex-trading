@@ -274,6 +274,12 @@ class GatewayTests(unittest.TestCase):
         self.assertEqual("LIVE_EXECUTION_ACCOUNT_LEASE_REQUIRED", wire["detail"])
         self.assertEqual(before, len(self.server.posts()))
 
+    def test_even_lease_owner_cannot_submit_without_durable_intent_scope(self):
+        before = len(self.server.posts())
+        result = self.gateway._submit_buy_order(SYMBOL, 65, 67, "NO-PREPARE")
+        self.assertEqual("DURABLE_MUTATION_CONTEXT_REQUIRED", result["detail"])
+        self.assertEqual(before, len(self.server.posts()))
+
     def test_bound_lease_released_prevents_subsequent_mutation(self):
         other = self.gateway_new()
         self.account_lease.__exit__(None, None, None)

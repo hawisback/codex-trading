@@ -240,6 +240,12 @@ class BreezeTests(unittest.TestCase):
         self.assertEqual("LIVE_EXECUTION_ACCOUNT_LEASE_REQUIRED", wire["detail"])
         self.assertFalse(self.server.posts())
 
+    def test_even_lease_owner_cannot_submit_without_durable_intent_scope(self):
+        self.gateway.register_contract(INSTRUMENT, SYMBOL)
+        response = self.gateway._submit_buy_order(SYMBOL, 65, 67, "NO-PREPARE")
+        self.assertEqual("DURABLE_MUTATION_CONTEXT_REQUIRED", response["detail"])
+        self.assertFalse(self.server.posts())
+
     def test_paper_and_changed_credentials_block_mutations(self):
         self.gateway.register_contract(INSTRUMENT, SYMBOL)
         self.gateway.set_mode("PAPER")
