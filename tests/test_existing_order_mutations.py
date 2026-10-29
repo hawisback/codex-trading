@@ -110,6 +110,7 @@ class MutationGatewayTests(unittest.TestCase):
             "S1",
             lambda: {"error": True, "detail": "TIMEOUT", "outcome_unknown": True},
             "STOP", action="MODIFY_STOP",
+            expected_trigger_price=48, expected_limit_price=47,
         )
         self.assertTrue(outcome["outcome_unknown"])
         self.assertEqual("UNKNOWN", self._mutations()[0]["phase"])

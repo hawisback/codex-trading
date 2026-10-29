@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from execution_safety import ReconciliationError, SchedulerLock, atomic_save
-from trading.domain.intent_state import proposed_transition, needs_reconciliation
+from trading.domain.intent_state import proposed_transition
 
 WORKSPACE = Path(__file__).resolve().parents[3]
 

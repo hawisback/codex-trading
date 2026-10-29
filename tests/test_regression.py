@@ -28,6 +28,7 @@ REGRESSION_MODULES = (
     "tests.test_intent_states",
     "tests.test_journal_intent_transitions",
     "tests.test_existing_order_mutations",
+    "tests.test_mutation_evidence_recovery",
     "tests.test_trap7_refinement",
     "tests.test_path_a_safety",
     "tests.test_path_a_history",
