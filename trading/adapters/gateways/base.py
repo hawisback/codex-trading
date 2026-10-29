@@ -17,7 +17,8 @@ from trading.adapters.gateways.journal import GatewayJournal
 from trading.adapters.account_lease import AccountExecutionLease, account_lock_path
 from execution_safety import SchedulerLock
 from trading.domain.intent_state import needs_reconciliation
-from trading.domain.mutation_evidence import verified_mutation_evidence
+from trading.domain.mutation_evidence import (verified_mutation_evidence,
+    verified_partial_cancel_exposure, stable_order_fingerprint)
 from trading.adapters.gateways.rate_limiter import TokenBucketRateLimiter
 from trading.domain.prices import round_tick
 
@@ -305,9 +306,7 @@ class BaseBrokerGateway(ABC):
                 book = self.get_orders()
                 if not isinstance(book, dict) or book.get("error"):
                     raise ReconciliationError("Fresh broker order book unavailable for mutation recovery")
-                orders = book.get("orders")
-                if not isinstance(orders, list):
-                    raise ReconciliationError("Incomplete broker order book")
+                orders = rows(book, "orders")
                 account = self.get_account_id()
                 if not isinstance(account, str) or not account or account != self.journal.account:
                     raise ReconciliationError("Mutation recovery account mismatch")
@@ -328,6 +327,24 @@ class BaseBrokerGateway(ABC):
                         record, matches[0], account_id=account,
                         original_request_id=original["request_id"],
                     )
+                    if evidence is None and record.get("mutation_action") == "CANCEL":
+                        observed = matches[0]
+                        qty, filled_qty = observed.get("quantity"), observed.get("filled_quantity")
+                        if (observed.get("status") == "CANCELLED"
+                                and type(qty) is int and type(filled_qty) is int
+                                and 0 < filled_qty < qty):
+                            # A partially filled cancellation requires both
+                            # broker order and position books to agree. Bracket
+                            # the position GET with a second order GET: a race
+                            # must stay unresolved rather than release SELL gates.
+                            positions = rows(self.get_positions(), "positions")
+                            confirm_orders = rows(self.get_orders(), "orders")
+                            if stable_order_fingerprint(orders) == stable_order_fingerprint(confirm_orders):
+                                evidence = verified_partial_cancel_exposure(
+                                    record, observed, confirm_orders, positions,
+                                    account_id=account,
+                                    original_request_id=original["request_id"],
+                                )
                     if evidence is None:
                         unresolved.append(record["request_id"])
                         continue
@@ -344,6 +361,81 @@ class BaseBrokerGateway(ABC):
                         "unresolved": unresolved, "positions_verified": False}
             except Exception as exc:
                 return self._error("MUTATION_RECOVERY_UNVERIFIED: " + str(exc), unknown=True)
+
+    def emergency_recovery_report(self):
+        """Read-only, operator-facing broker inventory; NEVER authorizes SELL.
+
+        This report can be requested when automatic STOP/EXIT is blocked by
+        unresolved intents. It does not clear journals or claim protection,
+        and never places or cancels orders. A broker-console intervention
+        still requires an operator to verify actual exposure.
+        """
+        with self._lock:
+            try:
+                self._authorize()
+                current = self.get_status()
+                if (current.get("error") or current.get("mode") != "LIVE"
+                        or not current.get("connected") or not current.get("account_id")
+                        or current["account_id"] != self.journal.account):
+                    raise ReconciliationError("Emergency report broker identity unverified")
+                orders = rows(self.get_orders(), "orders")
+                positions = rows(self.get_positions(), "positions")
+                for item in orders + positions:
+                    if (item.get("account_id") != current["account_id"]
+                            or item.get("mode") != "LIVE"):
+                        raise ReconciliationError("Cross-account recovery snapshot")
+                active = []
+                for order in orders:
+                    n, f = order.get("quantity"), order.get("filled_quantity")
+                    if type(n) is not int or type(f) is not int or n <= 0 or not 0 <= f <= n:
+                        raise ReconciliationError("Emergency order quantities are unverified")
+                    if status(order) not in TERMINAL:
+                        active.append({
+                            "order_id": order.get("order_id"),
+                            "kind": order.get("kind"),
+                            "symbol": symbol_of(order),
+                            "status": status(order),
+                            "filled_quantity": f,
+                            "unfilled_quantity": n-f,
+                            "engine_owned": order.get("engine_owned") is True,
+                        })
+                inventory = []
+                for p in positions:
+                    q = p.get("quantity")
+                    if type(q) is not int:
+                        raise ReconciliationError("Emergency broker position quantity unverified")
+                    if q:
+                        inventory.append({"symbol": symbol_of(p), "quantity": q})
+                pending = [{
+                    "request_id": rec["request_id"],
+                    "phase": rec.get("phase"),
+                    "action": rec.get("mutation_action"),
+                    "target_order_id": rec.get("target_order_id"),
+                } for rec in self.journal.records.values()
+                    if rec.get("kind") == "MUTATION"
+                    and rec.get("phase") not in ("REJECTED", "RECONCILED")]
+                return {
+                    "status": "OPERATOR_BROKER_RECONCILIATION_REQUIRED",
+                    "broker": self.broker_name,
+                    "account_id": current["account_id"],
+                    "positions": inventory,
+                    "active_orders": active,
+                    "unresolved_mutations": pending,
+                    "orders_verified_complete": True,
+                    "positions_read": True,
+                    "account_flat_confirmed": False,
+                    "protective_stop_confirmed": False,
+                    "safe_to_resubmit_sell": False,
+                    "manual_action": (
+                        "Use the authenticated broker order/position console to "
+                        "confirm fills, outstanding SELL orders and remaining long "
+                        "quantity before any intervention. Do not erase the journal."
+                    ),
+                }
+            except Exception as exc:
+                return dict(self._error("EMERGENCY_INVENTORY_UNVERIFIED: " + str(exc),
+                                         unknown=True),
+                            safe_to_resubmit_sell=False)
 
     def _prepare(self, request_id, kind, symbol, ref=None, instrument_id=None):
         previous = self.journal.records.get(request_id)
