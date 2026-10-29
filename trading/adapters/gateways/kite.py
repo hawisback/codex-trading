@@ -163,6 +163,7 @@ class KiteExecutionGateway(BaseBrokerGateway):
                 if mutation:
                     try:
                         self._assert_execution_lease()
+                        self._assert_mutation_context()
                     except ReconciliationError as exc:
                         return self._error(str(exc))
                 # Exit callbacks may refresh price after pacing. Build the wire
@@ -172,6 +173,7 @@ class KiteExecutionGateway(BaseBrokerGateway):
                 if mutation:
                     try:
                         self._assert_execution_lease()
+                        self._assert_mutation_context()
                     except ReconciliationError as exc:
                         return self._error(str(exc))
                 headers = {

@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from execution_safety import ReconciliationError, SchedulerLock, atomic_save
+from trading.domain.intent_state import proposed_transition
 
 WORKSPACE = Path(__file__).resolve().parents[3]
 
@@ -105,6 +106,29 @@ class GatewayJournal:
         with self._lock, SchedulerLock(self.path.with_name(self.path.name + ".writer.lock")):
             self._reload(force=True)  # Always re-read after acquiring OS ownership.
             return self._put(request_id, **updates)
+
+    def transition(self, request_id, next_phase, *, broker_verified=False, **updates):
+        """Atomically validate a phase advance against the *latest* journal state.
+
+        For staged adoption: this method makes strict phase writes available
+        without rewriting existing schema-v1 records or bypassing historical
+        recovery adapters. The caller is responsible for establishing broker
+        identity/account evidence before broker_verified=True.
+        """
+        with self._lock, SchedulerLock(self.path.with_name(self.path.name + ".writer.lock")):
+            self._reload(force=True)
+            if self.account is None:
+                raise ReconciliationError("Gateway journal account is unverified")
+            records = self.data["accounts"].get(f"{self.broker}:{self.account}", {})
+            old = records.get(request_id)
+            if old is None:
+                raise ReconciliationError("Missing durable intent to transition")
+            if "phase" in updates:
+                raise ReconciliationError("Duplicate phase update")
+            validated = proposed_transition(
+                old.get("phase"), next_phase, broker_verified=broker_verified
+            )
+            return self._put(request_id, phase=validated.value, **updates)
 
     def _put(self, request_id, **updates):
         if not isinstance(request_id, str) or not request_id:

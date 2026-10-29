@@ -54,6 +54,7 @@ class BaseBrokerGateway(ABC):
         self._mode = "PAPER"
         self._live_authorized = False
         self._account_lease: AccountExecutionLease | None = None
+        self._mutation_active = ContextVar("native_mutation_intent_scope", default=False)
         self.journal = GatewayJournal(
             journal_path or Path(__file__).resolve().parents[3] / "logs/broker_intents.json", broker_name
         )
@@ -138,6 +139,11 @@ class BaseBrokerGateway(ABC):
         if lease.path != account_lock_path(self.broker_name, current["account_id"]):
             raise ReconciliationError("ACCOUNT_LEASE_SCOPE_MISMATCH")
         self._account_lease = lease
+
+    def _assert_mutation_context(self) -> None:
+        """Do not allow low-level native HTTP writes to bypass OMS intent handling."""
+        if not self._mutation_active.get():
+            raise ReconciliationError("DURABLE_MUTATION_CONTEXT_REQUIRED")
 
     def _assert_execution_lease(self) -> None:
         """Fail closed, including after pacing/waiting, if local ownership was lost."""
@@ -261,12 +267,14 @@ class BaseBrokerGateway(ABC):
         token = self._check.set(check)
         context = self._entry_context.set(entry or {})
         payload_context = self._order_payload.set(order_payload)
+        mutation_scope = self._mutation_active.set(True)
         try:
             yield
         finally:
             self._check.reset(token)
             self._entry_context.reset(context)
             self._order_payload.reset(payload_context)
+            self._mutation_active.reset(mutation_scope)
 
     def _before_transmit(self):
         check = self._check.get()

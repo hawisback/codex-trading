@@ -217,6 +217,7 @@ class BreezeExecutionGateway(BaseBrokerGateway):
             if mutation:
                 try:
                     self._assert_execution_lease()
+                    self._assert_mutation_context()
                 except ReconciliationError as exc:
                     return self._error(str(exc))
             payload = json.dumps(wire_data, separators=(",", ":"), allow_nan=False).encode("utf-8")
@@ -238,6 +239,7 @@ class BreezeExecutionGateway(BaseBrokerGateway):
             if mutation:
                 try:
                     self._assert_execution_lease()
+                    self._assert_mutation_context()
                 except ReconciliationError as exc:
                     return self._error(str(exc))
             request = urllib.request.Request(
