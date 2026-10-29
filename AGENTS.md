@@ -50,18 +50,18 @@
 
 ## 💰 Rule #3: Account Constraints, Step-Ladder Compounding & Sizing
 
-* **Baseline Capital:** **₹10,000 Margin**.
+* **Live Capital Authority:** Authenticated broker-verified **available margin**, not an assumed starting equity; ₹10,000 may appear only in explicitly historical/research examples.
 * **Step-Ladder Milestone Compounding Model:**
   The engine scales lot sizing dynamically strictly upon crossing verified broker margin milestones:
   | Verified Broker Available Margin | Active Sizing | Contract Quantity | Risk Rationale |
   |---|:---:|:---:|---|
-  | **< ₹20,000** | **2 Lots** | **130 contracts** | Baseline capital preservation tier |
-  | **₹20,000 – ₹40,000** | **4 Lots** | **260 contracts** | Double size funded purely by accumulated profits |
-  | **₹40,000 – ₹70,000** | **6 Lots** | **390 contracts** | Mid-stage compounding acceleration |
-  | **₹70,000 – ₹100,000** | **8 Lots** | **520 contracts** | Advanced high-water scaling |
-  | **> ₹100,000** | **10 Lots (Cap)** | **650 contracts** | Strict institutional liquidity ceiling |
-* **Dynamic Drawdown De-escalation:** If account equity pulls back below any milestone threshold during adverse conditions, lot sizing **instantly drops** to the lower bracket to protect accumulated capital.
-* **Zero-Shortfall Purchasing Power Buffer:** Sizing is hard-capped by `(available_margin - 150) // (contract_price * 65)`. Orders never exceed verified liquid funds minus a ₹150 buffer for exchange fees and STT.
+  | **0 < available margin <= ₹20,000** | **2 Lots MAX** | **130 contracts** | Strict inclusive first upper bound |
+  | **₹20,000 < margin <= ₹40,000** | **4 Lots MAX** | **260 contracts** | Global capital tier |
+  | **₹40,000 < margin <= ₹60,000** | **6 Lots MAX** | **390 contracts** | Global capital tier |
+  | **₹60,000 < margin <= ₹80,000** | **8 Lots MAX** | **520 contracts** | Global capital tier |
+  | **> ₹80,000** | **10 Lots MAX** | **650 contracts** | Absolute global ceiling, including above ₹100,000 |
+* **Dynamic Tier Recalculation:** Each new entry re-evaluates broker available margin against the global ladder. A reduced broker margin reduces the permitted tier; this does not imply existing positions are resized automatically.
+* **Zero-Shortfall Purchasing Power Buffer:** The lot ceiling is further constrained by whole lots affordable from `(broker_available_margin - 150) / (approved_option_limit_price * current_lot_size)`. Underlying NIFTY spot selects strikes, not option cost. Invalid/missing funds or option price blocks new entries; broker account, AI veto and OMS gates still apply.
 * **Order Cap:** Maximum **1 concurrent open position** at any time.
 * **Overnight Rule:** **STRICTLY ZERO POSITIONS OVERNIGHT**. All intraday positions must be squared off by 15:15 IST.
 * **Zero Cost Architecture:** Operates with **zero paid API fees** (uses local broker sessions on Kite/Breeze and free web RSS/market ingestion).

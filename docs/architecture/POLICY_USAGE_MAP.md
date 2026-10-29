@@ -1,6 +1,6 @@
 # R01 configuration usage and effective-policy inspection
 
-**Scope:** facts observed in source on 2026-10-29, based on original `main` code. The tool does not create a trader, read broker funds, consult an AI, inspect active positions, or authorize any orders.
+**Scope:** source-backed risk inventory; updated for the POL-01/POL-02 unmerged branch. The old configuration precedence below was superseded for sizing as documented. The tool does not create a trader, read broker funds, consult an AI, inspect active positions, or authorize any orders.
 
 ## Read-only diagnostics (new)
 
@@ -25,22 +25,22 @@ Report contains immutable `TradingPolicySnapshot` / `PolicyObservation` records,
 | Consultation mode | `--ai-mode` | `AI_CONSULTATION_MODE` | `strategies.ai_consultation.default_mode` | Disabled rejected; `rules`/`playbook` deterministic vs `chat` companion; gate mandatory |
 | Execution adapter | `--broker` | `EXECUTION_BROKER` | — | default `proxy`, native Kite/Breeze require explicit `--live`, verified account + gateway arming |
 | Data adapter | `--market-data-broker` | `MARKET_DATA_BROKER` | — | default Kite and independent of execution adapter |
-| Entry quantity | `--quantity` / `--lots` | `MAX_ORDER_QUANTITY` low-priority fallback | `strategy.compounding.max_order_quantity` then `trading.risk.max_order_quantity` | `trading/domain/sizing.py` uses truthy precedence; `position_lifecycle._submit_entry` applies strategy/global cap, affordability and absolute 650 |
+| Entry quantity | Compatibility CLI arguments retained | — | `risk.available_margin_lot_tiers`, `risk.max_lots_per_trade=10`, `risk.max_order_quantity=650` | `trading/domain/lot_policy.py` enforces the shared tier; `position_lifecycle._submit_entry` rechecks broker margin and final option price. Strategy compounding is legacy only. |
 | Available capital | — | Broker authentication | `risk.account_equity` (also documented ₹10k) | `position_lifecycle._submit_entry` reads actual broker `available_margin` and subtracts ₹150; static equity is not verified purchasing power |
-| Entry cutoff | — | — | `session.no_new_trade_after=14:45` | `position_lifecycle._submit_entry` enforces hard 14:15 and min(configured,hard) in LIVE; `MarketClock` has 14:15 trap |
-| Force exit | — | — | `session.force_exit_time=15:20` | HARD_SQUARE_OFF=15:15, but broker outage can delay actual closure |
+| Entry cutoff | — | — | `session.no_new_trade_after=14:15` | `position_lifecycle._submit_entry` enforces hard 14:15 and min(configured,hard) in LIVE; `MarketClock` has 14:15 trap |
+| Force exit | — | — | `session.force_exit_time=15:15` | HARD_SQUARE_OFF=15:15, but broker outage can delay actual closure |
 | Daily entries | — | — | `risk.max_trades_per_day=5` | `CycleWorkflow` uses MAX_DAILY_ENTRIES=10 and `PositionLifecycle` uses strategy `entry.max_daily_entries` (MACD=2) |
 | Premium | — | — | `option_selection.max_option_premium=135` | Candidate selection uses cap (fallback 185), `EntryPolicy.from_config` uses cap (fallback 70); active configured cap supersedes defaults |
-| Maximum lots | — | — | `risk.max_lots_per_trade=1` vs active MACD `compounding.max_lots_cap=10` | `calculate_compounding_quantity` reads *strategy* lots cap, not global risk lots setting in this function |
+| Maximum lots | — | — | `risk.max_lots_per_trade=10`; existing legacy strategy compounding values differ | `BrokerMarginLotPolicy` applies the owner-approved global 10-lot ceiling; historical strategy compounding is not authoritative for live sizing. |
 | Arming and kill switch | `--live` | — | `mode=LIVE`, `system_armed=true`, `auto_trade_enabled=true`, `kill_switch=false` | Native mutation requires the CLI and broker/account checks; JSON flags alone are not proof of actual arming |
 | Calendar/expiry | — | `MARKET_INSTRUMENTS_FILE` optional | `option_selection.exchange_holidays` | Market master and contract selectors also validate availability; calendar correctness not proven |
 | Strategy trailing/stops | Strategy/profile | — | `strategies.*.exit`, `trading.risk.*` | Multiple active strategy paths; requires scenario-by-scenario characterization, no flattening yet |
 
 ## Important distinction: source evidence vs effective behavior
 
-The command reports static source-backed rules, not the dynamic result of a live order. Example: active MACD strategy advertises a 650-contract compounding ceiling; the global config advertises 65. The selected strategy cap has truthy precedence in currently reviewed code, while buying power, requested quantity, available quotes, existing exposure, and the hard MAX_POSITION_QUANTITY further restrict submitted quantity. Calling “65” a universally enforced hard cap would be inaccurate.
+The command reports static source-backed rules, not the dynamic result of a live order. The approved risk configuration now defines 2/4/6/8/10-lot upper bounds from verified broker available margin, with a global 10-lot maximum. The executable option price, funds freshness, broker account and existing exposure remain independent entry checks. Legacy per-strategy compounding fields stay in strategies.json for research compatibility; they no longer override live sizing. See ADR-001. No tests or broker UAT have run.
 
-**Do not change configured values in this structural increment.**
+**This POLICY increment intentionally changed configured lot and session values on an unmerged branch; do not deploy it without testing and broker UAT.**
 
 ## R01 status
 

@@ -178,9 +178,9 @@ def build_policy_snapshot(
 
     cap = observe(
         "risk.max_order_quantity",
-        rule="Strategy compounding max_order_quantity has truthy precedence; then trading risk cap, env MAX_ORDER_QUANTITY/default. Entry submission also limits to affordable quantity and MAX_POSITION_QUANTITY.",
+        rule="Account-wide risk max_order_quantity=650 is validated by BrokerMarginLotPolicy, together with 10-lot ceiling and the approved margin tier. The executable option price, broker margin and reserve further constrain the result.",
         code="trading/domain/sizing.py; position_lifecycle.py:_submit_entry",
-        assessment="Global value is NOT necessarily a universal hard ceiling.",
+        assessment="This configuration is now a validated global ceiling; broker per-order limits require separate UAT.",
     )
     if cap is not _MISSING:
         _validate_scalar("risk.max_order_quantity", cap, diagnostics)
@@ -188,9 +188,9 @@ def build_policy_snapshot(
     observations.append(PolicyObservation(
         "selected_strategy.compounding.max_order_quantity", _freeze(strategy_cap),
         f"config/strategies.json:strategies.{chosen_strategy}.compounding.max_order_quantity",
-        f"Current strategy cap precedes trading risk cap; eventual global guard {MAX_POSITION_QUANTITY} contracts.",
+        "Legacy historical strategy compounding field is not used by the new live sizing calculator.",
         "trading/domain/sizing.py; position_lifecycle.py:_submit_entry",
-        "This is a *potential upper bound*, not a promised order size.",
+        "Legacy configuration only; live sizing is account-wide.",
     ))
     if strategy_cap is not None:
         _validate_scalar("selected_strategy.compounding.max_order_quantity", strategy_cap, diagnostics)
@@ -206,18 +206,22 @@ def build_policy_snapshot(
     observations.append(PolicyObservation(
         "selected_strategy.compounding.max_lots_cap", _freeze(compounding.get("max_lots_cap")),
         f"config/strategies.json:strategies.{chosen_strategy}.compounding.max_lots_cap",
-        "Current sizing function uses the strategy compounding max_lots_cap.",
+        "Legacy strategy-specific compounding setting; not used in shared live lot policy.",
         "trading/domain/sizing.py:calculate_compounding_quantity",
-        "Potential strategy preference, not guaranteed submitted lots.",
+        "Non-authoritative for the new live sizing calculator.",
     ))
     if compounding.get("max_lots_cap") is not None:
         _validate_scalar("selected_strategy.compounding.max_lots_cap", compounding["max_lots_cap"], diagnostics)
     observe(
         "risk.max_lots_per_trade",
-        rule=f"Current sizing function uses strategy compounding.max_lots_cap, lot size {LOT_SIZE}; global lots setting is not referenced by that sizing calculation.",
+        rule=f"Global 10-lot ceiling applies to every strategy; current lot size is {LOT_SIZE}.",
         code="trading/domain/sizing.py:calculate_compounding_quantity",
-        assessment="Not proof this key is unenforced on every other path.",
+        assessment="This key is validated by the shared BrokerMarginLotPolicy.",
     )
+    observe("risk.available_margin_lot_tiers",
+            rule="Verified broker available margin selects inclusive tiers: <=20k 2, <=40k 4, <=60k 6, <=80k 8, otherwise 10; selected option limit premium and ₹150 reserve may reduce quantity.",
+            code="trading/domain/lot_policy.py; trading/domain/sizing.py; position_lifecycle.py",
+            assessment="Global policy source, not a broker account verification report.")
     for key, code, rule in (
         ("risk.max_trades_per_day", "trading/application/workflows.py; trading/domain/limits.py",
          f"CycleWorkflow uses MAX_DAILY_ENTRIES={MAX_DAILY_ENTRIES}; lifecycle also applies strategy entry.max_daily_entries."),
@@ -241,7 +245,7 @@ def build_policy_snapshot(
         "session.no_new_trade_after",
         rule=f"Submission checks HARD_ENTRY_CUTOFF={HARD_ENTRY_CUTOFF}; active LIVE guard takes min(configured cutoff, hard cutoff), plus MarketClock's 14:15 trap gate.",
         code="position_lifecycle.py:_submit_entry; market_clock.py:is_new_trade_allowed",
-        assessment="JSON's later time does not relax the hard runtime cutoff.",
+        assessment="Configured cutoff is now aligned with hard 14:15; independent execution checks remain.",
     )
     before = observe(
         "session.no_new_trade_before",
@@ -253,7 +257,7 @@ def build_policy_snapshot(
         "session.force_exit_time",
         rule=f"Position monitoring and scheduler use HARD_SQUARE_OFF={HARD_SQUARE_OFF}; actual fill cannot be guaranteed on broker outage.",
         code="position_lifecycle.py; nifty_trader_scheduler.py",
-        assessment="The configured later time does not guarantee later exposure is allowed.",
+        assessment="Configured 15:15 is aligned; broker outages may still prevent a verified flat book.",
     )
     for key, value in (("session.no_new_trade_before", before),
                        ("session.no_new_trade_after", entry_after),
