@@ -334,13 +334,13 @@ class BaseBrokerGateway(ABC):
             with self._submission(check, entry, order_payload):
                 response = send(self.journal.records[request_id]["tag"])
         except EntryBlocked:
-            self.journal.put(request_id, phase="REJECTED")
+            self.journal.transition(request_id, "REJECTED")
             raise
         except Exception:
             return self._error("SUBMISSION_OUTCOME_UNKNOWN", unknown=True)
         if not isinstance(response, dict) or (not response.get("error") and not response.get("order_id")):
             if isinstance(response, dict) and response.get("status") == "CLOSED":
-                self.journal.put(request_id, phase="REJECTED")
+                self.journal.transition(request_id, "REJECTED")
                 return response
             return self._error("INVALID_MUTATION_RESPONSE", unknown=True)
         try:
@@ -351,7 +351,7 @@ class BaseBrokerGateway(ABC):
             }
             if response.get("order_id"):
                 updates["order_id"] = str(response["order_id"])
-            self.journal.put(request_id, **updates)
+            self.journal.transition(request_id, updates.pop("phase"), **updates)
         except Exception:
             return dict(response, error=True, detail="ACK_PERSISTENCE_FAILED", outcome_unknown=True)
         return response
