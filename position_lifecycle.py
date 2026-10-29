@@ -599,6 +599,10 @@ class PositionLifecycle:
             self._entry_guard.release()
 
     def _submit_entry(self, decision, *, today_entries=0):
+        # POL-06: every newly opened position needs an actual structural
+        # invalidation level; do not manufacture one from premium or spot.
+        if decision.get("invalidation_level") is None:
+            return {"error": True, "detail": "STRUCTURAL_INVALIDATION_REQUIRED"}
         blocked = self._entry_limit_block(today_entries)
         if blocked:
             return {"error": True, "detail": blocked}

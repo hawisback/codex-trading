@@ -16,7 +16,7 @@
   },
   "option_selection": {
     "max_option_premium": 135,
-    "min_option_premium": 15,
+    "min_option_premium": 0,
     "max_otm_strikes": 4,
     "min_open_interest": 10000,
     "max_bid_ask_spread_pct": 3,

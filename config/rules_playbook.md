@@ -46,11 +46,11 @@ This playbook catalogs the deterministic risk filters and institutional traps en
 * **Audit Finding:** In the October 2026 6-day audit across 75 candidates, Trap 1 blocked 15 trades: 7 were winners (+₹7,258.68 missed profit) and 8 were minor losses (-₹1,061.45 saved), creating a net drag of -₹6,197.23. Removing Trap 1 increased net sequential portfolio profit from +₹18,299.64 to +₹21,927.42 (+₹3,627.78 gain, 68.0% win rate).
 * **Current Action:** **STAND-DOWN / NO VETO**. 2-minute MACD momentum signals with volume expansion are permitted during midday and around VWAP crossings.
 
-### Trap 2: The 0DTE Cheap Option & Gamma Whipsaw Trap
+### Trap 2: 0DTE Liquidity, Confluence & Gamma Whipsaw Review (No Penny-Price Veto)
 * **Discovered:** Tuesday September 29 & July–August Expiry Days (Tuesdays).
-* **Pattern:** On 0DTE expiry days, selecting options with low premiums ($< ₹12.0$) or entering positions during afternoon gamma compression.
-* **Failure Mode:** At sub-₹12 premium, a mere 2-point adverse spot flutter causes an instant 30% drop in option value within 2–3 minutes.
-* **Guardrail Action:** **VETO CANDIDATE ENTRIES** on 0DTE whenever option premium is $< ₹12.0$. Only trade deep ITM options with sufficient intrinsic cushion.
+* **Pattern:** On expiry days, thin liquidity, wide spreads, accelerating theta decay or weak technical confluence can make inexpensive options hazardous.
+* **Failure Mode:** A cheap option can decay rapidly or become difficult to exit even when an entry signal briefly appears attractive.
+* **Guardrail Action:** **Do not veto solely on a minimum rupee premium.** Check authenticated broker buying power, fresh executable option quotes, spread/depth, expiry validity, structural invalidation and actual consultation veto. A cheap contract is neither approved nor disapproved merely because of its premium.
 
 ### Trap 3: The V-Reversal Counter-Trend Short Trap
 * **Discovered:** Monday, October 5, 2026 at 12:30 PM IST.

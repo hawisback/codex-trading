@@ -61,7 +61,7 @@ class EntryPolicy:
     quote_timeout: float = 1.0
     approval_ttl: float = 5.0
     candidate_age: float = 15.0
-    min_premium: float = 15.0
+    min_premium: float = 0.0
     max_premium: float = 70.0
     max_spread_pct: float = 3.0
     order_timeout: float = 10.0
@@ -81,7 +81,7 @@ class EntryPolicy:
             quote_timeout=number(execution.get("entry_quote_timeout_sec", 1)),
             approval_ttl=number(execution.get("ai_approval_ttl_seconds", 5)),
             candidate_age=number(execution.get("max_entry_candidate_age_seconds", 15)),
-            min_premium=number(selection.get("min_option_premium", 15)),
+            min_premium=number(selection.get("min_option_premium", 0)),
             max_premium=number(selection.get("max_option_premium", 70)),
             max_spread_pct=number(selection.get("max_bid_ask_spread_pct", 3)),
             order_timeout=number(risk.get("entry_order_timeout_sec", 10)))
@@ -89,7 +89,8 @@ class EntryPolicy:
                 not 0 <= policy.downside_pct < 100 or policy.max_points < 0 or
                 policy.limit_ticks < 0 or policy.limit_ticks != int(policy.limit_ticks) or
                 min(policy.quote_age, policy.quote_timeout, policy.approval_ttl,
-                    policy.candidate_age, policy.order_timeout, policy.min_premium) <= 0 or
+                    policy.candidate_age, policy.order_timeout) <= 0 or
+                policy.min_premium < 0 or
                 policy.max_premium < policy.min_premium or policy.max_spread_pct <= 0):
             raise EntryBlocked("INVALID_ENTRY_POLICY")
         return policy

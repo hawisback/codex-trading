@@ -149,8 +149,7 @@ class PositionMonitor:
 
             # 0b. Structural Invalidation (Spot breached technical invalidation level)
             elif (
-                enable_structural_wick_stop
-                and t.get("invalidation_level") is not None
+                t.get("invalidation_level") is not None
                 and (
                     (is_ce and spot and spot <= float(t["invalidation_level"]))
                     or (is_pe and spot and spot >= float(t["invalidation_level"]))

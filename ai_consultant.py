@@ -296,24 +296,10 @@ class AIConsultant:
         # -------------------------------------------------------------
         is_reversal_expansion = bool(d.is_directional_shift)
 
-        # -------------------------------------------------------------
-        # Trap 2: The 0DTE Cheap Penny Option Gamma Trap
-        # -------------------------------------------------------------
-        # Relaxed from ₹30 to ₹12: Allows viable ₹20-₹30 expiry afternoon runners (which often expand 3x-4x)
-        # while still protecting against sub-₹12 lottery penny tickets.
-        if d.is_expiry_0dte and d.option_entry_price < 12.0:
-            return AIVerdict(
-                is_approved=False,
-                action="VETOED",
-                confidence_score=95,
-                trap_detected="Trap 2: 0DTE Penny Option Gamma Trap",
-                reasoning=f"0DTE option premium is too cheap (₹{d.option_entry_price:.2f} < ₹12.0). Pure delta-decay lottery ticket with instant wipeout risk.",
-                recommended_trailing="tight_ema20",
-                timestamp=now_ts
-            )
+        # POL-03: Cheap option premium is not itself a consultation veto.
+        # Continue assessing expiry, liquidity, confluence and all other traps;
+        # this does not confer approval without AIConsultant.evaluate.
 
-        # -------------------------------------------------------------
-        # -------------------------------------------------------------
         # -------------------------------------------------------------
         # Trap 3: V-Reversal Counter-Trend Trap (RSI Cascade / Rebound)
         # -------------------------------------------------------------
