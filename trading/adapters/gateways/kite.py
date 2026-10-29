@@ -160,10 +160,20 @@ class KiteExecutionGateway(BaseBrokerGateway):
                     return self._error("BROKER_REQUEST_BUDGET_EXHAUSTED")
                 if mutation and (not self._live_authorized or not self.is_connected()):
                     return self._error("NATIVE_LIVE_NOT_ARMED")
+                if mutation:
+                    try:
+                        self._assert_execution_lease()
+                    except ReconciliationError as exc:
+                        return self._error(str(exc))
                 # Exit callbacks may refresh price after pacing. Build the wire
                 # body only after that callback has durably saved its final limit.
                 wire_data = data() if callable(data) else data
                 payload = urllib.parse.urlencode(wire_data).encode() if wire_data is not None else None
+                if mutation:
+                    try:
+                        self._assert_execution_lease()
+                    except ReconciliationError as exc:
+                        return self._error(str(exc))
                 headers = {
                     "X-Kite-Version": "3",
                     "Authorization": f"token {self.api_key}:{self.access_token}",

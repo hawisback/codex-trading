@@ -155,6 +155,11 @@ def run_scheduler(trader_factory, *, default_interval=60, default_quantity=65):
                 args.broker, verified["account_id"]
             )
             account_lease.__enter__()  # Must be held until all workers are shut down.
+            bind_lease = getattr(trader.client, "bind_account_lease", None)
+            if args.broker in ("kite", "breeze"):
+                if not callable(bind_lease):
+                    raise RuntimeError("Native broker gateway lacks execution lease enforcement")
+                bind_lease(account_lease)
             logger.warning(
                 "LIVE authorization and exclusive account lease verified for %s", args.broker
             )

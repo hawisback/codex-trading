@@ -214,6 +214,11 @@ class BreezeExecutionGateway(BaseBrokerGateway):
             if not session_exchange and (not self.is_connected() or (mutation and not self._live_authorized)):
                 return self._error("BREEZE_ACCOUNT_UNVERIFIED")
             wire_data = data() if callable(data) else (data or {})
+            if mutation:
+                try:
+                    self._assert_execution_lease()
+                except ReconciliationError as exc:
+                    return self._error(str(exc))
             payload = json.dumps(wire_data, separators=(",", ":"), allow_nan=False).encode("utf-8")
             headers = {"Content-Type": "application/json", "Accept": "application/json"}
             if not session_exchange:
@@ -230,6 +235,11 @@ class BreezeExecutionGateway(BaseBrokerGateway):
             remaining = deadline - time.monotonic()
             if remaining <= 0:
                 return self._error("BROKER_REQUEST_BUDGET_EXHAUSTED")
+            if mutation:
+                try:
+                    self._assert_execution_lease()
+                except ReconciliationError as exc:
+                    return self._error(str(exc))
             request = urllib.request.Request(
                 self.base_url + endpoint, data=payload, headers=headers, method=method
             )

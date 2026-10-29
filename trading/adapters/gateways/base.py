@@ -14,6 +14,8 @@ from typing import Any, Iterable, Optional
 from execution_safety import ReconciliationError, TERMINAL, filled, rows, same_scope, status, symbol_of
 from entry_policy import EntryBlocked
 from trading.adapters.gateways.journal import GatewayJournal
+from trading.adapters.account_lease import AccountExecutionLease, account_lock_path
+from execution_safety import SchedulerLock
 from trading.domain.intent_state import needs_reconciliation
 from trading.adapters.gateways.rate_limiter import TokenBucketRateLimiter
 from trading.domain.prices import round_tick
@@ -51,6 +53,7 @@ class BaseBrokerGateway(ABC):
         self._lock = threading.RLock()
         self._mode = "PAPER"
         self._live_authorized = False
+        self._account_lease: AccountExecutionLease | None = None
         self.journal = GatewayJournal(
             journal_path or Path(__file__).resolve().parents[3] / "logs/broker_intents.json", broker_name
         )
@@ -121,12 +124,41 @@ class BaseBrokerGateway(ABC):
     def _error(detail, *, unknown=False):
         return {"error": True, "detail": detail, "outcome_unknown": unknown}
 
+    def bind_account_lease(self, lease: AccountExecutionLease) -> None:
+        """Bind the scheduler's *already held* lease to this exact native gateway."""
+        if not isinstance(lease, AccountExecutionLease):
+            raise ReconciliationError("ACCOUNT_LEASE_REQUIRED")
+        current = self.get_status()
+        if (not isinstance(current, dict) or current.get("error")
+                or current.get("mode") != "LIVE" or not current.get("live_authorized")
+                or not current.get("connected") or not current.get("account_id")):
+            raise ReconciliationError("BROKER_ACCOUNT_UNVERIFIED")
+        if not lease.held or not SchedulerLock.is_held(lease.path):
+            raise ReconciliationError("ACCOUNT_LEASE_NOT_HELD")
+        if lease.path != account_lock_path(self.broker_name, current["account_id"]):
+            raise ReconciliationError("ACCOUNT_LEASE_SCOPE_MISMATCH")
+        self._account_lease = lease
+
+    def _assert_execution_lease(self) -> None:
+        """Fail closed, including after pacing/waiting, if local ownership was lost."""
+        lease = self._account_lease
+        account = self.get_account_id()
+        if not isinstance(account, str) or not account:
+            raise ReconciliationError("BROKER_ACCOUNT_UNVERIFIED")
+        if (lease is None or not lease.held
+                or not SchedulerLock.is_held(lease.path)
+                or lease.path != account_lock_path(self.broker_name, account)):
+            raise ReconciliationError("LIVE_EXECUTION_ACCOUNT_LEASE_REQUIRED")
+
     def _authorize(self):
         if self._mode != "LIVE" or not self._live_authorized:
             raise ReconciliationError("NATIVE_LIVE_NOT_ARMED")
         current = self.get_status()
-        if current.get("error") or not current.get("live_authorized"):
+        if (not isinstance(current, dict) or current.get("error")
+                or not current.get("live_authorized")
+                or not current.get("connected") or not current.get("account_id")):
             raise ReconciliationError("BROKER_ACCOUNT_UNVERIFIED")
+        self._assert_execution_lease()
 
     def restore_recovery_state(self, state):
         with self._lock:
