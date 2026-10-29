@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 from market_clock import MarketClock
 from trading.bootstrap import ensure_environment
+from trading.adapters.account_lease import AccountExecutionLease
 
 logger = logging.getLogger("NiftyAI")
 
@@ -124,6 +125,7 @@ def run_scheduler(trader_factory, *, default_interval=60, default_quantity=65):
         market_data_broker=args.market_data_broker,
     )
 
+    account_lease = None
     try:
         prepare = getattr(trader, "prepare_strategy_warmup", None)
         if prepare is not None:
@@ -135,8 +137,26 @@ def run_scheduler(trader_factory, *, default_interval=60, default_quantity=65):
             res = trader.client.set_mode("LIVE")
             if res.get("error") or res.get("mode") != "LIVE" or not res.get("live_authorized"):
                 raise RuntimeError("Broker LIVE authorization failed; scheduler will not trade")
+            # Account ownership must be held before *any* recovery workflow or
+            # live order-capable analysis cycle. One workspace scheduler lock
+            # does not exclude another checkout using the same broker account.
+            verified = trader.client.get_status()
+            if (
+                not isinstance(verified, dict)
+                or verified.get("error")
+                or verified.get("mode") != "LIVE"
+                or not verified.get("live_authorized")
+                or not verified.get("connected")
+                or not verified.get("account_id")
+                or (res.get("account_id") and res["account_id"] != verified["account_id"])
+            ):
+                raise RuntimeError("Verified LIVE broker account required for execution ownership")
+            account_lease = AccountExecutionLease(
+                args.broker, verified["account_id"]
+            )
+            account_lease.__enter__()  # Must be held until all workers are shut down.
             logger.warning(
-                f"🚨 Mode switched: {res.get('mode')} (Live Authorized: {res.get('live_authorized')})"
+                "LIVE authorization and exclusive account lease verified for %s", args.broker
             )
         else:
             status = trader.client.get_status()
@@ -237,5 +257,9 @@ def run_scheduler(trader_factory, *, default_interval=60, default_quantity=65):
                 market.close()
             except Exception:
                 logger.warning("Market-data stream shutdown did not complete cleanly")
-        if not trader.intelligence.stop_worker():
-            logger.warning("Intelligence worker still finishing an in-flight request at shutdown")
+        try:
+            if not trader.intelligence.stop_worker():
+                logger.warning("Intelligence worker still finishing an in-flight request at shutdown")
+        finally:
+            if account_lease is not None:
+                account_lease.__exit__(None, None, None)
