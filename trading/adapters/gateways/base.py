@@ -11,10 +11,11 @@ import time
 import uuid
 from typing import Any, Iterable, Optional
 
-from execution_safety import ReconciliationError, TERMINAL, filled, rows, same_scope, status, symbol_of
+from execution_safety import ReconciliationError, SchedulerLock, TERMINAL, filled, rows, same_scope, status, symbol_of
 from entry_policy import EntryBlocked
 from trading.adapters.gateways.journal import GatewayJournal
 from trading.adapters.gateways.rate_limiter import TokenBucketRateLimiter
+from trading.application.oms_ownership import AccountSessionLease
 from trading.domain.prices import round_tick
 
 logger = logging.getLogger("BrokerGateway")
@@ -50,6 +51,8 @@ class BaseBrokerGateway(ABC):
         self._lock = threading.RLock()
         self._mode = "PAPER"
         self._live_authorized = False
+        self._account_lease = None
+        self._leased_account = None
         self.journal = GatewayJournal(
             journal_path or Path(__file__).resolve().parents[3] / "logs/broker_intents.json", broker_name
         )
@@ -86,6 +89,11 @@ class BaseBrokerGateway(ABC):
             timeout = min(timeout, self._read_deadline - time.monotonic())
         return timeout > 0 and self.rate_limiter.acquire(timeout=timeout)
 
+    def _owns_account_lease(self):
+        return (self._account_lease is not None
+                and self._leased_account == self.get_account_id()
+                and SchedulerLock.is_held(self._account_lease.path))
+
     def get_status(self):
         connected = self.is_connected()
         account = self.get_account_id()
@@ -95,7 +103,8 @@ class BaseBrokerGateway(ABC):
             "mode": self._mode,
             "broker": self.broker_name,
             "connected": connected,
-            "live_authorized": self._mode == "LIVE" and self._live_authorized and connected,
+            "live_authorized": (self._mode == "LIVE" and self._live_authorized
+                                and connected and self._owns_account_lease()),
             "account_id": account,
         }
 
@@ -111,6 +120,17 @@ class BaseBrokerGateway(ABC):
                 current = self.get_status()
                 if current.get("error") or not current.get("connected") or not current.get("account_id"):
                     return self._error("BROKER_ACCOUNT_UNVERIFIED")
+                account = current["account_id"]
+                if self._account_lease is None:
+                    lease = AccountSessionLease(
+                        self.journal.path.parent, broker=self.broker_name,
+                        verified_account=account,
+                    )
+                    lease.__enter__()
+                    self._account_lease = lease
+                    self._leased_account = account
+                elif self._leased_account != account or not self._owns_account_lease():
+                    return self._error("OMS_ACCOUNT_OWNERSHIP_UNVERIFIED")
                 self._mode, self._live_authorized = "LIVE", True
                 return {"mode": "LIVE", "live_authorized": True, "account_id": current["account_id"]}
             except Exception as exc:
@@ -123,6 +143,8 @@ class BaseBrokerGateway(ABC):
     def _authorize(self):
         if self._mode != "LIVE" or not self._live_authorized:
             raise ReconciliationError("NATIVE_LIVE_NOT_ARMED")
+        if not self._owns_account_lease():
+            raise ReconciliationError("OMS_ACCOUNT_OWNERSHIP_UNVERIFIED")
         current = self.get_status()
         if current.get("error") or not current.get("live_authorized"):
             raise ReconciliationError("BROKER_ACCOUNT_UNVERIFIED")

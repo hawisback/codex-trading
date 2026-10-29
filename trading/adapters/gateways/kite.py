@@ -136,7 +136,7 @@ class KiteExecutionGateway(BaseBrokerGateway):
 
     def _request(self, method, endpoint, params=None, data=None, timeout=10.0, max_retries=1):
         mutation = method != "GET"
-        if mutation and (self._mode != "LIVE" or not self._live_authorized or not self.is_connected()):
+        if mutation and (self._mode != "LIVE" or not self._live_authorized or not self.is_connected() or not self._owns_account_lease()):
             return self._error("NATIVE_LIVE_NOT_ARMED")
         url = self.base_url + endpoint
         if params:
@@ -158,7 +158,7 @@ class KiteExecutionGateway(BaseBrokerGateway):
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     return self._error("BROKER_REQUEST_BUDGET_EXHAUSTED")
-                if mutation and (not self._live_authorized or not self.is_connected()):
+                if mutation and (not self._live_authorized or not self.is_connected() or not self._owns_account_lease()):
                     return self._error("NATIVE_LIVE_NOT_ARMED")
                 # Exit callbacks may refresh price after pacing. Build the wire
                 # body only after that callback has durably saved its final limit.
