@@ -93,8 +93,20 @@ class GatewayRecoveryTests(unittest.TestCase):
         self.addCleanup(self.fixture.doCleanups)
         self.gateway = self.fixture.gateway
         self.server = self.fixture.server
-        self.fixture.seed(sell=0)
-        self.server.orders["S1"]["status"] = "TRIGGER PENDING"
+        # Create an actual zero-fill protective STOP with its matching durable
+        # placement intent. seed(sell=0) alone creates no S1 order.
+        from trading.adapters.gateways.journal import broker_tag
+        from test_self_healing_exit import SYMBOL
+        self.fixture.seed(qty=65, sell=0)
+        self.gateway.journal.put(
+            "stop-full-request-id", kind="STOP", symbol=SYMBOL,
+            order_id="S1", entry_order_id="E1", phase="ACKNOWLEDGED",
+        )
+        self.server.add(
+            "S1", side="SELL", kind="SL", qty=65, filled=0,
+            state="TRIGGER PENDING", tag=broker_tag("stop-full-request-id"),
+            price=60,
+        )
 
     def mutations(self):
         return [r for r in self.gateway.journal.records.values()
@@ -122,7 +134,7 @@ class GatewayRecoveryTests(unittest.TestCase):
         self.assertEqual("RECONCILED", self.mutations()[0]["phase"])
         self.assertEqual(before, len([call for call in self.server.calls if call[0] == "DELETE"]))
 
-    def test_missing_or_partially_filled_target_remains_unresolved(self):
+    def test_missing_or_partially_filled_target_without_complete_exposure_remains_unresolved(self):
         self.gateway._mutate_existing(
             "S1", lambda: {"error": True, "outcome_unknown": True},
             "STOP", action="CANCEL")
@@ -135,6 +147,69 @@ class GatewayRecoveryTests(unittest.TestCase):
         report = self.gateway.reconcile_pending_mutations()
         self.assertEqual([], report["resolved"])
         self.assertEqual(1, len(report["unresolved"]))
+
+    def test_partial_cancel_reconciles_only_after_stable_orders_and_position_agree(self):
+        self.gateway._mutate_existing(
+            "S1", lambda: {"error": True, "outcome_unknown": True},
+            "STOP", action="CANCEL")
+        self.server.orders["S1"].update(
+            status="CANCELLED", filled_quantity=15, average_price=46)
+        before = len([call for call in self.server.calls if call[0] != "GET"])
+        report = self.gateway.reconcile_pending_mutations()
+        self.assertEqual(1, len(report["resolved"]))
+        evidence = self.mutations()[0]["broker_evidence"]
+        self.assertEqual("PARTIAL_CANCELLED_POSITION_RECONCILED", evidence["effect"])
+        self.assertEqual(15, evidence["verified_filled_quantity"])
+        self.assertEqual(50, evidence["reconciled_remaining_exposure"])
+        self.assertFalse(evidence["replacement_or_exit_authorized"])
+        self.assertFalse(report["positions_verified"])
+        self.assertEqual(before, len([call for call in self.server.calls if call[0] != "GET"]))
+
+    def test_partial_cancel_disagreement_with_position_remains_unknown(self):
+        from unittest.mock import patch
+        self.gateway._mutate_existing(
+            "S1", lambda: {"error": True, "outcome_unknown": True},
+            "STOP", action="CANCEL")
+        self.server.orders["S1"].update(
+            status="CANCELLED", filled_quantity=20, average_price=46)
+        position = dict(symbol=self.gateway.get_order("S1")["symbol"],
+                        quantity=65, account_id="TEST_ACCOUNT", mode="LIVE")
+        with patch.object(self.gateway, "get_positions",
+                          return_value={"positions": [position]}):
+            report = self.gateway.reconcile_pending_mutations()
+        self.assertEqual([], report["resolved"])
+        self.assertEqual("UNKNOWN", self.mutations()[0]["phase"])
+
+    def test_partial_cancel_outstanding_sell_requires_manual_reconciliation(self):
+        self.gateway._mutate_existing(
+            "S1", lambda: {"error": True, "outcome_unknown": True},
+            "STOP", action="CANCEL")
+        self.server.orders["S1"].update(
+            status="CANCELLED", filled_quantity=10, average_price=46)
+        self.gateway.journal.put(
+            "separate-stop-2", kind="STOP",
+            symbol=self.gateway.get_order("S1")["symbol"],
+            entry_order_id="E1", order_id="S2",
+            phase="ACKNOWLEDGED")
+        from trading.adapters.gateways.journal import broker_tag
+        self.server.add(
+            "S2", side="SELL", kind="SL", qty=55, filled=0,
+            state="TRIGGER PENDING", tag=broker_tag("separate-stop-2"), price=40)
+        report = self.gateway.reconcile_pending_mutations()
+        self.assertEqual([], report["resolved"])
+        self.assertEqual("UNKNOWN", self.mutations()[0]["phase"])
+
+    def test_emergency_inventory_is_read_only_and_never_grants_sell(self):
+        before = len([call for call in self.server.calls if call[0] != "GET"])
+        report = self.gateway.emergency_recovery_report()
+        self.assertEqual("OPERATOR_BROKER_RECONCILIATION_REQUIRED", report["status"])
+        self.assertFalse(report["safe_to_resubmit_sell"])
+        self.assertFalse(report["account_flat_confirmed"])
+        self.assertFalse(report["protective_stop_confirmed"])
+        self.assertEqual([{"symbol": report["positions"][0]["symbol"], "quantity": 65}],
+                         report["positions"])
+        self.assertEqual(1, len(report["active_orders"]))
+        self.assertEqual(before, len([call for call in self.server.calls if call[0] != "GET"]))
 
     def test_unknown_modify_clears_only_when_exact_broker_prices_observed(self):
         self.gateway._mutate_existing(

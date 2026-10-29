@@ -78,8 +78,20 @@ class MutationGatewayTests(unittest.TestCase):
         self.addCleanup(self.fixture.doCleanups)
         self.gateway = self.fixture.gateway
         self.server = self.fixture.server
-        self.fixture.seed(sell=0)
-        self.server.orders["S1"]["status"] = "TRIGGER PENDING"
+        # Create an actual zero-fill protective STOP with its matching durable
+        # placement intent. seed(sell=0) alone creates no S1 order.
+        from trading.adapters.gateways.journal import broker_tag
+        from test_self_healing_exit import SYMBOL
+        self.fixture.seed(qty=65, sell=0)
+        self.gateway.journal.put(
+            "stop-full-request-id", kind="STOP", symbol=SYMBOL,
+            order_id="S1", entry_order_id="E1", phase="ACKNOWLEDGED",
+        )
+        self.server.add(
+            "S1", side="SELL", kind="SL", qty=65, filled=0,
+            state="TRIGGER PENDING", tag=broker_tag("stop-full-request-id"),
+            price=60,
+        )
 
     def _mutations(self):
         return [r for r in self.gateway.journal.records.values()
