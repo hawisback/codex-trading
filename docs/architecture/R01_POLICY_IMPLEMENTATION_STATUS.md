@@ -1,67 +1,53 @@
-# R01 owner-policy implementation status
+# R01 policy implementation status — feature branch
 
-**Branch:** `feature/r01-approved-policy-contracts-20261029`
-**Date:** 2026-10-29
-**Release class:** OFFLINE IMPLEMENTATION / POLICY DESIGN; **not live enabled**
-**Tests:** authored only; not run at owner's request
+**Date:** 2026-10-29  
+**Branch:** `feature/r01-approved-policy-contracts-20261029`  
+**Default:** `config/trading.json:r01_policy.enabled=false`  
+**Verification:** Python syntax-only inspection performed; tests authored but **not executed**. No broker UAT or LIVE orders. No deployment or merge to `main`.
 
-This increment preserves production mode/configuration/OMS/entry/exit
-behavior. In particular it does not replace the active MACD strategy's
-compounding milestones, does not expand today's two-entry strategy cap,
-does not unify trailing stops, and does not change any LIVE broker
-authorization, consultation or veto.
+## Owner decisions implemented in code (explicit opt-in only)
 
-| Policy | Owner direction | Current implementation / remaining gate |
-| --- | --- | --- |
-| POL-01 | Capital tier ceiling 2/4/6/8/10, max 10 | **Implemented as pure offline preview** with exact inclusive boundaries and explicit undecided basis; no live sizing changes. Source field requires final owner definition and broker validation. |
-| POL-02 | Entry hard cutoff 14:15 IST; square-off trigger 15:15 IST | Already operative hard constants in `trading/domain/limits.py`; JSON still advertises 14:45/15:20. Preserved as-is to avoid behavioral divergence across paths; migration and parity review pending. |
-| POL-03 | **No penny-option rule; no spot-level or arbitrary option-premium-band trade bias** | **Owner decision recorded.** No new ₹12/₹30 veto; existing AI sub-₹12 Trap 2, ₹15 minimum and ₹135 maximum premium filters still exist in code/config, pending a separate review to remove unwanted price-only rejection without weakening affordability, quote/expiry integrity, consultation or existing-position protection. No LIVE behavior changed. |
-| POL-04 | No static capital assumption for LIVE | Pure preview requires explicit funds and executable option ask; LIVE funding checks unchanged. Broker authentication, account identity and data freshness must be enforced by integration, not this pure code. |
-| POL-05 | Up to 10 trades per session, unless unacceptable loss | `MAX_DAILY_ENTRIES=10` already exists, but MACD retains `entry.max_daily_entries=2`. Daily loss threshold, P&L basis and exact trade-counting meaning not selected; no permission to increase trade frequency yet. |
-| POL-06 | Strategy-independent stop/trailing by time of day | Architecture direction documented; **no stop modification** until exact stop and ratchet formulas are signed off. No weakening active position protection. |
-| POL-07 | Intended production LIVE | Native Kite/Breeze still require explicit `--live`, broker account verification, mode authorization and all existing safety gates. No automatic arming or proxy routing change. |
-| POL-08 | Reliable holiday + expiry selection | Architecture direction recorded (exchange calendar + broker instrument master). No change to live expiry inference/source refresh yet; needs provenance, freshness and outage design. |
+| Policy | R01 implementation |
+| --- | --- |
+| POL-01 | Available broker margin selects 2/4/6/8/10-lot tiers at ₹20k/₹40k/₹60k/₹80k inclusive bands. Broker-confirmed single-order cap, fresh approved option price, margin, ₹150 reserve, lot size and 650-position hard limit also bound quantity. |
+| POL-02 | `config/trading.json` aligned to 14:15 IST no-new-entry and 15:15 IST force-exit trigger, matching existing hard runtime constants. |
+| POL-03 | No ₹12/₹30 penny-option veto in opted-in deterministic consultation; absolute ₹15/₹135 premium price bands ignored when enabled. Other AI consultation vetoes, approved entry envelope, quote/spread/expiry/broker affordability stay intact. |
+| POL-04 | New opt-in LIVE entries require verified broker margin and matching account identity. Static equity cannot authorize quantity. |
+| POL-05 | Reconciled filled entry count ceiling 10 (including MACD); new entries require broker-reconciled session P&L with realized+unrealized loss strictly below existing configured 1.5% of verified start-of-day equity. Missing/mismatched/stale P&L blocks entries. |
+| POL-06 | Uniform time-based monotonic stop floor across strategy names, starting from existing 25% risk hard-stop config plus active MACD morning/midday profit-ratchet schedule. Never loosens stronger current stop; opt-in per-position policy version prevents retroactive migration. Existing OMS stop order lifecycle remains owner. |
+| POL-07 | Keep `--live` mandatory for native brokers and require explicit broker LIVE authorization; do not auto-arm on startup. |
+| POL-08 | Calendar and broker-master cross-source verification remains the later R05 market data/expiry deliverable; no unsupported calendar-refresh promise or change made in R01. |
 
-## How to inspect the approved sizing boundaries offline
+## Critical activation limitation
 
-No credentials, authenticated broker connection, or order capabilities are
-needed. Values below are **made-up demonstration inputs**; they must never
-be interpreted as verified broker data.
+**Do not turn on this flag in production yet.** Current broker
+`get_funds()` adapters have not been demonstrated to provide
+`max_single_order_quantity`, account-verified `pnl_asof`,
+`pnl_session_date`, `pnl_account_id`,
+`start_of_day_equity`, `realized_pnl_today` and
+`unrealized_pnl_today`. R01 deliberately denies new LIVE entries
+until those broker-side contract fields are present, correct and fresh.
 
-```bash
-python -m tools.owner_policy_preview \
-  --capital-basis available_margin \
-  --bracket-capital 80000 \
-  --available-margin 80000 \
-  --executable-option-ask 100 \
-  --lot-size 65 \
-  --broker-order-limit 650
-```
+See [R01_ACTIVATION_RUNBOOK.md](R01_ACTIVATION_RUNBOOK.md) for exact
+fields and rollout / rollback constraints; [ADR-0001](../adr/ADR-0001-OWNER-LOT-LADDER.md)
+and [ADR-0002](../adr/ADR-0002-NO-PENNY-OPTION-PRICE-BIAS.md)
+for the supporting policy direction and legacy filter inventory.
 
-The code explicitly accepts either `available_margin` or `account_equity`
-as a **hypothetical comparison input** because the owner has not selected
-the live tier capital basis. The CLI is a calculation aid only. A positive
-quantity is **not an instruction to trade**.
+## What is deliberately unchanged
 
-For example, ₹80,000 falls in the 8-lot tier; ₹80,000.01 falls in
-the 10-lot tier. The actual preview ceiling may be lower because of
-option affordability, reserve, broker per-order limit and the existing
-650-contract hard cap. If the native broker permits only one lot per
-single order, the preview caps at one lot; it **does not** silently split
-an order into multiple submissions.
+- `main` branch and the currently deployed/live engine.
+- The default `enabled=false` sizing, OMS execution, AI veto and stop management.
+- Broker order submission/retry/cancel semantics, durable intent IDs,
+  unknown outcome reconciliation, current open position treatment.
+- The risk of nonfill or outage during square-off remains real.
 
-## Merge and production gates
+## Review gates remaining
 
-1. Review open decisions in `POLICY_DECISIONS.md` and
-   `ADR-0001-OWNER-LOT-LADDER.md`.
-2. Explicitly settle the tier-capital broker field; the terms “equity”,
-   “available funds”, “buying power” and “spot price” are not interchangeable.
-3. Define daily-loss stop and cross-strategy trailing rules separately.
-4. Capture baseline/replay parity and full offline regression evidence;
-   tests were intentionally not executed in this increment.
-5. Implement a separate, gated LIVE integration with policy/version stamps,
-   broker/account/quote freshness checks, and OMS-aware protection.
-6. Require supervised operational acceptance before deployment. An unmerged
-   branch is neither production-ready nor evidence that a broker order is safe.
+- Broker P&L and per-order quantity normalized against actual authenticated account.
+- Offline test/replay and adverse-order scenario evidence, including boundary capital,
+  daily loss, opt-in price-neutral consultation and persistent stop monotonicity.
+- Review of old open positions and OMS policy-version continuity.
+- Separate reviewed approval to turn the flag on, supervised broker UAT and staged rollout.
 
-**No change to `main` or live trading deployment is made by this increment.**
+The code was committed and syntax inspected. **It has not been proven safe
+to activate or merged**. No tests were run at the owner's request.
