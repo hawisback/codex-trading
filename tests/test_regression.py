@@ -21,6 +21,7 @@ REGRESSION_MODULES = (
     "tests.test_strike_macd",
     "tests.test_candidate_selection",
     "tests.test_broker_margin_lot_policy",
+    "tests.test_boundary_safety",
     "tests.test_trap7_refinement",
     "tests.test_path_a_safety",
     "tests.test_path_a_history",

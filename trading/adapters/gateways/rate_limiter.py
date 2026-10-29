@@ -30,21 +30,42 @@ class TokenBucketRateLimiter:
         self.last_update = time.monotonic()
         self._lock = threading.Lock()
 
+    def _validate_tokens(self, tokens: float) -> None:
+        """Reject malformed requests before touching the shared bucket."""
+        if (
+            isinstance(tokens, bool)
+            or not isinstance(tokens, (int, float))
+            or not math.isfinite(tokens)
+            or tokens <= 0
+            or tokens > self.capacity
+        ):
+            raise ValueError("Token request must be finite, positive and fit the bucket")
+
+    def _refill_locked(self) -> None:
+        """Refill conservatively; callers must hold ``self._lock``."""
+        now = time.monotonic()
+        elapsed = max(0.0, now - self.last_update)
+        self.last_update = max(self.last_update, now)
+        self.tokens = min(self.capacity, self.tokens + elapsed * self.rate)
+
     def acquire(self, tokens: float = 1.0, timeout: float | None = 10.0) -> bool:
         """Block until the requested tokens are available, or until timeout.
 
         Returns:
             True if tokens were acquired, False if timeout occurred.
         """
+        self._validate_tokens(tokens)
+        if timeout is not None and (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, (int, float))
+            or not math.isfinite(timeout)
+            or timeout < 0
+        ):
+            raise ValueError("Timeout must be finite and non-negative")
         start_time = time.monotonic()
-        if tokens <= 0 or tokens > self.capacity:
-            raise ValueError("Token request must fit the bucket")
         while True:
             with self._lock:
-                now = time.monotonic()
-                elapsed = now - self.last_update
-                self.last_update = now
-                self.tokens = min(self.capacity, self.tokens + elapsed * self.rate)
+                self._refill_locked()
 
                 if self.tokens >= tokens:
                     self.tokens -= tokens
@@ -69,11 +90,9 @@ class TokenBucketRateLimiter:
         Returns:
             True if tokens were acquired, False otherwise.
         """
+        self._validate_tokens(tokens)
         with self._lock:
-            now = time.monotonic()
-            elapsed = now - self.last_update
-            self.last_update = now
-            self.tokens = min(self.capacity, self.tokens + elapsed * self.rate)
+            self._refill_locked()
 
             if self.tokens >= tokens:
                 self.tokens -= tokens
