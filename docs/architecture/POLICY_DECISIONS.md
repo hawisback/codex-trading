@@ -21,8 +21,8 @@
 - `AGENTS.md` formerly describes different ladder thresholds; `config/strategies.json` active MACD compounding uses milestone floors 0/20k/40k/70k/100k for 2/4/6/8/10 lots, whereas the owner has now specified inclusive upper brackets 20k/40k/60k/80k and 10 maximum.
 - Global `risk.max_order_quantity=650` and `max_lots_per_trade=10` now follow the approved available-margin ladder. Old strategy-local compounding data is retained for historical compatibility but no longer controls live sizing.
 - Session JSON now aligns with the hard 14:15 entry cutoff and 15:15 square-off trigger. Old research tunables may still contain historical values.
-- `config/trading.json` risk.max_trades_per_day=5 vs runtime constant 10 and MACD entry.max_daily_entries=2.
-- Strategy exit configs differ materially; centralizing them is a **behavior-changing** policy migration and must be separate from a structural refactor.
+- Global `risk.max_trades_per_day` and MACD `entry.max_daily_entries` now specify 10. The entry preflight also checks verified broker day fills, ₹5k daily loss and ₹2k planned per-trade risk.
+- All profiles' initial stop settings now cap planned premium loss at 20% (pre-existing tighter 6% remains). Trailing and structural-level source settings still differ and will be designed in a later POL-06 phase.
 - Legacy configured static `account_equity` and `baseline_capital` must not authorize live purchases; retain research snapshots only where clearly labeled.
 - The deterministic consultation gate and its veto are mandatory and independent of strategies. LIVE mode does not waive any preflight.
 

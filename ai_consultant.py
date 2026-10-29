@@ -59,7 +59,7 @@ confirmed confluence; state the uncertainty and veto if it cannot be resolved.
 EMA9 proximity and EMA20 alignment are advisory in the active profile; do not
 reinstate either as an unconditional pre-entry veto. All remaining playbook
 traps and risk guardrails remain mandatory. Confluence never auto-approves.
-Preserve 30% initial broker protection, the frozen 15-20% post-fill loss band,
+Preserve existing broker stop protection capped at 20% planned premium loss and any tighter stop floor,
 and at least 15 adverse Spot points for structural invalidation. Sizing, quote
 revalidation, one-position cap, 15:15 square-off and timeout-to-cash still apply.
 """

@@ -34,7 +34,7 @@
       },
       "exit": {
         "max_hold_seconds": 21600,
-        "initial_stop_pct": 30,
+        "initial_stop_pct": 20,
         "target_pct": 50,
         "structural_stops_enabled": true,
         "vwap_stop_buffer": 15,
@@ -61,7 +61,7 @@
       },
       "exit": {
         "max_hold_seconds": 21600,
-        "initial_stop_pct": 30,
+        "initial_stop_pct": 20,
         "target_pct": 50,
         "structural_stops_enabled": false,
         "vwap_stop_buffer": 15,
@@ -260,7 +260,7 @@
       },
       "exit": {
         "max_hold_seconds": 21600,
-        "initial_stop_pct": 25,
+        "initial_stop_pct": 20,
         "post_fill_stop_loss": {
           "min_loss_pct": 15,
           "max_loss_pct": 20

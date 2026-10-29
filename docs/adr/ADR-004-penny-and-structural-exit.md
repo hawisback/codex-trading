@@ -18,6 +18,8 @@
 - Retain existing protective broker stop orders, AI stop, pre-existing tighter stop floors, partial-fill and cancel/replace management. Do **not** remove the premium safety stop or weaken already-open exposure management. Initial broker protective stops and option-premium monitor fallback are now capped at 20% for newly managed positions; any previously tighter initial setting or existing tighter stop floor remains authoritative. Time-dependent trailing and initial structure selection remain unchanged.
 - If structural spot context is unavailable, the monitor cannot claim an early structural exit; broker-side stop protection stays mandatory.
 
+- The configuration's **existing initial stop percentages above 20%** were tightened to 20% across strategies. The legacy scalper's existing 6% remains tighter; relaxing it to 20% is **not** part of this policy increment. Time-dependent trailing remains strategy-local temporarily, as explicitly deferred.
+
 ## Risk and rollout
 
 The new structure requirement may **reduce** entries from strategies that do not currently emit an invalidation level; this is intentional fail-closed behavior. This is a policy change, not a mechanically equivalent refactor. Review the resulting signal/entry parity and recoverability before release. It remains untested/unmerged.
