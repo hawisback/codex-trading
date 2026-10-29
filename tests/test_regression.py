@@ -11,6 +11,8 @@ REGRESSION_MODULES = (
     "tests.test_replay_and_configuration",
     "tests.test_policy_snapshot",
     "tests.test_owner_lot_policy",
+    "tests.test_daily_loss_policy",
+    "tests.test_unified_stop_policy",
     "tests.test_daily_logs",
     "tests.test_gateways",
     "tests.test_breeze_gateway",
