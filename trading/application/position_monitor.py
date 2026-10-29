@@ -4,6 +4,7 @@ from trading.domain.limits import HARD_SQUARE_OFF
 from trading.domain.states import is_exiting
 from trading.domain.trailing import runner_trigger, session_trigger
 from trading.domain.structural_exit import existing_structural_breach
+from trading.domain.unified_exit import POLICY_VERSION, shared_profit_floor, structural_decision
 from trading.domain.volatility import vix_exit_settings
 import logging
 from market_clock import MarketClock
@@ -19,6 +20,54 @@ class PositionMonitor:
         self.exit_trade = exit_trade
         self.ratchet_stops = ratchet_stops
         self.save_position = save_position
+
+    def _manage_shared_policy(self, trade: dict, ctx: dict) -> bool:
+        """Manage a new POL06_V1 position; return True if still unresolved.
+
+        OMS owns actual order writes, verified fills, cancel/replace and
+        competing-SELL suppression. Neither a companion failure nor stale
+        structure may block broker-side protective management.
+        """
+        now = MarketClock.now_ist()
+        hm = now.strftime("%H:%M")
+        trade_id = trade.get("trade_id")
+        entry = float(trade.get("entry_price") or 0)
+        bid = float(trade.get("last_bid") or 0)
+        peak = max(entry, float(trade.get("peak_bid") or 0), bid)
+        existing = max(
+            float(trade.get("desired_stop_trigger") or 0),
+            float(trade.get("current_stop_trigger") or 0),
+            float(trade.get("ai_stop_price") or 0),
+        )
+        reason = None
+        if hm >= HARD_SQUARE_OFF:
+            reason = "Mandatory 15:15 IST square-off, broker confirmation required"
+        elif entry <= 0 or bid <= 0:
+            # Never fabricate quote-based exits or unverified profit floors.
+            return True
+        else:
+            structural, updates = structural_decision(trade, ctx, now)
+            if updates is not None and updates != trade.get("structural_breach_confirmation", {}):
+                trade["structural_breach_confirmation"] = updates
+                if self.save_position is not None:
+                    self.save_position(trade)
+            floor = shared_profit_floor(entry, peak, hm)
+            floor = max(existing, floor or 0, entry * 0.8)
+            if structural:
+                reason = "POL06 STRUCTURAL EXIT: " + structural
+            elif bid <= floor + 1e-9:
+                reason = f"POL06 OPTION FLOOR: verified bid {bid:.2f} <= {floor:.2f}"
+            elif floor > existing + 1e-9:
+                # Ratchet never loosens verified STOP coverage; mutation
+                # serialization and exchange ACK remain with the OMS.
+                self.ratchet_stops(trade, round_tick(floor))
+        if reason:
+            result = self.exit_trade(trade_id, reason, limit_price=bid if bid > 0 else None)
+            if result.get("status") != "CLOSED":
+                logger.warning("POL06 trade %s exit remains pending; retaining recovery state", trade_id)
+                return True
+            return False
+        return True
 
     def manage(self, open_trades: list, ctx: dict, intel: dict) -> list:
         """
@@ -70,6 +119,13 @@ class PositionMonitor:
                     t.get("risk_exit_required") or t.get("exit_reason", "Resume pending exit"),
                 )
                 if result.get("status") != "CLOSED":
+                    remaining_open.append(t)
+                continue
+            # New trades use the same centrally defined exit policy regardless
+            # of which strategy found the swing. Older positions retain their
+            # pre-migration stop and trailing behavior.
+            if t.get("exit_policy_version") == POLICY_VERSION:
+                if self._manage_shared_policy(t, ctx):
                     remaining_open.append(t)
                 continue
             trade_id = t.get("trade_id")

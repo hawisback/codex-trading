@@ -716,6 +716,7 @@ class PositionLifecycle:
                  "entry_price": price, "last_bid": quote["best_bid"], "peak_bid": quote["best_bid"],
                  "entry_time": MarketClock.now_ist().isoformat(),
                  "exit_policy_version": "POL06_V1",
+                 "option_right": decision["signal"].replace("BUY_", ""),
                  "today_entry_number": today_entries + 1,
                  "setup_type": decision.get("setup_type", "TREND_PULLBACK"),
                  "invalidation_level": decision.get("invalidation_level"), "entry_execution": evidence}
