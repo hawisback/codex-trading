@@ -22,7 +22,7 @@ OWNER_MAX_LOTS = 10
 @dataclass(frozen=True)
 class OwnerLadderDecision:
     tier_lots: int
-    affordable_lots: int
+    affordable_lots: int  # Saturated at the applicable order/lot ceiling.
     allowed_lots: int
     quantity: int
 
@@ -78,13 +78,19 @@ def owner_ladder_decision(
     if not math.isfinite(per_lot) or per_lot <= 0:
         return _nonnegative_decision()
     usable_margin = max(0.0, available_margin - FEE_RESERVE)
-    affordable = int(usable_margin // per_lot)
     ceiling = min(
         tier, OWNER_MAX_LOTS, max_lots_cap,
         max_order_quantity // LOT_SIZE,
         MAX_POSITION_QUANTITY // LOT_SIZE,
     )
-    approved = min(affordable, ceiling)
+    # Bound division before converting to int: finite but extreme values can
+    # overflow to infinity if usable_margin / per_lot is unconstrained.
+    # We never need to compute affordability beyond the permitted ceiling.
+    if usable_margin >= per_lot * ceiling:
+        affordable = ceiling
+    else:
+        affordable = min(ceiling, int(usable_margin // per_lot))
+    approved = affordable
     return OwnerLadderDecision(
         tier_lots=tier,
         affordable_lots=affordable,

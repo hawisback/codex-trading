@@ -34,6 +34,11 @@ class OwnerLadderTests(unittest.TestCase):
                 self.assertEqual(0, owner_ladder_decision(invalid, 25.0).quantity)
                 self.assertEqual(0, owner_ladder_decision(100_000.0, invalid).quantity)
 
+    def test_extreme_finite_ratio_is_bounded_and_does_not_overflow(self):
+        result = owner_ladder_decision(1e300, 1e-300)
+        self.assertEqual(10, result.allowed_lots)
+        self.assertEqual(650, result.quantity)
+
     def test_strict_broker_and_position_caps(self):
         self.assertEqual(
             130, owner_ladder_decision(200_000.0, 2.0, max_order_quantity=130).quantity
