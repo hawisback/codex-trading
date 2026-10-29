@@ -455,8 +455,15 @@ class BaseBrokerGateway(ABC):
                 check=final_check,
             )
 
-    def _mutate_existing(self, order_id, send, kind, check=None):
+    def _mutate_existing(self, order_id, send, kind, check=None, *, action="CANCEL"):
+        """Mutation of a known broker order requires a separate durable intent.
+
+        A response can be an ACK without proving the cancel/modify actually
+        completed. An ambiguous result remains UNKNOWN; retry requires broker
+        evidence, never a blind duplicate network mutation.
+        """
         with self._lock:
+            intent = None
             try:
                 self._authorize()
                 order = self.get_order(order_id)
@@ -466,15 +473,53 @@ class BaseBrokerGateway(ABC):
                     return self._error("Unexpected broker order kind or variety")
                 if status(order) in TERMINAL:
                     return order
+                symbol = symbol_of(order)
+                if not symbol:
+                    return self._error("Existing order symbol is unverified")
+                intent = "AI-MUT-" + datetime_now_id()
+                self.journal.prepare_mutation(
+                    intent,
+                    target_order_id=str(order_id),
+                    action=action,
+                    target_kind=kind,
+                    symbol=symbol,
+                )
                 with self._submission(check=check):
                     response = send()
-                return (
-                    response
-                    if isinstance(response, dict)
-                    else self._error("INVALID_MUTATION_RESPONSE", unknown=True)
-                )
+            except EntryBlocked:
+                if intent is not None:
+                    try:
+                        self.journal.transition(intent, "REJECTED")
+                    except Exception:
+                        return self._error("MUTATION_REJECTION_PERSISTENCE_FAILED", unknown=True)
+                raise
             except Exception as exc:
-                return self._error(str(exc), unknown=True)
+                # If prepare succeeded, the intent remains PREPARED and blocks
+                # retries; a network exception must not be assumed unfilled.
+                return self._error(str(exc), unknown=intent is not None)
+
+            # A definitive preflight veto explicitly reports not_submitted;
+            # every other malformed/failed submission is conservatively UNKNOWN.
+            rejected = isinstance(response, dict) and response.get("not_submitted") is True
+            acknowledged = (
+                isinstance(response, dict)
+                and bool(response)
+                and not response.get("error")
+                and not response.get("outcome_unknown")
+            )
+            next_phase = "REJECTED" if rejected else "ACKNOWLEDGED" if acknowledged else "UNKNOWN"
+            try:
+                self.journal.transition(intent, next_phase)
+            except Exception:
+                return self._error("MUTATION_ACK_PERSISTENCE_FAILED", unknown=True)
+
+            if not isinstance(response, dict):
+                return self._error("INVALID_MUTATION_RESPONSE", unknown=True)
+            if next_phase == "UNKNOWN":
+                return dict(response, error=True, outcome_unknown=True)
+            # ACKNOWLEDGED is not evidence of STOP change or cancellation.
+            # Callers still await an actual verified broker order state.
+            return response
 
     def cancel_entry_order(self, order_id):
         return self._mutate_existing(order_id, lambda: self._submit_cancel_order(order_id), "ENTRY")
@@ -487,11 +532,12 @@ class BaseBrokerGateway(ABC):
 
     def reprice_exit_order(self, order_id, limit_price):
         return self._mutate_existing(
-            order_id, lambda: self._submit_reprice_exit(order_id, limit_price), "EXIT"
+            order_id, lambda: self._submit_reprice_exit(order_id, limit_price), "EXIT",
+            action="REPRICE_EXIT",
         )
 
     def _submit_reprice_exit(self, order_id, limit_price):
-        return self._error("EXIT_REPRICE_UNSUPPORTED")
+        return dict(self._error("EXIT_REPRICE_UNSUPPORTED"), not_submitted=True)
 
     def modify_stop_loss(self, stop_order_id, trigger_price, limit_price, before_submit=None):
         def check():
@@ -515,6 +561,7 @@ class BaseBrokerGateway(ABC):
             ),
             "STOP",
             check=check,
+            action="MODIFY_STOP",
         )
 
     def wait_for_fill(self, order_id, timeout_sec=15, poll_interval=0.5, return_on_partial=False):
