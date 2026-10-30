@@ -59,9 +59,14 @@ class StopManager:
                 state["risk_exit_required"] = "Protective stop triggered but remains unfilled"
             if status(stop) != "TRIGGER_PENDING" or stop.get("pending_modification"):
                 confirmed = False
-            if float(stop.get("trigger_price") or 0) + float(
-                self.cfg.get("stop_min_improvement_points", 0.50)
-            ) < float(state.get("desired_stop_trigger") or 0):
+            confirmation_tolerance = (
+                0.0001
+                if r01_unified_active(state, getattr(self.owner, "trading_cfg", {}))
+                else float(self.cfg.get("stop_min_improvement_points", 0.50))
+            )
+            if float(stop.get("trigger_price") or 0) + confirmation_tolerance < float(
+                state.get("desired_stop_trigger") or 0
+            ):
                 confirmed = False
         if any(covered.get(ref, 0) > qty for ref, qty in balances.items()):
             state["risk_exit_required"] = "Protective SELL quantities exceed remaining long exposure"

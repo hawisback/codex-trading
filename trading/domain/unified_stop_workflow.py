@@ -85,9 +85,18 @@ def r01_stop_floor(state: Mapping[str, Any], now: datetime,
     if any(v is None for v in existing):
         return None
     prior = max(existing, default=Decimal(0))
-    # A recorded peak must have originated from the existing verified-quote
-    # pipeline. Never use unverified LTP for new profit tiers.
-    peak = _positive(state.get("peak_bid")) if state.get("quote_verified") is True else entry
+    # Broker-verified historical peaks may be reused on a new, fresh quote,
+    # but never tighten a stop using stale/unverified quote state.
+    fresh = False
+    stamp = state.get("bid_timestamp")
+    if state.get("quote_verified") is True and isinstance(stamp, str):
+        try:
+            observed = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+            age = (now - observed).total_seconds() if observed.tzinfo else -1
+            fresh = 0 <= age <= 2.0
+        except ValueError:
+            pass
+    peak = _positive(state.get("peak_bid")) if fresh else entry
     if peak is None:
         return None
     decision = unified_floor(
