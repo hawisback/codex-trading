@@ -1,7 +1,7 @@
 # R01 policy implementation status — feature branch
 
-**Date:** 2026-10-29  
-**Branch:** `feature/r01-approved-policy-contracts-20261029`  
+**Original implementation:** 2026-10-29, `feature/r01-approved-policy-contracts-20261029`  
+**Current integration:** 2026-10-30, `feature/live-activation-guardrails-20261030`  
 **Default:** `config/trading.json:r01_policy.enabled=false`  
 **Verification:** Python syntax-only inspection performed; tests authored but **not executed**. No broker UAT or LIVE orders. No deployment or merge to `main`.
 
@@ -14,21 +14,20 @@
 | POL-03 | No ₹12/₹30 penny-option veto in opted-in deterministic consultation; absolute ₹15/₹135 premium price bands ignored when enabled. Other AI consultation vetoes, approved entry envelope, quote/spread/expiry/broker affordability stay intact. |
 | POL-04 | New opt-in LIVE entries require verified broker margin and matching account identity. Static equity cannot authorize quantity. |
 | POL-05 | Reconciled filled entry count ceiling 10 (including MACD); new entries require broker-reconciled session P&L with realized+unrealized loss strictly below existing configured 1.5% of verified start-of-day equity. Missing/mismatched/stale P&L blocks entries. |
-| POL-06 | Uniform time-based monotonic stop floor across strategy names, starting from existing 25% risk hard-stop config plus active MACD morning/midday profit-ratchet schedule. Never loosens stronger current stop; opt-in per-position policy version prevents retroactive migration. Existing OMS stop order lifecycle remains owner. |
-| POL-07 | Keep `--live` mandatory for native brokers and require explicit broker LIVE authorization; do not auto-arm on startup. |
+| POL-06 | **Integrated** unified calculation through `unified_stop_workflow.py`, `PositionMonitor.manage` and `StopManager.ensure/floor`: a version-stamped R01 position uses one time-aware stop across strategy profiles, freeze-on-entry 25% initial risk and monotonic upward-tick floors. Stamped positions remain on R01 across config reloads; legacy unstamped positions retain previous strategies. Stop/exits still use existing OMS; no regression/UAT pass has been established. |
+| POL-07 | Keep explicit native `--live`; Kite/Breeze now also require a verified account-scoped OS owner lease at arming and mutation transport. This local lease is not distributed fencing; no broker UAT. |
 | POL-08 | Calendar and broker-master cross-source verification remains the later R05 market data/expiry deliverable; no unsupported calendar-refresh promise or change made in R01. |
 
 ## Critical activation limitation
 
-**Do not turn on this flag in production yet.** Current broker
-`get_funds()` adapters have not been demonstrated to provide
+**Do not turn on this flag in production yet.** Current native broker `get_funds()` adapters attach authenticated account/source/local receipt metadata but **do not** provide
 `max_single_order_quantity`, account-verified `pnl_asof`,
 `pnl_session_date`, `pnl_account_id`,
 `start_of_day_equity`, `realized_pnl_today` and
 `unrealized_pnl_today`. R01 deliberately denies new LIVE entries
 until those broker-side contract fields are present, correct and fresh.
 
-See [R01_ACTIVATION_RUNBOOK.md](R01_ACTIVATION_RUNBOOK.md) for exact
+See [current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md), [unified stop contract](R01_UNIFIED_STOP_EXECUTION.md) and [R01_ACTIVATION_RUNBOOK.md](R01_ACTIVATION_RUNBOOK.md) for exact
 fields and rollout / rollback constraints; [ADR-0001](../adr/ADR-0001-OWNER-LOT-LADDER.md)
 and [ADR-0002](../adr/ADR-0002-NO-PENNY-OPTION-PRICE-BIAS.md)
 for the supporting policy direction and legacy filter inventory.

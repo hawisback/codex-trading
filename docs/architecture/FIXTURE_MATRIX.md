@@ -12,6 +12,12 @@ No reference traces were generated, modified or executed in this increment. Pres
 | `tests/fixtures/replay_example.json` | Deterministic decision replay context | EXISTING, not executed |
 | `tests/fixtures/PATH_A_POLICY.md` | Active Path A fixture expectations, premium cap and consultation TTL | EXISTING, not executed |
 
+## Newly authored fixtures (not executed in this increment)
+
+- `tests/test_unified_stop_integration.py`: shared decision and initial broker stop across strategy names; IST phases, stale quotes, upward 0.05-tick rounding, stronger floor, version persistence, separation of legacy-vs-R01 behavior and square-off. Registered in `tests/test_regression.py`.
+- `tests/test_live_activation_guardrails.py`: account-ownership and broker funds provenance/absent P&L contract cases. Registered but not run.
+- Existing legacy stop, native gateway and OMS suites remain part of the explicit offline regression. **Authored does not mean passed**; broker-verified crash/partial-fill and UAT scenarios are still open.
+
 ## Required future redacted fixture cases
 
 | ID | Case | Evidence | Expected invariants | Owner |

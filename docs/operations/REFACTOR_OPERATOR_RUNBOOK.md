@@ -1,6 +1,6 @@
 # OMS and market-data operator recovery runbook (R02–R10)
 
-**Status:** DRAFT — not validated by a supervised incident drill.  
+**Status:** DRAFT — not validated by a supervised incident drill. Latest R01 stop integration is code-complete but **not tested or activated**. [Current status](../architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).  
 **Never use this procedure to bypass an AI veto, kill switch, unverified broker account, uncertain order, or existing protective stop.**
 
 ## Before market open
@@ -11,6 +11,15 @@
 4. Verify live available funds and per-order broker quantity freeze limit. For R01, also verify current-day start-of-day equity and realized/unrealized P&L for the same account, with explicit timestamps and correct IST session. **No static capital fallback**.
 5. Confirm recent exact-contract bid/ask depth and completed strategy bars. Stale quotes/OI gaps block NEW exposure.
 6. Check kill switch, stop coverage, durable unknown intents and any pending exit. Do not accept a startup READY verdict until the full offline suite and broker acceptance have been recorded.
+
+## Unified stop readiness and live recovery (R01)
+
+- A position is **R01** only if broker-reconciled persisted state has `r01_policy_version=r01-owner-20261029-v1`; it then uses the unified policy even if `r01_policy.enabled` has later been disabled for new entries. A missing version means **legacy** handling. Do not manually stamp or erase a version to force stop migration.
+- For stamped R01 positions check the **entry-frozen** initial stop percentage, last verified quote timestamp/bid, peak, desired and confirmed triggers, coverage quantities and outstanding STOP/EXIT intents. The initial target is currently 25% loss, tightened by morning/midday and 15/20/30/40% gain tiers, but **never** below any stronger confirmed broker stop. A desired trigger is not confirmed protection.
+- `PositionMonitor` routes only stamped R01 positions through the shared stop policy; stop creation, cancellation/replacement and exits still require the OMS to reconcile the actual broker. If the floor is breached, the OMS coordinates the residual SELL; do not place an independent competing exit.
+- Missing/stale quotes **block new price-driven ratchets** but do not prove an open position is protected. Existing resting stops, uncovered-exposure escalation, outstanding pending exits and mandatory 15:15 IST square-off still require attention. Do not call a forced square-off “flat” until a fresh broker book confirms it.
+- Native gateway LIVE OS lease locks are limited to cooperating instances with the **same host lock directory**. Operator must prevent proxy/legacy/out-of-band order writers separately; do not delete lock files or journals to bypass ownership uncertainty. Broker day-P&L and freeze-limit gaps still prevent R01 new-entry activation.
+- Do not proceed to UAT or production until the registered offline suite (including `tests.test_unified_stop_integration`), broker rate/partial-fill/unknown-ACK scenarios, restart/rollbacks and supervised recovery drills have passed. Tests were not run in this documentation update.
 
 ## Unknown order result / lost ACK
 

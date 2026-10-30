@@ -1,5 +1,8 @@
 # Refactoring delivery status — 2026-10-29
 
+> **ARCHIVED SNAPSHOT — not the latest implementation state.** This page describes the R02–R10 foundation branch *before* the 2026-10-30 native LIVE ownership/funds work and full R01 stop-monitor integration. In particular, the lines below saying that `AccountSessionLease` is unwired to native gateways, that R01 stops are only calculated by `StopManager`, or that native funds receipt provenance is absent are **historical**. See [canonical current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md) and [activation blockers](LIVE_ACTIVATION_HOLD_20261030.md) for what is now coded and what is **still unverified**. No tests have been run for the newer work.
+
+
 **Branch:** `refactor/r02-r10-safety-foundations-20261029`  
 **Parent:** `feature/r01-approved-policy-contracts-20261029`  
 **Environment:** CODE ONLY. No tests executed; no native broker UAT; no production deployment. `main` is unchanged.  

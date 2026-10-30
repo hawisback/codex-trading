@@ -1,8 +1,9 @@
 # R01 opt-in implementation and activation contract
 
-**Implementation branch:** `feature/r01-approved-policy-contracts-20261029`  
+**Original R01 branch:** `feature/r01-approved-policy-contracts-20261029`  
+**Current integrated branch:** `feature/live-activation-guardrails-20261030`  
 **Status:** Implemented behind `config/trading.json:r01_policy.enabled=false`. **NOT activated, merged, broker-validated or deployed.**  
-**Tests:** Authored/registered only. No tests were run, per owner instruction.
+**Tests:** Guardrail and unified stop integration regressions have been authored/registered but **not executed** per owner instruction. The owner has reviewed code; neither offline parity nor broker UAT has passed. See [current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md).
 
 ## Implemented behavioral contracts (only if explicitly enabled)
 
@@ -38,20 +39,27 @@
    No trading decisions are based on arbitrary NIFTY spot price bands
    introduced by R01; underlying spot remains context for technical
    analysis/contract choice and independent stop invalidation.
-4. **Unified stop (POL-06):** The same strategy-name-independent
-   protective stop floor is calculated in
-   `trading/domain/unified_stop_policy.py` and consumed by the existing
-   `StopManager.floor`. The starting common floor uses the existing
-   configured **25% option hard stop**, while retaining any stronger
-   pre-existing/confirmed stop. The common profit tiers and
-   morning/midday schedules are based on the current active MACD
-   configuration (15/20/30/40% gains -> 0/10/20/30% protected;
-   morning 09:15–11:30, midday 11:30–13:15).
-   No stop can be lowered by this helper; updates still use the
-   existing OMS stop-modify/cancel/verify/recovery logic.
-   A position is eligible only if its entry state carries
-   `r01_policy_version=r01-owner-20261029-v1`: no retroactive
-   conversion of already-open legacy positions.
+4. **Unified stop (POL-06):** New R01-stamped positions use one
+   strategy-independent policy in `trading/domain/unified_stop_policy.py`
+   and `trading/domain/unified_stop_workflow.py` across **both**
+   `StopManager.ensure/floor` (broker initial and trailing protection)
+   and `PositionMonitor.manage` (hold/ratchet/breached-floor exits).
+   The entry persists `r01_policy_version=r01-owner-20261029-v1`
+   and the initial loss percentage (currently **25%**) for restart
+   and configuration-reload continuity. Global +15/20/30/40%-peak
+   gain tiers protect 0/10/20/30%; morning 09:15–11:30 and midday
+   11:30–13:15 IST proposals compete by strongest floor.
+   R01 triggers round upward to ₹0.05 and never loosen verified stronger
+   broker stops. A fresh verified executable bid is required for
+   price-driven actions. Legacy profile targets, timers, EMA/VWAP and
+   separate microtrails are bypassed **only for stamped R01 positions**;
+   independent technical invalidation, unresolved risk exits, and
+   15:15 square-off still apply. The OMS still owns actual broker
+   modification, cancel, replacement and fill reconciliation.
+   Post-fill strategy-specific AI stop overrides are skipped for R01;
+   **mandatory pre-entry consultant evaluation and veto remain**.
+   New R01 orders reject a configuration without the unified-stop flag.
+   Full contract: [R01_UNIFIED_STOP_EXECUTION.md](R01_UNIFIED_STOP_EXECUTION.md).
 5. **Session and authorization (POL-02/07):** JSON now records
    no-entry-after **14:15 IST** and forced exit **15:15 IST** to
    match the already-hard-coded runtime limits. Broker fills and a
@@ -73,6 +81,8 @@ An authenticated `get_funds()` response must provide:
 | Field | Required provenance |
 | --- | --- |
 | `account_id` | Same verified account as `execution_scope.account_id` |
+| `source` | Authenticated provider-specific funds origin, not a placeholder |
+| `funds_asof` | Aware broker-response receipt timestamp and within required freshness budget; **not** the broker P&L timestamp |
 | `available_margin` | Finite actual broker purchasing power |
 | `pnl_account_id` | Same account as the execution session |
 | `pnl_session_date` | Current IST session date YYYY-MM-DD |
@@ -84,8 +94,7 @@ An authenticated `get_funds()` response must provide:
 
 The broker adapter must reconcile these fields with the correct account,
 date, current NIFTY instrument master, and broker reporting semantics.
-A generic funds endpoint may not contain all these fields; that is a
-**known integration gap, not permission to use a fabricated fallback**.
+A generic funds endpoint may not contain all these fields; that is a **known integration gap, not permission to use a fabricated fallback**. The native Kite/Breeze adapters now attach `account_id`, `source`, and `funds_asof` to genuine margin responses; they **still do not** provide the required verified daily P&L ledger or instrument-appropriate freeze limit. An authenticated receipt is **not** a substitute for those independent facts.
 
 ## Change activation and rollback
 
@@ -98,8 +107,7 @@ A generic funds endpoint may not contain all these fields; that is a
   fixtures; run the full offline suite; inspect OMS unknown-ACK,
   partial-fill, cancel and broker-outage behavior; conduct supervised
   broker UAT. This work was intentionally **not performed here**.
-- Never enable the new policy mid-position to retroactively rewrite
-  a legacy stop. The policy version is persisted on new R01 entries.
+- Never enable the new policy mid-position to retroactively rewrite a legacy stop. A stamped R01 position retains the unified stop authority and its entry-frozen loss setting even if the new-entry feature switch is disabled later; continue protecting it through the existing OMS.
 - Rolling back the branch is a code/config change only; always reconcile
   and continue protecting existing positions before replacing an
   active process. Do not restart blindly into LIVE mode.
