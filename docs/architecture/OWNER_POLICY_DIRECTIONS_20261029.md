@@ -1,5 +1,7 @@
 # Owner policy directions — 2026-10-29
 
+> **Historical document / point-in-time snapshot:** This page preserves its original planning, inventory, findings or policy questions from its dated baseline. Some approvals, source values, lease wiring and stop integrations progressed afterward on `feature/live-activation-guardrails-20261030`. For **current branch status, approved R01 boundaries, integration coverage and activation blockers**, consult [the 2026-10-30 canonical release record](CURRENT_IMPLEMENTATION_STATUS_20261030.md). No recent R01/LIVE/unified-stop regression tests or supervised broker UAT have run; the feature flag remains disabled. Do not treat old “pending” or “passed” statements as new acceptance results.
+
 **Change class:** POLICY SPECIFICATION (documentation only).  
 **Repository branch:** `refactor/r00-r01-policy-foundations-20261029`.  
 **Status:** user-provided desired behavior captured; implementation remains pending review and precise definitions. No live configuration, strategy code, stop logic, or broker execution was changed in response to these directions. No tests were run.

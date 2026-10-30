@@ -1,5 +1,7 @@
 # R00 baseline and compatibility contract
 
+> **Historical document / point-in-time snapshot:** This page preserves its original planning, inventory, findings or policy questions from its dated baseline. Some approvals, source values, lease wiring and stop integrations progressed afterward on `feature/live-activation-guardrails-20261030`. For **current branch status, approved R01 boundaries, integration coverage and activation blockers**, consult [the 2026-10-30 canonical release record](CURRENT_IMPLEMENTATION_STATUS_20261030.md). No recent R01/LIVE/unified-stop regression tests or supervised broker UAT have run; the feature flag remains disabled. Do not treat old “pending” or “passed” statements as new acceptance results.
+
 **Captured:** 2026-10-29. **Scope:** repository source inspection; no code execution, tests, broker reads or credential access.  
 **Reference:** `main` commit `92da61d2a5c5a1ae5d5e7477db0027f196fb7c5f`; master plan `plan/trading-engine-modernization-20261029` commit `eb574da98d9452f26c3169d5134e16d39579e36d`.  
 **Independent unmerged OMS patch:** `refactor/trading-engine-architecture-20261029` commit `bc5a4b644041eae0ae5f51dfe1d0fabb2db92d17`. It has not been merged into this R00/R01 branch; tests were not executed for it.
