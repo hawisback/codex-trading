@@ -50,20 +50,23 @@
 
 ## 💰 Rule #3: Account Constraints, Step-Ladder Compounding & Sizing
 
+> **Current policy note:** The approved R01 upper-bound ladder is **₹20k/₹40k/₹60k/₹80k**, not the older 70k/100k research bands. R01 is implemented only on `feature/live-activation-guardrails-20261030` and **disabled** by `r01_policy.enabled=false`. No real-money safety or execution test has passed for this increment. See [canonical status](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).
+
+
 * **Baseline Capital:** **₹10,000 Margin**.
 * **Step-Ladder Milestone Compounding Model:**
   The engine scales lot sizing dynamically strictly upon crossing verified broker margin milestones:
   | Verified Broker Available Margin | Active Sizing | Contract Quantity | Risk Rationale |
   |---|:---:|:---:|---|
-  | **< ₹20,000** | **2 Lots** | **130 contracts** | Baseline capital preservation tier |
-  | **₹20,000 – ₹40,000** | **4 Lots** | **260 contracts** | Double size funded purely by accumulated profits |
-  | **₹40,000 – ₹70,000** | **6 Lots** | **390 contracts** | Mid-stage compounding acceleration |
-  | **₹70,000 – ₹100,000** | **8 Lots** | **520 contracts** | Advanced high-water scaling |
-  | **> ₹100,000** | **10 Lots (Cap)** | **650 contracts** | Strict institutional liquidity ceiling |
+  | **Positive funds through ₹20,000 inclusive** | **Up to 2 Lots** | **130 max** | Authenticated broker margin tier |
+  | **Above ₹20,000 through ₹40,000 inclusive** | **Up to 4 Lots** | **260 max** | Broker funding and order limit still apply |
+  | **Above ₹40,000 through ₹60,000 inclusive** | **Up to 6 Lots** | **390 max** | Broker funding and order limit still apply |
+  | **Above ₹60,000 through ₹80,000 inclusive** | **Up to 8 Lots** | **520 max** | Broker funding and order limit still apply |
+  | **Above ₹80,000** | **Up to 10 Lots** | **650 max** | Hard position cap and order limit still apply |
 * **Dynamic Drawdown De-escalation:** If account equity pulls back below any milestone threshold during adverse conditions, lot sizing **instantly drops** to the lower bracket to protect accumulated capital.
 * **Zero-Shortfall Purchasing Power Buffer:** Sizing is hard-capped by `(available_margin - 150) // (contract_price * 65)`. Orders never exceed verified liquid funds minus a ₹150 buffer for exchange fees and STT.
 * **Order Cap:** Maximum **1 concurrent open position** at any time.
-* **Overnight Rule:** **STRICTLY ZERO POSITIONS OVERNIGHT**. All intraday positions must be squared off by 15:15 IST.
+* **Overnight Rule:** Target **zero positions overnight** with a mandatory 15:15 IST square-off request. Broker outages/failed fills can prevent verified flatness; preserve the exposure incident and reconcile.
 * **Zero Cost Architecture:** Operates with **zero paid API fees** (uses local broker sessions on Kite/Breeze and free web RSS/market ingestion).
 
 ---
@@ -104,6 +107,9 @@ Every candidate trade must pass the 8 institutional traps defined in [`config/ru
 ---
 
 ## 🚀 Morning Pre-Flight Command
+
+> **Do not use the historical `--live` examples below as authorization to trade.** Broker day-P&L/freeze limits, current instrument master, offline suites, OMS recovery and supervised UAT remain release blockers. `r01_policy.enabled=false` and the branch is not merged/deployed. Read [LIVE hold](docs/architecture/LIVE_ACTIVATION_HOLD_20261030.md) before any separately approved release.
+
 
 ### 1. Deterministic Rules Mode (Algorithmic Heuristics, Zero AI):
 To launch the live engine on **Zerodha Kite** with in-process market data (Strategy 5: Path A 2m MACD Momentum):

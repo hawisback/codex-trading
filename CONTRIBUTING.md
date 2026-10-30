@@ -1,5 +1,8 @@
 # Working on this engine
 
+> **Current working-branch status:** [2026-10-30 implementation/release summary](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md). Tests for the new LIVE guardrails and unified stops were written but **not executed** under the owner's standing instruction. Previous test results in staged-refactor records do not certify the new R01 path. Never run native `--live` as a development check.
+
+
 Read `AGENTS.md` before changing or running trading code. All work and temporary
 state must stay inside this repository. The AI gate, its veto authority, and cash
 preservation on uncertainty are mandatory.

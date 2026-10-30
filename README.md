@@ -1,5 +1,8 @@
 # NIFTY Options AI Trading Engine & Market Intelligence
 
+> **Current implementation/release status (2026-10-30):** See [canonical status](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) and the [LIVE hold](docs/architecture/LIVE_ACTIVATION_HOLD_20261030.md). Latest code is on `feature/live-activation-guardrails-20261030`, unmerged to `main`. R01 unified stops/sizing are coded but `r01_policy.enabled=false`; this increment's offline tests and broker UAT **have not run**. The historical backtests, commands and performance claims below are not evidence of R01 correctness or future returns. **Do not start native `--live` without a separately approved supervised release.**
+
+
 Development: run `python -m tools.checks` for offline regression and boundary checks.
 Run `python -m tools.quality` for pinned lint/type checks plus the offline suite.
 See [CONTRIBUTING.md](CONTRIBUTING.md) and the
@@ -13,8 +16,7 @@ Native Kite and ICICI Breeze execution use `--broker kite --live` and
 `--broker breeze --live`; see [broker setup](docs/BROKER_INTEGRATIONS.md) and
 [gateway safety and recovery](docs/NATIVE_GATEWAY_SAFETY.md). Check both accounts
 without arming execution using `python -m tools.brokers --broker both`.
-The active strategy now runs [uncapped trailing with a 5% peak pullback from +50% gain](docs/TRAILING_STOPS.md),
-including verified stop replacement after the per-order modification budget.
+Legacy positions retain [uncapped runner trailing and verified stop replacement](docs/TRAILING_STOPS.md). Opted-in, R01-stamped positions use a [separate shared stop/OMS contract](docs/architecture/R01_UNIFIED_STOP_EXECUTION.md), not yet tested or activated.
 
 Automated, multi-factor AI trading engine for **NIFTY 50 Index Options**, combining **internal broker feeds (Zerodha Kite & ICICI Breeze)**, **PR #51 Precision Order Execution (PAPER & LIVE)**, **multi-timeframe option-premium technical indicators**, **real-time external market intelligence (Global Cues & Live Financial News)**, an **Institutional Liquidity Trap Detection Gateway (8 Playbook Traps)**, an **Autonomous AI Opportunity Radar (Strategy 4)**, and a **Dynamic Incremental Trailing Ratchet Engine**.
 
@@ -118,7 +120,7 @@ When working within or extending this repository, every agent and process must a
 1. **Directory Isolation:** Strictly work ONLY inside `c:\Users\hawis\Documents\antigravity\splendid-bardeen`. **NEVER** edit, create, or modify files in `icici-breeze-api-trading` or any directory outside this workspace.
 2. **Capital, Step-Ladder Compounding & Position Sizing:**
    - Baseline capital is **₹10,000 Margin** (sized for 2 lots / 130 NIFTY contracts).
-   - Dynamic **Step-Ladder Milestone Compounding**: scales order sizing to 2, 4, 6, 8, up to 10 lots (650 contracts cap) as verified broker margin crosses ₹20k, ₹40k, ₹70k, and ₹100k milestones.
+   - **Owner-approved R01 maximum sizing (disabled):** 2/4/6/8/10 lots for positive, authenticated available-margin bands through ₹20k / ₹40k / ₹60k / ₹80k / above ₹80k respectively. These are ceilings; executable option price, ₹150 reserve, hard risk caps and broker-verified order freeze may lower quantity.
    - Dynamic drawdown protection: lot sizing instantly de-escalates to the lower tier if account equity drops below a milestone.
    - Maximum **1 concurrent open position**.
    - Zero-shortfall purchasing power buffer reserves a ₹150 buffer for taxes, STT, and exchange turnover: `safe_margin = max(0, available_margin - 150)`.
@@ -501,7 +503,9 @@ Before any trade is executed, the scheduler builds a complete [`MarketDossier`](
 
 ## 🎯 Dynamic Trailing Stop Engine & Priority Hierarchy
 
-The execution daemon enforces a strict, hierarchical trailing stop model designed to protect capital while letting winning runners capture multi-R expansions:
+> **Historical/legacy illustration only:** The diagram below is **not** the R01 stop schedule, and any “guaranteed profit floor” is a desired trigger, not a guaranteed broker fill. R01 uses a frozen initial **25%** option-premium loss setting with unified 15/20/30/40% gain tiers and IST morning/midday phases, retaining stronger stops. See [unified stop specification](docs/architecture/R01_UNIFIED_STOP_EXECUTION.md). No current-increment end-to-end tests or broker UAT have run.
+
+The following earlier strategy model is retained for historical reference:
 
 ```
 +---------------------------------------------------------------------------------+
@@ -569,18 +573,21 @@ During the optimization of the AI Opportunity Radar, two major market hypotheses
 
 ## 📈 Step-Ladder Milestone Compounding Model & Capital Scaling Audit
 
-To compound capital aggressively while protecting against drawdowns during choppy regimes, the engine implements **Step-Ladder Milestone Compounding**.
+> **R01 revision:** The maximum-lot table below reflects the 2026-10-29 owner-approved bands, but the legacy backtest scorecard below it has **not** been re-run against this R01 model. This is not evidence of LIVE profitability. Current native broker funds adapters still lack the required current-day P&L ledger and per-instrument freeze limits; R01 is off.
+
+
+R01 defines an authenticated-margin-based **maximum-lot ladder** behind a disabled feature switch; older research below should not be interpreted as current broker-verified production sizing.
 
 ### 1. Milestone Escalation Matrix
-Instead of an unconstrained "all-in" reinvestment (which over-leverages during adverse consolidation), sizing scales strictly upon crossing permanent capital milestones:
+Instead of an unconstrained all-in sizing model, R01 caps quantity according to authenticated margin, fresh executable option premium, the fee reserve and broker-verified limits. Bracket **upper** boundaries are inclusive:
 
 | Verified Broker Available Margin | Active Sizing | Contract Quantity | Risk Allocation Rationale |
 |---|:---:|:---:|---|
-| **< ₹20,000** | **2 Lots** | **130 contracts** | Baseline capital preservation tier (₹10,000 margin) |
-| **₹20,000 – ₹40,000** | **4 Lots** | **260 contracts** | Double size funded purely by accumulated profits |
-| **₹40,000 – ₹70,000** | **6 Lots** | **390 contracts** | Mid-tier compounding acceleration |
-| **₹70,000 – ₹100,000** | **8 Lots** | **520 contracts** | Advanced high-water scaling |
-| **> ₹100,000** | **10 Lots (Cap)** | **650 contracts** | Strict institutional liquidity ceiling |
+| **₹0 < funds ≤ ₹20,000** | **Up to 2 Lots** | **130 max** | Verified account margin; affordability can lower the order |
+| **₹20,000 < funds ≤ ₹40,000** | **Up to 4 Lots** | **260 max** | Ceiling, not an obligatory quantity |
+| **₹40,000 < funds ≤ ₹60,000** | **Up to 6 Lots** | **390 max** | Requires current broker/quote evidence |
+| **₹60,000 < funds ≤ ₹80,000** | **Up to 8 Lots** | **520 max** | Independent risk limits still apply |
+| **Funds > ₹80,000** | **Up to 10 Lots** | **650 max** | Broker freeze and hard position cap still apply |
 
 ### 2. Sizing Governor & Drawdown Protection
 1. **Dynamic De-escalation:** Sizing is tied to real-time available margin. If account equity pulls back below any milestone, sizing immediately drops to the lower tier.
