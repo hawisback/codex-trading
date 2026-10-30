@@ -75,6 +75,7 @@ class UnifiedR01DecisionTests(unittest.TestCase):
         result = decide_unified_stop(state, self.now)
         self.assertEqual("EXIT", result.kind)  # Bid=115 is below the real stop.
         state["last_bid"] = 126
+        state["peak_bid"] = 126  # A newly verified bid also updates the recorded peak.
         self.assertEqual(123.05, decide_unified_stop(state, self.now).trigger)
 
     def test_round_up_does_not_lose_a_partial_tick(self):
