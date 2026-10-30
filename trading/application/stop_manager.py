@@ -7,7 +7,7 @@ from entry_policy import timestamp
 from execution_safety import ReconciliationError, TERMINAL, remaining, status
 from market_clock import MarketClock
 from trading.domain.prices import round_tick
-from trading.domain.unified_stop_policy import unified_floor
+from trading.domain.unified_stop_workflow import r01_unified_active, r01_stop_floor
 
 logger = logging.getLogger("NiftyAI")
 
@@ -73,26 +73,25 @@ class StopManager:
     def floor(self, state):
         balances = state.get("entry_balances", {})
         existing = max(
-            [float(s.get("trigger_price") or 0) for s in state["stops"] if balances.get(self.ref(s), 0) > 0]
+            [float(s.get("trigger_price") or 0) for s in state["stops"]
+             if balances.get(self.ref(s), 0) > 0]
             + [float(state.get("desired_stop_trigger") or 0)]
         )
-        options = getattr(self.owner, "trading_cfg", {}).get("r01_policy", {})
-        if (options.get("enabled") is not True or options.get("unified_stop_enabled") is not True
-                or state.get("r01_policy_version") != "r01-owner-20261029-v1"):
-            # Do not migrate an already-open legacy position just because
-            # the operator enables R01 mid-session.
+        if not r01_unified_active(state, getattr(self.owner, "trading_cfg", {})):
+            # Never migrate legacy positions automatically.
             return existing
-
-        # Never loosen any confirmed broker stop. Price gains require the
-        # existing monitoring quote to have been verified; quote failure
-        # cannot turn an unknown bid into a profit ratchet.
-        entry = state.get("entry_price")
-        highest = state.get("peak_bid") if state.get("quote_verified") else entry
-        proposal = unified_floor(
-            entry, highest, existing, MarketClock.now_ist().strftime("%H:%M"),
-            initial_loss_pct=getattr(self.owner, "trading_cfg", {}).get("risk", {})
-            .get("option_hard_stop_pct", 25))
-        return max(existing, float(proposal.trigger_floor)) if proposal else existing
+        # The same pure, strategy-neutral decision is used by the monitor
+        # and the OMS on entry/recovery. Retain confirmed stronger stops.
+        proposal = r01_stop_floor(
+            state, MarketClock.now_ist(),
+            initial_loss_pct=getattr(self.owner, "trading_cfg", {})
+            .get("risk", {}).get("option_hard_stop_pct", 25),
+        )
+        if proposal is None:
+            state["risk_exit_required"] = "Unified stop policy evidence invalid"
+            self.save(state)
+            return existing
+        return max(existing, proposal[0])
 
     def place(self, state, ref, trigger):
         if not self.owner.refresh_monitor_quote(state, reuse=True):
@@ -158,11 +157,19 @@ class StopManager:
                 return
             if qty <= 0 or active:
                 continue
-            trigger = round_tick(
-                max(
-                    state["entry_price"] * (1 - self.cfg.get("initial_stop_pct", 30) / 100), self.floor(state)
+            if r01_unified_active(state, getattr(self.owner, "trading_cfg", {})):
+                # No strategy-specific initial stop. The unified floor is
+                # tick-rounded UP and preserves previously verified protection.
+                trigger = self.floor(state)
+            else:
+                trigger = round_tick(
+                    max(
+                        state["entry_price"] * (1 - self.cfg.get("initial_stop_pct", 30) / 100),
+                        self.floor(state),
+                    )
                 )
-            )
+            if state.get("risk_exit_required"):
+                return
             self.place(state, ref, trigger)
             if state.get("risk_exit_required"):
                 break
@@ -240,9 +247,12 @@ class StopManager:
             if status(stop) != "TRIGGER_PENDING" or stop.get("pending_modification"):
                 continue
             minimum_improvement = (
-                0.0
-                if state.get("ai_stop_status") == "APPLYING"
-                else float(self.cfg.get("stop_min_improvement_points", 0.50))
+                0.0 if state.get("ai_stop_status") == "APPLYING"
+                else (
+                    0.049  # Unified tick floor: a one-tick gain is actionable.
+                    if r01_unified_active(state, getattr(self.owner, "trading_cfg", {}))
+                    else float(self.cfg.get("stop_min_improvement_points", 0.50))
+                )
             )
             if trigger <= float(stop.get("trigger_price") or 0) + minimum_improvement:
                 continue
