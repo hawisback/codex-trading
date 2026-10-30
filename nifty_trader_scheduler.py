@@ -20,6 +20,7 @@ import sys
 import time
 import json
 import uuid
+from functools import partial
 import logging
 import argparse
 import urllib.request
@@ -38,6 +39,7 @@ from position_lifecycle import PositionLifecycle
 from ai_opportunity_radar import AIOpportunityRadar, AIOpportunity
 from trading.adapters.gateways import create_execution_gateway
 from trading.adapters.market_data import create_market_data
+from trading.adapters.entry_controls import read_entry_control_block
 from trading.ports import ExecutionGateway, IntelligenceSource, PositionStore, MarketReader, QuoteReader
 from trading.application.market_context import MarketContextService
 from trading.application.dossier import DossierService
@@ -100,6 +102,9 @@ class NiftyOptionsTrader(PositionLifecycle):
         self.strategy_mode = settings.strategy_name
         self.strategy_cfg = settings.strategy
         self.trading_cfg = settings.trading
+        # Re-read only operator entry controls, not the position's frozen risk
+        # policy. A local pause must also work after the process has started.
+        self.entry_control_reader = partial(read_entry_control_block, Path("config/trading.json").resolve())
         self.ai_consultant = AIConsultant(mode=settings.ai_mode, timeout_seconds=settings.ai_timeout,
                                           trading_config=self.trading_cfg, strategy_config=self.strategy_cfg)
         self.opportunity_radar = build_radar(self.strategy_cfg)

@@ -1,12 +1,10 @@
-# 🧠 Antigravity AI Companion Pair-Trading Architecture & Runbook
+# Neural companion pair-trading architecture and runbook
 
-> **Current branch note (2026-10-30):** This is a prior companion-mode implementation/usage record, not approval to run LIVE. Mandatory pre-entry chat/rules consultation and veto are preserved. Newly R01-stamped positions use one time-aware stop policy and **do not** run competing legacy post-fill two-step AI stop overrides; older positions retain original rules. The new integration is disabled, has not been regression/UAT verified and is not deployed. See [canonical status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).
-
-
-> **System Scope:** Autonomous in-IDE Pair-Trading with the Antigravity Neural LLM  
-> **Status:** Active in Production  
-> **Strategy:** Strategy 5 / Path A (`macd_momentum`)
-> **Execution Mode:** `--ai-mode chat` via background watcher bridge  
+> **Current branch (2026-10-30):** The selected companion is the persistent Codex worker in ChatGPT IDE. It explicitly invokes the installed CLI and stays armed for both request types; see [current Codex guide](CODEX_COMPANION.md). Offline tests and a nontradable CLI canary pass. Actual Kite order acceptance remains pending; no worker or LIVE scheduler was left running by implementation checks.
+>
+> New R01 positions retain the unified 25% initial stop authority and do not request competing legacy post-fill refinements. The two-step stop-refinement flow below applies only to eligible legacy positions. All requests use current frozen/authoritative policy, original deadlines and application-owned publication.
+>
+> **Execution mode:** `--ai-mode chat`. Rules/playbook is deterministic, with no neural AI.
 
 ---
 
@@ -21,8 +19,8 @@ Per user directive, order execution and refined risk management are separated in
 ```mermaid
 sequenceDiagram
     participant S as Nifty Trading Scheduler
-    participant W as AI Watcher Daemon
-    participant A as Antigravity AI Companion
+    participant W as Persistent Codex Worker
+    participant A as Codex Neural Companion
     participant OMS as Broker OMS Execution (Kite/Breeze)
 
     Note over S: STEP 1: FAST ENTRY EXECUTION
@@ -74,7 +72,7 @@ cannot approve an entry. Any explicit veto or trap dominates conflicting
 approval aliases. Approval lifetime is bounded by submission time and the
 consultation deadline.
 
-The batch publishes Markdown first and JSON last, then waits for Antigravity.
+The batch publishes Markdown first and JSON last, then waits for the neural companion.
 The companion must read `config/rules_playbook.md` and enforce its risk rules
 before returning its judgment. Missing or invalid responses preserve cash;
 chat mode never substitutes a rules verdict for the companion.
@@ -116,42 +114,24 @@ the configured 2/4/6/8/10-lot milestones, capped at 650 contracts and by
 `(available_margin - 150) // (premium * 65)`. A milestone target can be reduced
 when purchasing power cannot fund it. Drawdowns automatically reduce sizing.
 
-The current premium cap is **135.0**. Quote revalidation, order limits and the
+The legacy premium cap is **135.0**; opted-in R01 disables arbitrary price-only bands while preserving affordability and quote checks. Quote revalidation, order limits and the
 ?150 purchasing-power buffer remain mandatory before submission.
 
 ---
 
-## 4. In-IDE Launch Runbook
+## 4. ChatGPT IDE / Codex launch
 
-To run this entire automated pair-trading architecture 100% inside the Antigravity IDE:
+Use the [current Codex worker guide](CODEX_COMPANION.md) and [start-paused operator acceptance procedure](operations/KITE_LOCAL_ACCEPTANCE_20261030.md).
 
-### Step 1: Pre-Flight Verification
 ```powershell
-python -m tools.brokers --broker kite
-python scratch/check_macro_cues.py
+python -m tools.codex_companion --check
+python -m tools.codex_companion --self-test
+python -m tools.codex_companion
 ```
-Verify available margin, zero open positions, crude oil, and GIFT Nifty.
 
-### Step 2: Arm the AI Watcher Daemon
-```powershell
-python tools/watch_consultation.py
-```
-*(Run as a background daemon task in the IDE. It outputs: `[HH:MM:SS] Antigravity AI Companion Watcher ARMED.`)*
+The first two commands do not consume the live inbox or place orders. The third stays armed for entry and legacy stop requests. It does not continue the visible IDE conversation; it invokes the installed Codex CLI using the local ChatGPT login. Application code validates and publishes all responses. The legacy one-shot watcher remains available for manual notifications only.
 
-### Step 3: Launch the Trading Scheduler
-```powershell
-python nifty_trader_scheduler.py --broker kite --market-data-broker kite --live --strategy macd_momentum --ai-mode chat --wait-until-market-open
-```
-*(Run as a background daemon task in the IDE. It verifies live authorization and waits until 09:15:00 IST)*.
-
-### Step 4: Keep IDE Window Open
-Leave the Antigravity IDE open. Both processes run concurrently.
-- When an entry candidate appears, the AI companion evaluates it and writes `logs/ai_verdict.json`.
-- When filled, the AI companion receives the post-fill dossier, determines the technical stop, and writes `logs/ai_stop_verdict.json`.
-- The engine dynamically ratchets the broker stop and tracks Spot invalidation automatically!
-
-The watcher is a one-shot IDE wake-up task. Rearm it with `python tools/watch_consultation.py` after submitting **each** entry or stop verdict. On restart it immediately detects existing unexpired requests, including a stop dossier published while the entry response was being handled. Use the request ID shown in that dossier when submitting a stop verdict.
-
+The operator starts the Kite scheduler separately, initially with new entries paused and the approved trial policy loaded. The application re-reads operator entry controls before candidate discovery and at the actual BUY boundary, while continuing existing stop/exit management. Do not use a one-cycle run for an acceptance session that may create exposure.
 
 ## Path A candles and reversal protection
 
@@ -212,7 +192,7 @@ it is never replaced with Spot or zero-valued MACD. Native option minute history
 currently requires Kite as the market-data source; Breeze data reports this
 context unavailable. The execution broker can still be Kite or Breeze.
 
-In **chat mode**, the Antigravity AI Companion evaluates confluence:
+In **chat mode**, the explicitly invoked neural companion evaluates confluence:
 
 - Spot bullish (2m MACD above signal) plus selected CE histogram positive and
   increasing supports a **high-conviction BUY_CE candidate**, subject to all

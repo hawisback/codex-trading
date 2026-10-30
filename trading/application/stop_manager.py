@@ -78,8 +78,7 @@ class StopManager:
     def floor(self, state):
         balances = state.get("entry_balances", {})
         existing = max(
-            [float(s.get("trigger_price") or 0) for s in state["stops"]
-             if balances.get(self.ref(s), 0) > 0]
+            [float(s.get("trigger_price") or 0) for s in state["stops"] if balances.get(self.ref(s), 0) > 0]
             + [float(state.get("desired_stop_trigger") or 0)]
         )
         if not r01_unified_active(state, getattr(self.owner, "trading_cfg", {})):
@@ -88,10 +87,11 @@ class StopManager:
         # The same pure, strategy-neutral decision is used by the monitor
         # and the OMS on entry/recovery. Retain confirmed stronger stops.
         proposal = r01_stop_floor(
-            state, MarketClock.now_ist(),
+            state,
+            MarketClock.now_ist(),
             initial_loss_pct=state.get(
-                "r01_initial_stop_pct", getattr(self.owner, "trading_cfg", {})
-                .get("risk", {}).get("option_hard_stop_pct", 25)
+                "r01_initial_stop_pct",
+                getattr(self.owner, "trading_cfg", {}).get("risk", {}).get("option_hard_stop_pct", 25),
             ),
         )
         if proposal is None:
@@ -254,7 +254,8 @@ class StopManager:
             if status(stop) != "TRIGGER_PENDING" or stop.get("pending_modification"):
                 continue
             minimum_improvement = (
-                0.0 if state.get("ai_stop_status") == "APPLYING"
+                0.0
+                if state.get("ai_stop_status") == "APPLYING"
                 else (
                     0.049  # Unified tick floor: a one-tick gain is actionable.
                     if r01_unified_active(state, getattr(self.owner, "trading_cfg", {}))

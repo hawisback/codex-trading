@@ -6,6 +6,9 @@
   "r01_policy": {
     "enabled": false,
     "capital_basis": "available_margin",
+    "daily_loss_per_lot_inr": 3000,
+    "daily_loss_basis": "proposed_entry_lots",
+    "daily_loss_breach_action": "BLOCK_NEW_ENTRIES_ONLY",
     "max_daily_entries": 10,
     "price_only_veto_disabled": true,
     "unified_stop_enabled": true

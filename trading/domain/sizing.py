@@ -28,6 +28,7 @@ def calculate_compounding_quantity(
         from decimal import Decimal, InvalidOperation
         from trading.domain.owner_lot_policy import owner_ladder_max_lots
         from trading.domain.limits import MAX_POSITION_QUANTITY
+
         try:
             margin_value = Decimal(str(available_margin))
             premium = Decimal(str(contract_price))
@@ -39,8 +40,7 @@ def calculate_compounding_quantity(
             affordable = int(safe // (premium * LOT_SIZE))
         except (TypeError, ValueError, InvalidOperation, ArithmeticError):
             return 0
-        lots = min(owner_ladder_max_lots(margin_value), affordable,
-                   MAX_POSITION_QUANTITY // LOT_SIZE)
+        lots = min(owner_ladder_max_lots(margin_value), affordable, MAX_POSITION_QUANTITY // LOT_SIZE)
         return max(0, lots) * LOT_SIZE
 
     comp_cfg = strategy_cfg.get("compounding", {})

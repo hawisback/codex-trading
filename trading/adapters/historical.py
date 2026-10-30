@@ -46,6 +46,7 @@ class WorkspaceHistoricalSource:
 @dataclass
 class OptionHistory:
     """Verified contract identity and timestamps; direction alone is never a lookup key."""
+
     contracts: dict[tuple[int, str], dict[str, dict[str, Any]]]
     excluded_files: list[str]
 
@@ -77,10 +78,17 @@ def load_option_history(session, expiry, *, root=WORKSPACE_ROOT):
             _, file_session, file_strike, file_right = path.stem.split("_")
             raw_strike, right = number(meta["strike"], minimum=1), meta["right"]
             strike = int(raw_strike)
-            if (meta["session"] != session or meta["expiry"] != expiry
-                    or raw_strike != strike or strike % 50
-                    or file_session != session.replace("-", "") or int(file_strike) != strike
-                    or file_right != right or right not in ("CE", "PE") or not meta.get("symbol")):
+            if (
+                meta["session"] != session
+                or meta["expiry"] != expiry
+                or raw_strike != strike
+                or strike % 50
+                or file_session != session.replace("-", "")
+                or int(file_strike) != strike
+                or file_right != right
+                or right not in ("CE", "PE")
+                or not meta.get("symbol")
+            ):
                 raise ValueError("Option contract metadata mismatch")
             rows = json.loads(path.read_text(encoding="utf-8"))
             indexed = {}
@@ -90,8 +98,13 @@ def load_option_history(session, expiry, *, root=WORKSPACE_ROOT):
                     raise ValueError("Option candle timestamp mismatch")
                 if stamp.isoformat() in indexed:
                     raise ValueError("Duplicate option candle timestamp")
-                clean = {key: number(row[key], minimum=.01) for key in ("open", "high", "low", "close")}
-                if not clean["low"] <= min(clean["open"], clean["close"]) <= max(clean["open"], clean["close"]) <= clean["high"]:
+                clean = {key: number(row[key], minimum=0.01) for key in ("open", "high", "low", "close")}
+                if (
+                    not clean["low"]
+                    <= min(clean["open"], clean["close"])
+                    <= max(clean["open"], clean["close"])
+                    <= clean["high"]
+                ):
                     raise ValueError("Invalid option candle range")
                 clean.update(start_time=stamp.isoformat(), volume=number(row.get("volume", 0), minimum=0))
                 indexed[stamp.isoformat()] = clean

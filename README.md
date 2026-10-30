@@ -1,6 +1,6 @@
 # NIFTY Options AI Trading Engine & Market Intelligence
 
-> **Current implementation/release status (2026-10-30):** See [canonical status](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) and the [LIVE hold](docs/architecture/LIVE_ACTIVATION_HOLD_20261030.md). Latest code is on `feature/live-activation-guardrails-20261030`, unmerged to `main`. R01 unified stops/sizing are coded but `r01_policy.enabled=false`; this increment's offline tests and broker UAT **have not run**. The historical backtests, commands and performance claims below are not evidence of R01 correctness or future returns. **Do not start native `--live` without a separately approved supervised release.**
+> **Current implementation/release status (2026-10-30):** See [canonical status](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) and the [LIVE hold](docs/architecture/LIVE_ACTIVATION_HOLD_20261030.md). The local repair candidate on `feature/live-activation-guardrails-20261030` passes the quality wrapper and **574 offline tests**; see [validation and candidate identity](docs/architecture/OFFLINE_VALIDATION_20261030.md). The feature-branch candidate remains unmerged and undeployed, with `r01_policy.enabled=false`. Kite risk/contract/calendar read-only acceptance passes; operator-run broker order UAT remains open. The release targets this Windows machine; no CI rollout is required. Historical backtests and performance claims do not certify this release. **Do not start native `--live` without a separately approved supervised release.**
 
 
 Development: run `python -m tools.checks` for offline regression and boundary checks.
@@ -32,7 +32,7 @@ Automated, multi-factor AI trading engine for **NIFTY 50 Index Options**, combin
 >
 > **Operating Mandate for Any Agent or Operator:**
 > 1. **Zero Trades Without Evaluation:** Every candidate trade (`BUY_CE` or `BUY_PE`) must be evaluated by the Risk Gatekeeper ([`ai_consultant.py`](ai_consultant.py)) against the [Deterministic Rules Playbook](config/rules_playbook.md).
-> 2. **AI Definition Mandate:** "AI" refers **EXCLUSIVELY to the Antigravity AI Code Companion** (`--ai-mode chat`). Running in `--ai-mode rules` or `--ai-mode playbook` executes **100% deterministic code rules**, NOT AI.
+> 2. **AI Definition Mandate:** "AI" means an explicitly invoked neural companion: **Codex in ChatGPT IDE** or the legacy Antigravity companion (`--ai-mode chat`). An idle watcher alone is not inference. `rules` / `playbook` execute deterministic code with **NO neural AI**. See [persistent Codex worker](docs/CODEX_COMPANION.md).
 > 3. **Supreme Veto Authority:** If any of the 8 Institutional Traps are flagged, the setup is **instantly vetoed** and the system stands aside in cash.
 > 4. **Fail-Safe to Capital Preservation:** If consultation times out, disconnects, or encounters an error, the engine **fails-safe to ZERO trades placed**. Never fall back to blind execution.
 > 4. **Detailed Reference:** See [AI Architecture & Operational Directive](docs/AI_ARCHITECTURE_AND_DIRECTIVE.md).
@@ -100,7 +100,7 @@ Automated, multi-factor AI trading engine for **NIFTY 50 Index Options**, combin
    - Client wrapper for local proxy OMS (used when running with `--broker proxy` or for paper simulation).
 4. **AI Market Dossier & Consultation Gateway ([`ai_context_dossier.py`](ai_context_dossier.py) & [`ai_consultant.py`](ai_consultant.py))**:
    - Compiles comprehensive 6-section market dossiers (EMA ribbons, VWAP blender geometry, consolidation boxes, order flow, heavyweights, India VIX, sector breadth, and live news headlines).
-   - Serves the **Antigravity Chat-Assisted Pair-Trading** handshake (`mode: "chat"`) or autonomous (`mode: "playbook"`).
+   - Serves the **Codex / legacy neural companion** handshake (`mode: "chat"`) or autonomous (`mode: "playbook"`).
    - Evaluates candidate trades against the **8 Institutional Traps** plus **Sector Divergence Veto** before any capital is committed.
 5. **AI Opportunity Radar ([`ai_opportunity_radar.py`](ai_opportunity_radar.py))**:
    - Autonomous multi-regime opportunity discovery engine (Strategy 4).
@@ -120,7 +120,7 @@ When working within or extending this repository, every agent and process must a
 1. **Directory Isolation:** Strictly work ONLY inside `c:\Users\hawis\Documents\antigravity\splendid-bardeen`. **NEVER** edit, create, or modify files in `icici-breeze-api-trading` or any directory outside this workspace.
 2. **Capital, Step-Ladder Compounding & Position Sizing:**
    - Baseline capital is **₹10,000 Margin** (sized for 2 lots / 130 NIFTY contracts).
-   - **Owner-approved R01 maximum sizing (disabled):** 2/4/6/8/10 lots for positive, authenticated available-margin bands through ₹20k / ₹40k / ₹60k / ₹80k / above ₹80k respectively. These are ceilings; executable option price, ₹150 reserve, hard risk caps and broker-verified order freeze may lower quantity.
+   - **Owner-approved R01 maximum sizing (disabled):** 2/4/6/8/10 lots for verified available-margin bands below ₹40k / ₹40k–<₹60k / ₹60k–<₹80k / ₹80k–<₹100k / ₹100k+ respectively. Executable option price, the ₹150 reserve, hard caps and verified exchange limits can lower quantity.
    - Dynamic drawdown protection: lot sizing instantly de-escalates to the lower tier if account equity drops below a milestone.
    - Maximum **1 concurrent open position**.
    - Zero-shortfall purchasing power buffer reserves a ₹150 buffer for taxes, STT, and exchange turnover: `safe_margin = max(0, available_margin - 150)`.
@@ -416,7 +416,7 @@ client.exit_position(fill["order_id"], limit_price=92.50)
 
 ## 🤖 Antigravity Chat-Assisted Pair-Trading & News-First Execution Protocol
 
-The engine operates on a collaborative **Pair-Trading model** between the background execution daemon and **Antigravity Chat**. The daemon never places orders autonomously into live markets without clearing the setup through the consultation gateway.
+The current chat integration uses the persistent **Codex neural companion** described in [the worker guide](docs/CODEX_COMPANION.md). The following manual handshake remains supported for legacy companion use. The daemon never places orders autonomously into live markets without clearing the setup through the consultation gateway.
 
 ### 1. Mandatory News-First Intelligence Check (Step 3)
 Before candidate entries are analyzed or planned, the engine ingests real-time external catalysts via [`market_intelligence.py`](market_intelligence.py) on every 1-minute cycle:
@@ -484,7 +484,7 @@ Before any trade is executed, the scheduler builds a complete [`MarketDossier`](
 
 1. **Trap 1: The VWAP Blender** — Choppy rotation with $\ge 3$ VWAP crosses in 60m and spot within 18 pts of flat VWAP. Vetoes entries to prevent whipsaws.
 2. **Trap 2: Extreme Heavyweight Divergence** — Single-stock artificial index rallies (e.g. HDFC up while Reliance is breaking down $<-0.55\%$). Vetoes trades lacking broad institutional sponsorship.
-3. **Trap 3: Vertical RSI Exhaustion & Momentum Chasing** — 
+3. **Trap 3: Vertical RSI Exhaustion & Momentum Chasing** —
    - Overbought Call spike chasing ($1\text{m RSI} \ge 74.5$).
    - Overbought Call top chasing ($1\text{m RSI} \ge 70.0$ within 12 pts of day high).
    - Falling knife avalanche buying ($1\text{m RSI} < 28.0$).
@@ -522,7 +522,7 @@ The following earlier strategy model is retained for historical reference:
 ```
 
 > [!IMPORTANT]
-> **Trailing Stop Priority Inversion Fix:**  
+> **Trailing Stop Priority Inversion Fix:**
 > When a position is profitable and an incremental profit floor (+10%, +20%, +30%) or dynamic peak trailing stop is active, **the trailing stop takes absolute priority over 5m EMA9/EMA20 indicator exits**. Minor intra-candle index pullbacks are prevented from prematurely cutting winning trades that are securely protected by ratcheted profit floors.
 
 ---
@@ -579,15 +579,17 @@ During the optimization of the AI Opportunity Radar, two major market hypotheses
 R01 defines an authenticated-margin-based **maximum-lot ladder** behind a disabled feature switch; older research below should not be interpreted as current broker-verified production sizing.
 
 ### 1. Milestone Escalation Matrix
-Instead of an unconstrained all-in sizing model, R01 caps quantity according to authenticated margin, fresh executable option premium, the fee reserve and broker-verified limits. Bracket **upper** boundaries are inclusive:
+Instead of an unconstrained all-in sizing model, R01 caps quantity according to authenticated margin, fresh executable option premium, the fee reserve and broker-verified limits. The revised owner milestones are minimum thresholds; affordability can reduce the tier ceiling to one or more whole lots:
 
 | Verified Broker Available Margin | Active Sizing | Contract Quantity | Risk Allocation Rationale |
 |---|:---:|:---:|---|
-| **₹0 < funds ≤ ₹20,000** | **Up to 2 Lots** | **130 max** | Verified account margin; affordability can lower the order |
-| **₹20,000 < funds ≤ ₹40,000** | **Up to 4 Lots** | **260 max** | Ceiling, not an obligatory quantity |
-| **₹40,000 < funds ≤ ₹60,000** | **Up to 6 Lots** | **390 max** | Requires current broker/quote evidence |
-| **₹60,000 < funds ≤ ₹80,000** | **Up to 8 Lots** | **520 max** | Independent risk limits still apply |
-| **Funds > ₹80,000** | **Up to 10 Lots** | **650 max** | Broker freeze and hard position cap still apply |
+| **₹0 < funds < ₹40,000** | **Up to 2 Lots** | **130 max** | Affordability can reduce sizing to one lot |
+| **₹40,000 ≤ funds < ₹60,000** | **Up to 4 Lots** | **260 max** | Ceiling, subject to actual funding |
+| **₹60,000 ≤ funds < ₹80,000** | **Up to 6 Lots** | **390 max** | Requires current broker/quote evidence |
+| **₹80,000 ≤ funds < ₹100,000** | **Up to 8 Lots** | **520 max** | Independent risk limits still apply |
+| **Funds ≥ ₹100,000** | **Up to 10 Lots** | **650 max** | Exchange freeze and hard position cap still apply |
+
+**Daily cash loss cap:** INR 3,000 per actual proposed entry lot (INR 30,000 at 10 lots), recalculated for every new entry from verified realized + unrealized account-day P&L. At the cap, block new entries and retain existing stop/exit management. R01 does not use the legacy 1.5% opening-equity rule.
 
 ### 2. Sizing Governor & Drawdown Protection
 1. **Dynamic De-escalation:** Sizing is tied to real-time available margin. If account equity pulls back below any milestone, sizing immediately drops to the lower tier.
@@ -648,27 +650,15 @@ The Step-Ladder model was audited against Fixed Sizing and Dynamic Full Cash Rei
 
 ## 🧭 Morning Pre-Market Checklist & Launch Protocol (09:10 – 09:15 IST)
 
-Follow these steps every trading morning to ensure safe, seamless deployment:
+For the current Kite/Codex release, use [the Codex worker guide](docs/CODEX_COMPANION.md) and [start-paused local acceptance](docs/operations/KITE_LOCAL_ACCEPTANCE_20261030.md). Actual starts are operator actions; the default R01 flag remains off.
 
-1. **Pre-Market Connectivity & Freshness Check (09:10 IST):**
-   ```powershell
-   python check_live_apis.py
-   ```
-   *Confirms Kite and Breeze broker session validity, available margin ($\ge ₹10,000$), quote freshness, and 0 overnight positions.*
+```powershell
+python -m tools.brokers --broker kite
+python -m tools.codex_companion --check
+python -m tools.codex_companion --self-test
+```
 
-2. **Launch Execution Daemon (09:15 IST):**
-   ```powershell
-   python nifty_trader_scheduler.py --lots 2 --interval 60 --strategy ai_opportunity_radar --ai-mode playbook
-   ```
-   *Runs by default with real-time broker quotes, 2 lots (130 contracts), and 5-second active trailing ratchets.*
-
-3. **Intraday Risk Governance:**
-   - **09:15 – 09:25 IST:** Opening volatility filter (stands aside during initial opening 10 minutes).
-   - **09:25 – 11:15 IST:** Evaluates Morning Climax Rubber-Band Springs with Structural Wick Stops.
-   - **09:25 – 14:15 IST:** Evaluates 5m EMA9 Trend Pullbacks against the 8 AI Traps.
-   - **14:00+ IST:** Arms the Late-Day Micro-Trail (+4% gain locks +1% profit floor).
-   - **14:15+ IST:** Freezes fresh directional entries (Trap 5: Late-Day Alpha Preservation).
-   - **15:10 – 15:15 IST:** Broker EOD square-off lockout guarantees 100% flat book overnight.
+Then the operator starts the persistent worker and, in a separate terminal, the scheduler in chat mode using the acceptance procedure. The original consultation deadline is 45 seconds and approval lifetime is at most 15 seconds after application publication. New entries stop at 14:15 IST; the OMS requests square-off at 15:15 and must verify actual broker flatness. A request cannot guarantee a fill during an outage.
 
 ---
 

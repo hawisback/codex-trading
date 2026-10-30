@@ -6,7 +6,13 @@ from datetime import datetime, timedelta
 from typing import Any, Mapping, Optional
 from ai_context_dossier import MarketDossier, generate_market_dossier
 from market_clock import MarketClock
-from trading.domain.market_data import exchange_time, number, two_minute_macd_metrics, macd_observation_bars, prior_session_warmup
+from trading.domain.market_data import (
+    exchange_time,
+    number,
+    two_minute_macd_metrics,
+    macd_observation_bars,
+    prior_session_warmup,
+)
 from trading.domain.order_book import order_book_snapshot
 from entry_policy import EntryPolicy
 from trading.domain.stop_loss import configured_stop_policy, positive_price
@@ -112,7 +118,8 @@ class DossierService:
         dossier.order_flow = copy.deepcopy(ctx.get("order_flow", {}))
         if ctx.get("option_quote") is not None:
             dossier.order_book = order_book_snapshot(
-                ctx["option_quote"], dossier.instrument_id, EntryPolicy.from_config(self.trading_cfg))
+                ctx["option_quote"], dossier.instrument_id, EntryPolicy.from_config(self.trading_cfg)
+            )
         dossier.vix = copy.deepcopy(ctx.get("vix", {}))
         dossier.sectors = copy.deepcopy(ctx.get("sectors", {}))
         for quote in ([dossier.vix] if dossier.vix else []) + list(dossier.sectors.values()):
@@ -145,10 +152,19 @@ class DossierService:
             rolling = self.macd_entry.get("use_rolling_2m", False)
             warmup = self.macd_entry.get("prior_session_warmup_enabled", False)
             holidays = self.trading_cfg.get("option_selection", {}).get("exchange_holidays", [])
-            prior = prior_session_warmup(ctx.get("prior_session_warmup_candles") or [], now,
-                                        holidays=holidays) if warmup else []
-            periods = tuple(int(number(self.macd_entry.get(k, self.macd_entry.get(alias, default)), minimum=1)) for k, alias, default in (
-                ("macd_fast", "fast_period", 12), ("macd_slow", "slow_period", 26), ("macd_signal", "signal_period", 9)))
+            prior = (
+                prior_session_warmup(ctx.get("prior_session_warmup_candles") or [], now, holidays=holidays)
+                if warmup
+                else []
+            )
+            periods = tuple(
+                int(number(self.macd_entry.get(k, self.macd_entry.get(alias, default)), minimum=1))
+                for k, alias, default in (
+                    ("macd_fast", "fast_period", 12),
+                    ("macd_slow", "slow_period", 26),
+                    ("macd_signal", "signal_period", 9),
+                )
+            )
             bars = macd_observation_bars(candles, prior=prior, as_of=now, rolling=rolling)
             spot = two_minute_macd_metrics(bars, periods=periods, rolling=rolling)
             cutoff = exchange_time(spot["candle_closed_at"])
@@ -158,15 +174,25 @@ class DossierService:
             reader = getattr(self.market_data, "get_strike_macd", None)
             if reader is None:
                 raise ValueError("Selected-contract MACD history provider is unavailable")
-            options = dict(use_rolling_2m=rolling, warmup_enabled=warmup, holidays=holidays, periods=periods) if rolling or warmup else {}
+            options = (
+                dict(use_rolling_2m=rolling, warmup_enabled=warmup, holidays=holidays, periods=periods)
+                if rolling or warmup
+                else {}
+            )
             metrics = reader(dossier.instrument_id, as_of=cutoff, timeout=5.0, **options)
-            if (metrics["instrument_id"] != dossier.instrument_id or metrics["right"] != dossier.direction
-                    or number(metrics["strike"]) != dossier.strike or metrics["expiry"] != expiry
-                    or metrics["candle_closed_at"] != spot["candle_closed_at"]
-                    or metrics.get("interval") != spot["interval"] or metrics.get("periods") != spot["periods"]):
+            if (
+                metrics["instrument_id"] != dossier.instrument_id
+                or metrics["right"] != dossier.direction
+                or number(metrics["strike"]) != dossier.strike
+                or metrics["expiry"] != expiry
+                or metrics["candle_closed_at"] != spot["candle_closed_at"]
+                or metrics.get("interval") != spot["interval"]
+                or metrics.get("periods") != spot["periods"]
+            ):
                 raise ValueError("Option MACD contract identity or observation does not match Spot dossier")
-            line, signal, histogram, previous = [number(metrics[key]) for key in
-                                                 ("macd", "signal", "histogram", "previous_histogram")]
+            line, signal, histogram, previous = [
+                number(metrics[key]) for key in ("macd", "signal", "histogram", "previous_histogram")
+            ]
             momentum_status = metrics["momentum_status"]
             if not isinstance(momentum_status, str) or not momentum_status:
                 raise ValueError("Option MACD momentum status is missing")

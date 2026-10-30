@@ -60,18 +60,22 @@ class OrderIntentView:
             )
         except (KeyError, ValueError, TypeError) as exc:
             raise InvalidIntentTransition("INTENT_RECORD_INVALID") from exc
-        if (not all(isinstance(v, str) and v.strip() for v in
-                    (view.request_id, view.account_id, view.symbol))
-                or view.mode not in ("LIVE", "PAPER")
-                or view.kind not in ("ENTRY", "STOP", "EXIT")
-                or (view.broker_order_id is not None and
-                    (not isinstance(view.broker_order_id, str) or not view.broker_order_id))):
+        if (
+            not all(isinstance(v, str) and v.strip() for v in (view.request_id, view.account_id, view.symbol))
+            or view.mode not in ("LIVE", "PAPER")
+            or view.kind not in ("ENTRY", "STOP", "EXIT")
+            or (
+                view.broker_order_id is not None
+                and (not isinstance(view.broker_order_id, str) or not view.broker_order_id)
+            )
+        ):
             raise InvalidIntentTransition("INTENT_IDENTITY_INVALID")
         return view
 
 
-def transition(intent: OrderIntentView, phase: IntentPhase, *,
-               verified_broker_order_id: str | None = None) -> OrderIntentView:
+def transition(
+    intent: OrderIntentView, phase: IntentPhase, *, verified_broker_order_id: str | None = None
+) -> OrderIntentView:
     """Return a new view or reject unsafe/ambiguous transition.
 
     UNKNOWN is unresolved, not an instruction to resubmit. REJECTED requires
@@ -90,7 +94,11 @@ def transition(intent: OrderIntentView, phase: IntentPhase, *,
     if phase in (IntentPhase.ACKNOWLEDGED, IntentPhase.RECONCILED) and not new_id:
         raise InvalidIntentTransition("INTENT_BROKER_ACK_UNVERIFIED")
     return OrderIntentView(
-        request_id=intent.request_id, account_id=intent.account_id,
-        mode=intent.mode, symbol=intent.symbol, kind=intent.kind,
-        phase=phase, broker_order_id=new_id,
+        request_id=intent.request_id,
+        account_id=intent.account_id,
+        mode=intent.mode,
+        symbol=intent.symbol,
+        kind=intent.kind,
+        phase=phase,
+        broker_order_id=new_id,
     )

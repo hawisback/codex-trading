@@ -23,9 +23,13 @@ class R01PriceBandTests(unittest.TestCase):
             policy.band(200, "TREND_PULLBACK")
 
     def test_opt_in_no_fixed_minimum_or_maximum(self):
-        cfg = {**self.cfg, "r01_policy": {
-            "enabled": True, "price_only_veto_disabled": True,
-        }}
+        cfg = {
+            **self.cfg,
+            "r01_policy": {
+                "enabled": True,
+                "price_only_veto_disabled": True,
+            },
+        }
         policy = EntryPolicy.from_config(cfg)
         self.assertTrue(policy.price_only_bounds_disabled)
         for price in (10, 200):
@@ -35,9 +39,13 @@ class R01PriceBandTests(unittest.TestCase):
                 self.assertGreaterEqual(upper, price)
 
     def test_non_boolean_flag_cannot_activate_relaxation(self):
-        cfg = {**self.cfg, "r01_policy": {
-            "enabled": "true", "price_only_veto_disabled": True,
-        }}
+        cfg = {
+            **self.cfg,
+            "r01_policy": {
+                "enabled": "true",
+                "price_only_veto_disabled": True,
+            },
+        }
         self.assertFalse(EntryPolicy.from_config(cfg).price_only_bounds_disabled)
 
 

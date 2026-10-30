@@ -17,6 +17,7 @@ from test_self_healing_exit import ROOT, Trader, approved_decision, entry_dossie
 from trading.adapters.gateways import BreezeExecutionGateway, create_execution_gateway
 from trading.adapters.gateways.breeze import broker_time, option_contract
 from trading.application.scheduler import run_scheduler
+from tests.gateway_lifecycle import end_gateway_process
 
 INSTRUMENT = "INST-NIFTY-2026-10-27-23000-CE"
 SYMBOL = "NIFTY26O2723000CE"
@@ -161,6 +162,7 @@ class BreezeTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(prefix=".breeze-test-", dir=ROOT)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
+        self.gateways = []
         self.now = MarketClock.parse_to_ist(NOW)
         clock = patch.object(MarketClock, "now_ist", side_effect=lambda: self.now)
         clock.start()
@@ -180,10 +182,19 @@ class BreezeTests(unittest.TestCase):
             account_id="BREEZE_TEST",
             journal_path=self.root / "broker_intents.json",
         )
+        self.gateways.append(gateway)
+        self.addCleanup(end_gateway_process, gateway)
         gateway.rate_limiter.acquire = lambda **kwargs: True
+        gateway.quote_limiter.acquire = lambda **kwargs: True
         if arm:
             self.assertTrue(gateway.set_mode("LIVE").get("live_authorized"))
         return gateway
+
+    def restart_gateway(self):
+        for gateway in self.gateways:
+            end_gateway_process(gateway)
+        self.gateway = self.gateway_new()
+        return self.gateway
 
     def trader(self, gateway=None, qty=65):
         trader = Trader(self.root / "active_position.json", gateway or self.gateway)
@@ -250,7 +261,7 @@ class BreezeTests(unittest.TestCase):
         self.assertEqual("stoploss", stop[2]["order_type"])
         state = trader.load_active_position()
         self.assertEqual(INSTRUMENT, state["entry_execution"]["ai_verdict"]["entry_instrument_id"])
-        other = self.trader(self.gateway_new())
+        other = self.trader(self.restart_gateway())
         trades, _ = other.get_trades_state()
         self.assertTrue(other.state_verified, other.last_reconciliation_error)
         self.assertEqual(INSTRUMENT, trades[0]["instrument_id"])
@@ -289,7 +300,7 @@ class BreezeTests(unittest.TestCase):
         result = trader.execute_trade(self.decision(trader))
         self.assertTrue(result.get("outcome_unknown"), result)
         self.assertEqual(1, len(self.server.posts()))
-        other = self.trader(self.gateway_new())
+        other = self.trader(self.restart_gateway())
         trades, _ = other.get_trades_state()
         self.assertTrue(other.state_verified, other.last_reconciliation_error)
         self.assertTrue(trades[0]["protection_confirmed"])
@@ -393,7 +404,7 @@ class BreezeTests(unittest.TestCase):
         trader = self.trader()
         self.server.lose_next = "STOP"
         trader.execute_trade(self.decision(trader))
-        other = self.trader(self.gateway_new())
+        other = self.trader(self.restart_gateway())
         trades, _ = other.get_trades_state()
         self.assertTrue(other.state_verified, other.last_reconciliation_error)
         self.assertTrue(trades[0]["protection_confirmed"])

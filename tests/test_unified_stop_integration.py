@@ -10,7 +10,9 @@ from market_clock import IST_TZ
 from trading.application.position_monitor import PositionMonitor
 from trading.application.stop_manager import StopManager
 from trading.domain.unified_stop_workflow import (
-    R01_STOP_VERSION, decide_unified_stop, r01_stop_floor,
+    R01_STOP_VERSION,
+    decide_unified_stop,
+    r01_stop_floor,
     r01_unified_active,
 )
 import unittest
@@ -22,21 +24,34 @@ class UnifiedR01DecisionTests(unittest.TestCase):
 
     def state(self, *, bid=115, peak=115, entry=100, **overrides):
         result = dict(
-            status="OPEN", trade_id="BUY-1", symbol="NIFTY-TEST-CE",
+            status="OPEN",
+            trade_id="BUY-1",
+            symbol="NIFTY-TEST-CE",
             instrument_id="INST-NIFTY-2026-11-03-24000-CE",
-            entry_price=entry, last_bid=bid, peak_bid=peak,
-            quote_verified=True, bid_timestamp=self.now.isoformat(),
-            r01_policy_version=R01_STOP_VERSION, r01_initial_stop_pct=25,
-            entry_balances={"BUY-1": 65}, stops=[],
-            desired_stop_trigger=0, current_stop_trigger=0,
+            entry_price=entry,
+            last_bid=bid,
+            peak_bid=peak,
+            quote_verified=True,
+            bid_timestamp=self.now.isoformat(),
+            r01_policy_version=R01_STOP_VERSION,
+            r01_initial_stop_pct=25,
+            entry_balances={"BUY-1": 65},
+            stops=[],
+            desired_stop_trigger=0,
+            current_stop_trigger=0,
             protection_confirmed=False,
         )
         result.update(overrides)
         return result
 
     def test_same_time_based_floor_across_all_strategy_names(self):
-        for strategy in ("legacy_scalper", "structural_runner",
-                         "institutional_pullback", "macd_momentum", "ai_opportunity_radar"):
+        for strategy in (
+            "legacy_scalper",
+            "structural_runner",
+            "institutional_pullback",
+            "macd_momentum",
+            "ai_opportunity_radar",
+        ):
             with self.subTest(strategy=strategy):
                 state = self.state(setup_type=strategy)
                 result = decide_unified_stop(state, self.now)
@@ -70,8 +85,9 @@ class UnifiedR01DecisionTests(unittest.TestCase):
 
     def test_confirmed_stronger_stop_never_moves_backwards(self):
         state = self.state(
-            stops=[dict(entry_order_id="BUY-1", status="TRIGGER_PENDING",
-                        trigger_price=123.05)], desired_stop_trigger=120)
+            stops=[dict(entry_order_id="BUY-1", status="TRIGGER_PENDING", trigger_price=123.05)],
+            desired_stop_trigger=120,
+        )
         result = decide_unified_stop(state, self.now)
         self.assertEqual("EXIT", result.kind)  # Bid=115 is below the real stop.
         state["last_bid"] = 126
@@ -85,11 +101,13 @@ class UnifiedR01DecisionTests(unittest.TestCase):
 
     def test_version_is_sticky_when_feature_is_disabled(self):
         state = self.state()
-        self.assertTrue(r01_unified_active(
-            state, {"r01_policy": {"enabled": False, "unified_stop_enabled": False}}))
+        self.assertTrue(
+            r01_unified_active(state, {"r01_policy": {"enabled": False, "unified_stop_enabled": False}})
+        )
         state.pop("r01_policy_version")
-        self.assertFalse(r01_unified_active(
-            state, {"r01_policy": {"enabled": True, "unified_stop_enabled": True}}))
+        self.assertFalse(
+            r01_unified_active(state, {"r01_policy": {"enabled": True, "unified_stop_enabled": True}})
+        )
 
 
 class UnifiedR01MonitoringTests(unittest.TestCase):
@@ -97,32 +115,47 @@ class UnifiedR01MonitoringTests(unittest.TestCase):
         self.now = datetime(2026, 10, 30, 10, 30, tzinfo=IST_TZ)
         self.exits = []
         self.ratchets = []
-        self.trading_cfg = {"r01_policy": {"enabled": True, "unified_stop_enabled": True},
-                            "risk": {"option_hard_stop_pct": 25}}
-        self.strategy = {"exit": {
-            "initial_stop_pct": 6, "profit_target_enabled": True,
-            "target_pct": 5, "max_hold_seconds": 1,
-            "runner_trailing_enabled": True,
-        }}
+        self.trading_cfg = {
+            "r01_policy": {"enabled": True, "unified_stop_enabled": True},
+            "risk": {"option_hard_stop_pct": 25},
+        }
+        self.strategy = {
+            "exit": {
+                "initial_stop_pct": 6,
+                "profit_target_enabled": True,
+                "target_pct": 5,
+                "max_hold_seconds": 1,
+                "runner_trailing_enabled": True,
+            }
+        }
         self.monitor = PositionMonitor(
-            self.strategy, True,
+            self.strategy,
+            True,
             lambda _, reason, **kwargs: self.exits.append(reason) or {"status": "CLOSED"},
             lambda state, trigger: self.ratchets.append(trigger),
             trading_cfg=self.trading_cfg,
         )
         self.state = dict(
-            status="OPEN", trade_id="BUY-1", symbol="UNIT-CE",
+            status="OPEN",
+            trade_id="BUY-1",
+            symbol="UNIT-CE",
             instrument_id="INST-NIFTY-2026-11-03-24000-CE",
-            entry_price=100, last_bid=115, peak_bid=115,
+            entry_price=100,
+            last_bid=115,
+            peak_bid=115,
             r01_policy_version=R01_STOP_VERSION,
             r01_initial_stop_pct=25,
-            bid_timestamp=self.now.isoformat(), quote_verified=True,
-            protection_confirmed=False, entry_balances={"BUY-1": 65},
-            stops=[], entry_time="2026-10-30T09:15:00+05:30",
+            bid_timestamp=self.now.isoformat(),
+            quote_verified=True,
+            protection_confirmed=False,
+            entry_balances={"BUY-1": 65},
+            stops=[],
+            entry_time="2026-10-30T09:15:00+05:30",
         )
 
     def evaluate(self):
         from unittest.mock import patch
+
         with patch("market_clock.MarketClock.now_ist", return_value=self.now):
             return self.monitor.manage([self.state], {}, {})
 
@@ -138,8 +171,7 @@ class UnifiedR01MonitoringTests(unittest.TestCase):
         self.assertIn("UNIFIED_PROTECTIVE_FLOOR_BREACHED", self.exits[-1])
 
     def test_unconfirmed_stop_is_rechecked_but_confirmed_stop_is_not(self):
-        self.state.update(desired_stop_trigger=110, current_stop_trigger=110,
-                          protection_confirmed=True)
+        self.state.update(desired_stop_trigger=110, current_stop_trigger=110, protection_confirmed=True)
         self.evaluate()
         self.assertFalse(self.ratchets)
         self.state["protection_confirmed"] = False
@@ -164,22 +196,28 @@ class UnifiedStopManagerTests(unittest.TestCase):
     def test_r01_entry_uses_one_initial_stop_not_strategy_specific_six_percent(self):
         from types import SimpleNamespace
         from unittest.mock import patch
+
         now = datetime(2026, 10, 30, 10, 30, tzinfo=IST_TZ)
         recorded, placed = [], []
         owner = SimpleNamespace(
-            client=object(), state_verified=True,
+            client=object(),
+            state_verified=True,
             strategy_cfg={"exit": {"initial_stop_pct": 6}},
-            trading_cfg={"risk": {"option_hard_stop_pct": 25},
-                         "r01_policy": {"enabled": False}},
+            trading_cfg={"risk": {"option_hard_stop_pct": 25}, "r01_policy": {"enabled": False}},
             save_active_position=lambda state: recorded.append(state.get("desired_stop_trigger")),
         )
         mgr = StopManager(owner)
         state = dict(
             r01_policy_version=R01_STOP_VERSION,
-            r01_initial_stop_pct=25, entry_price=100,
-            last_bid=100, peak_bid=100,
-            quote_verified=True, bid_timestamp=now.isoformat(),
-            entry_balances={"BUY-1": 65}, stops=[], exits=[],
+            r01_initial_stop_pct=25,
+            entry_price=100,
+            last_bid=100,
+            peak_bid=100,
+            quote_verified=True,
+            bid_timestamp=now.isoformat(),
+            entry_balances={"BUY-1": 65},
+            stops=[],
+            exits=[],
         )
         mgr.place = lambda state, ref, trigger: placed.append((ref, trigger))
         with patch("market_clock.MarketClock.now_ist", return_value=now):

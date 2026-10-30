@@ -211,7 +211,10 @@ class BreezeExecutionGateway(BaseBrokerGateway):
                 blocked = self._before_transmit()
                 if blocked:
                     return blocked
-            if not session_exchange and (not self.is_connected() or (mutation and (not self._live_authorized or not self._owns_account_lease()))):
+            if not session_exchange and (
+                not self.is_connected()
+                or (mutation and (not self._live_authorized or not self._owns_account_lease()))
+            ):
                 return self._error("BREEZE_ACCOUNT_UNVERIFIED")
             wire_data = data() if callable(data) else (data or {})
             payload = json.dumps(wire_data, separators=(",", ":"), allow_nan=False).encode("utf-8")

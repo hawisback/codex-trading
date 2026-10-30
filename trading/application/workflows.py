@@ -29,6 +29,11 @@ class CycleWorkflow:
             return {"has_open_trades": True, "blocked": trader.last_reconciliation_error}
         if open_trades:
             return trader.run_monitor_cycle(open_trades)
+        control_check = getattr(trader, "_entry_control_block", None)
+        blocked = control_check() if control_check is not None else None
+        if blocked:
+            audit.event("entry_blocked", trader, reason=blocked)
+            return {"has_open_trades": False, "blocked": blocked}
         if getattr(trader, "strategy_mode", None) == "macd_momentum":
             blocked = trader._entry_limit_block(today_entries)
             if blocked:

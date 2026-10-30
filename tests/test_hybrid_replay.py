@@ -28,13 +28,26 @@ class HybridReplayTests(unittest.TestCase):
         self.reviewer = HybridHistoricalReview(self.cfg, self.trading)
 
     def bars(self, start, count, flat=False):
-        return [dict(start_time=(start + timedelta(minutes=i)).isoformat(), open=p - .2,
-                     high=p + .5, low=p - .5, close=p, volume=1000)
-                for i in range(count) for p in [23000 if flat else 23000 + 30 * math.sin(i * .31) + .1 * i]]
+        return [
+            dict(
+                start_time=(start + timedelta(minutes=i)).isoformat(),
+                open=p - 0.2,
+                high=p + 0.5,
+                low=p - 0.5,
+                close=p,
+                volume=1000,
+            )
+            for i in range(count)
+            for p in [23000 if flat else 23000 + 30 * math.sin(i * 0.31) + 0.1 * i]
+        ]
 
     def context(self, rows=None, count=64):
-        ctx = causal_hybrid_context(self.today if rows is None else rows,
-            self.start + timedelta(minutes=count), expiry="2026-10-27", prior_rows=self.prior)
+        ctx = causal_hybrid_context(
+            self.today if rows is None else rows,
+            self.start + timedelta(minutes=count),
+            expiry="2026-10-27",
+            prior_rows=self.prior,
+        )
         ctx["prior_session_warmup_candles"] = prior_session_warmup(self.prior, self.start)
         return ctx
 
@@ -69,8 +82,13 @@ class HybridReplayTests(unittest.TestCase):
 
     def test_missing_exact_option_history_blocks_instead_of_using_synthetic_prices(self):
         count, ctx, candidate = self.crossover()
-        result = self.reviewer.evaluate(self.today, now=self.start + timedelta(minutes=count),
-            expiry="2026-10-27", options=OptionHistory({}, []), prior_rows=self.prior)
+        result = self.reviewer.evaluate(
+            self.today,
+            now=self.start + timedelta(minutes=count),
+            expiry="2026-10-27",
+            options=OptionHistory({}, []),
+            prior_rows=self.prior,
+        )
         self.assertEqual(candidate.signal, result["signal"])
         self.assertEqual("EXACT_OPTION_HISTORY_UNAVAILABLE", result["blocked"])
         self.assertIsNone(result["verdict"])
@@ -80,16 +98,27 @@ class HybridReplayTests(unittest.TestCase):
         strike = select_strike(ctx["spot"], "CE", "STRICT_ITM")
         stamp = ctx["candles_1m"][-1]["start_time"]
         options = OptionHistory({(strike, "CE"): {stamp: dict(open=8, high=8, low=8, close=8)}}, [])
-        result = self.reviewer.evaluate(self.today, now=self.start + timedelta(minutes=count),
-            expiry="2026-10-27", options=options, prior_rows=self.prior)
+        result = self.reviewer.evaluate(
+            self.today,
+            now=self.start + timedelta(minutes=count),
+            expiry="2026-10-27",
+            options=options,
+            prior_rows=self.prior,
+        )
         self.assertEqual("CONSULTANT_VETOED", result["blocked"])
         self.assertEqual("VETOED", result["verdict"]["action"])
         self.assertIn("Trap 2", result["verdict"]["trap_detected"])
         self.assertIsNone(result["verdict"]["max_entry_price"])
         with MarketClock.at(self.start + timedelta(minutes=count)):
-            decision = dict(signal=candidate.signal, setup_type=candidate.setup_type, ltp=67,
-                            instrument_id="TEST", symbol="NIFTY-CE", target_strike=strike,
-                            invalidation_level=candidate.invalidation_level)
+            decision = dict(
+                signal=candidate.signal,
+                setup_type=candidate.setup_type,
+                ltp=67,
+                instrument_id="TEST",
+                symbol="NIFTY-CE",
+                target_strike=strike,
+                invalidation_level=candidate.invalidation_level,
+            )
             dossier = self.reviewer.dossiers.build_dossier(ctx, decision, [], 0)
         self.assertEqual(ctx["ema_9"], dossier.ema9_5m)
         self.assertEqual(ctx["ema_20"], dossier.ema20_5m)
@@ -100,7 +129,9 @@ class HybridReplayTests(unittest.TestCase):
             root = Path(directory)
             (root / "config").mkdir()
             (root / "data").mkdir()
-            (root / "config/strategies.json").write_text(json.dumps({"strategies": {"macd_momentum": self.cfg}}))
+            (root / "config/strategies.json").write_text(
+                json.dumps({"strategies": {"macd_momentum": self.cfg}})
+            )
             (root / "config/trading.json").write_text(json.dumps(self.trading))
             (root / "data/spot_candles_20261026.json").write_text(json.dumps(self.prior))
             (root / "data/spot_candles_20261027.json").write_text(json.dumps(self.today))

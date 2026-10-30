@@ -19,7 +19,8 @@ def inspect_configuration(path: Path) -> dict:
             raise ValueError("Top-level JSON is not an object")
     except (OSError, ValueError, UnicodeError):
         return {
-            "release_ready": False, "status": "CONFIG_UNREADABLE",
+            "release_ready": False,
+            "status": "CONFIG_UNREADABLE",
             "blockers": ["CONFIG_UNREADABLE"],
         }
 
@@ -39,12 +40,14 @@ def inspect_configuration(path: Path) -> dict:
         errors.append("R01_FLAG_INVALID")
     elif r01["enabled"] is True:
         errors.append("R01_ENABLED_REQUIRES_BROKER_UAT")
-    errors.extend((
-        "REGRESSION_EVIDENCE_NOT_PROVIDED",
-        "BROKER_CONFORMANCE_EVIDENCE_NOT_PROVIDED",
-        "OMS_CRASH_RECOVERY_EVIDENCE_NOT_PROVIDED",
-        "SUPERVISED_LIVE_APPROVAL_NOT_PROVIDED",
-    ))
+    errors.extend(
+        (
+            "REGRESSION_EVIDENCE_NOT_PROVIDED",
+            "BROKER_CONFORMANCE_EVIDENCE_NOT_PROVIDED",
+            "OMS_CRASH_RECOVERY_EVIDENCE_NOT_PROVIDED",
+            "SUPERVISED_LIVE_APPROVAL_NOT_PROVIDED",
+        )
+    )
     return {
         "release_ready": False,
         "status": "BLOCKED",
@@ -57,8 +60,7 @@ def inspect_configuration(path: Path) -> dict:
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Read-only safety preflight; never arms LIVE trading")
-    parser.add_argument("--trading-config", type=Path,
-                        default=Path("config/trading.json"))
+    parser.add_argument("--trading-config", type=Path, default=Path("config/trading.json"))
     args = parser.parse_args(argv)
     print(json.dumps(inspect_configuration(args.trading_config), indent=2))
     return 2

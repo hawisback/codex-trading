@@ -280,8 +280,17 @@ class BrokerMarketData:
                 self._warmup_key = key
             return copy.deepcopy(self._warmup)
 
-    def get_strike_macd(self, instrument_id, *, as_of=None, timeout=None,
-                        use_rolling_2m=False, warmup_enabled=False, holidays=(), periods=(12, 26, 9)):
+    def get_strike_macd(
+        self,
+        instrument_id,
+        *,
+        as_of=None,
+        timeout=None,
+        use_rolling_2m=False,
+        warmup_enabled=False,
+        holidays=(),
+        periods=(12, 26, 9),
+    ):
         """Read the exact option token's session candles; never substitute Spot.
 
         Kite native history is currently supported. Unsupported sources and
@@ -299,21 +308,26 @@ class BrokerMarketData:
             budget = self._budget(timeout)
             contract = self._resolve_contract(str(instrument_id), budget)
             opening = cutoff.replace(hour=9, minute=15, second=0, microsecond=0)
-            rows = history(contract["token"], "minute", opening - timedelta(days=14) if warmup_enabled else opening, cutoff, budget)
+            rows = history(
+                contract["token"],
+                "minute",
+                opening - timedelta(days=14) if warmup_enabled else opening,
+                cutoff,
+                budget,
+            )
             completed = completed_spot_bars(rows, cutoff)
-            minutes = [
-                bar
-                for bar in completed
-                if exchange_time(bar["start_time"]).date() == cutoff.date()
+            minutes = [bar for bar in completed if exchange_time(bar["start_time"]).date() == cutoff.date()]
+            expected_minutes = [
+                opening + timedelta(minutes=i) for i in range(int((cutoff - opening).total_seconds() // 60))
             ]
-            expected_minutes = [opening + timedelta(minutes=i)
-                for i in range(int((cutoff - opening).total_seconds() // 60))]
             if [exchange_time(bar["start_time"]) for bar in minutes] != expected_minutes:
                 raise MarketDataError("Selected option current-session minute history is incomplete")
             prior = prior_session_warmup(completed, cutoff, holidays=holidays) if warmup_enabled else []
             bars = macd_observation_bars(minutes, prior=prior, as_of=cutoff, rolling=use_rolling_2m)
             cadence = 60 if use_rolling_2m else 120
-            expected_close = opening + timedelta(seconds=cadence * int((cutoff - opening).total_seconds() // cadence))
+            expected_close = opening + timedelta(
+                seconds=cadence * int((cutoff - opening).total_seconds() // cadence)
+            )
             if (
                 not bars
                 or exchange_time(bars[-1]["start_time"]) + timedelta(minutes=2) != expected_close

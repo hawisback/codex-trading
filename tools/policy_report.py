@@ -36,31 +36,52 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--strategy", help="Preview an existing strategy profile; never runs it")
     parser.add_argument("--ai-mode", help="Preview a consultation mode; never starts a consultation")
-    parser.add_argument("--broker", choices=("proxy", "kite", "breeze"),
-                        help="Preview execution selection; no broker object is created")
-    parser.add_argument("--market-data-broker", choices=("kite", "breeze"),
-                        help="Preview market-data selection; no network reads")
+    parser.add_argument(
+        "--broker",
+        choices=("proxy", "kite", "breeze"),
+        help="Preview execution selection; no broker object is created",
+    )
+    parser.add_argument(
+        "--market-data-broker",
+        choices=("kite", "breeze"),
+        help="Preview market-data selection; no network reads",
+    )
     parser.add_argument("--format", choices=("text", "json"), default="text")
-    parser.add_argument("--validate-config", action="store_true",
-                        help="Check a subset of inventoried fields only; not full runtime certification")
+    parser.add_argument(
+        "--validate-config",
+        action="store_true",
+        help="Check a subset of inventoried fields only; not full runtime certification",
+    )
     args = parser.parse_args(argv)
 
     try:
         trading = read_json(ROOT / "config/trading.json")
         strategies = read_json(ROOT / "config/strategies.json")
         # Only these allowlisted nonsecret settings participate in the snapshot.
-        environ = {key: os.environ[key] for key in (
-            "STRATEGY_MODE", "AI_CONSULTATION_MODE", "EXECUTION_BROKER",
-            "MARKET_DATA_BROKER",
-        ) if key in os.environ}
+        environ = {
+            key: os.environ[key]
+            for key in (
+                "STRATEGY_MODE",
+                "AI_CONSULTATION_MODE",
+                "EXECUTION_BROKER",
+                "MARKET_DATA_BROKER",
+            )
+            if key in os.environ
+        }
         snapshot = build_policy_snapshot(
-            trading, strategies, strategy=args.strategy, ai_mode=args.ai_mode,
-            execution_broker=args.broker, market_data_broker=args.market_data_broker,
+            trading,
+            strategies,
+            strategy=args.strategy,
+            ai_mode=args.ai_mode,
+            execution_broker=args.broker,
+            market_data_broker=args.market_data_broker,
             environ=environ,
         )
     except (OSError, ValueError, TypeError) as exc:
         # Don't include user-provided JSON content or secrets in an error report.
-        parser.exit(2, f"Cannot inspect configuration: {type(exc).__name__} (report only; live code unchanged)\n")
+        parser.exit(
+            2, f"Cannot inspect configuration: {type(exc).__name__} (report only; live code unchanged)\n"
+        )
 
     if args.format == "json":
         print(json.dumps(snapshot.to_dict(), indent=2, ensure_ascii=False, allow_nan=False))
@@ -81,8 +102,10 @@ def main(argv: list[str] | None = None) -> int:
             for issue in snapshot.diagnostics:
                 print(f"- {issue}")
     if args.validate_config:
-        print("Validation scope: selected inventoried keys only, NOT every strategy or live preflight.",
-              file=__import__("sys").stderr)
+        print(
+            "Validation scope: selected inventoried keys only, NOT every strategy or live preflight.",
+            file=__import__("sys").stderr,
+        )
     return 1 if snapshot.diagnostics else 0
 
 

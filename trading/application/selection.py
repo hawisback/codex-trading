@@ -87,7 +87,7 @@ class CandidateSelectionService:
                 target_ltp = leg.get("ltp")
                 if strict_contract:
                     try:
-                        target_ltp = number(target_ltp, minimum=.01)
+                        target_ltp = number(target_ltp, minimum=0.01)
                     except (ValueError, TypeError, OverflowError):
                         target_ltp = None
 
@@ -95,7 +95,11 @@ class CandidateSelectionService:
                 # ZERO-SHORTFALL MARGIN BUDGET GATEKEEPER & MAX PREMIUM ENFORCEMENT
                 # -------------------------------------------------------------
                 try:
-                    avail_margin = number(ctx.get("available_margin"), minimum=0) if strict_contract else float(ctx.get("available_margin") or 0.0)
+                    avail_margin = (
+                        number(ctx.get("available_margin"), minimum=0)
+                        if strict_contract
+                        else float(ctx.get("available_margin") or 0.0)
+                    )
                 except (ValueError, TypeError, OverflowError):
                     avail_margin = 0.0
                 order_qty = self.quantity_calculator(avail_margin, target_ltp or 100.0)
@@ -114,7 +118,11 @@ class CandidateSelectionService:
                     max_premium = float("inf")
 
                 # 1. If ITM exceeds safe budget or max premium policy, step down to ATM
-                if not strict_contract and target_ltp and (required_cost > safe_budget or order_qty == 0 or target_ltp > max_premium):
+                if (
+                    not strict_contract
+                    and target_ltp
+                    and (required_cost > safe_budget or order_qty == 0 or target_ltp > max_premium)
+                ):
                     reasons.append(
                         f"MARGIN BUDGET OPTIMIZATION: ITM strike {target_strike} (₹{target_ltp:.1f} x {order_qty} = ₹{required_cost:.0f}) "
                         f"exceeds safe policy (Budget: ₹{safe_budget:.0f}, Max Premium: ₹{max_premium:.1f}). Falling back to ATM {atm_strike}."
@@ -190,8 +198,14 @@ class CandidateSelectionService:
                 if (
                     target_ltp is None
                     or target_instrument is None
-                    or (strict_contract and (not target_symbol or not isinstance(target_ltp, (int, float))
-                                             or isinstance(target_ltp, bool)))
+                    or (
+                        strict_contract
+                        and (
+                            not target_symbol
+                            or not isinstance(target_ltp, (int, float))
+                            or isinstance(target_ltp, bool)
+                        )
+                    )
                     or order_qty <= 0
                     or required_cost > safe_budget
                     or target_ltp > max_premium
@@ -211,7 +225,9 @@ class CandidateSelectionService:
 
             if strict_contract and (not target_instrument or not target_symbol or not target_ltp):
                 signal = "NEUTRAL"
-                reasons.append("STRICT ITM VETO: Required ITM contract unavailable or outside purchasing-power/premium policy; preserving cash.")
+                reasons.append(
+                    "STRICT ITM VETO: Required ITM contract unavailable or outside purchasing-power/premium policy; preserving cash."
+                )
                 target_instrument = target_symbol = target_ltp = None
                 order_qty = 0
 

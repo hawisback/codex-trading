@@ -12,9 +12,13 @@ import urllib.request
 from execution_safety import ReconciliationError
 from entry_policy import EntryBlocked
 from market_clock import MarketClock
+from trading.adapters.kite_contract_evidence import KiteContractEvidence
 from trading.adapters.gateways.base import BaseBrokerGateway
 from trading.bootstrap import ensure_environment
 from trading.domain.prices import round_tick
+from trading.domain.broker_contracts import BrokerContractError
+from trading.domain.kite_daily_pnl import kite_daily_pnl
+from trading.domain.limits import LOT_SIZE
 
 KITE_API_BASE_URL = "https://api.kite.trade"
 
@@ -72,6 +76,7 @@ class KiteExecutionGateway(BaseBrokerGateway):
         self._verified_at = 0.0
         self._verified_credentials = None
         self._contracts: dict[str, str] = {}
+        self._contract_evidence = KiteContractEvidence()
 
     def register_contract(self, instrument_id, symbol):
         if not instrument_id or not symbol or str(symbol).startswith("INST-"):
@@ -136,7 +141,12 @@ class KiteExecutionGateway(BaseBrokerGateway):
 
     def _request(self, method, endpoint, params=None, data=None, timeout=10.0, max_retries=1):
         mutation = method != "GET"
-        if mutation and (self._mode != "LIVE" or not self._live_authorized or not self.is_connected() or not self._owns_account_lease()):
+        if mutation and (
+            self._mode != "LIVE"
+            or not self._live_authorized
+            or not self.is_connected()
+            or not self._owns_account_lease()
+        ):
             return self._error("NATIVE_LIVE_NOT_ARMED")
         url = self.base_url + endpoint
         if params:
@@ -158,7 +168,9 @@ class KiteExecutionGateway(BaseBrokerGateway):
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     return self._error("BROKER_REQUEST_BUDGET_EXHAUSTED")
-                if mutation and (not self._live_authorized or not self.is_connected() or not self._owns_account_lease()):
+                if mutation and (
+                    not self._live_authorized or not self.is_connected() or not self._owns_account_lease()
+                ):
                     return self._error("NATIVE_LIVE_NOT_ARMED")
                 # Exit callbacks may refresh price after pacing. Build the wire
                 # body only after that callback has durably saved its final limit.
@@ -342,6 +354,72 @@ class KiteExecutionGateway(BaseBrokerGateway):
             "account_id": self.get_account_id(),
             "source": "kite:user/margins:authenticated-receipt",
         }
+
+    def get_daily_pnl(self):
+        """Read account-wide gross intraday P&L; never arm or mutate orders."""
+        with self._lock:
+            try:
+                self._ensure_verified()
+                account = self.get_account_id()
+                credentials = (self.api_key, self.access_token)
+                started = MarketClock.now_ist()
+                positions = self._request("GET", "/portfolio/positions")
+                trades = self._request("GET", "/trades")
+                received = MarketClock.now_ist()
+                self._ensure_verified()
+                if (
+                    not self.is_connected()
+                    or self.get_account_id() != account
+                    or credentials != (self.api_key, self.access_token)
+                    or received.date() != started.date()
+                    or not 0 <= (received - started).total_seconds() <= 30
+                ):
+                    raise BrokerContractError("KITE_PNL_ACCOUNT_OR_SESSION_CHANGED")
+                # Use the beginning of the read window, conservatively, as
+                # freshness time. Fills cannot be later than the final receipt.
+                result = kite_daily_pnl(positions, trades, account_id=account, observed_at=received)
+                result["pnl_asof"] = started.isoformat()
+                return result
+            except BrokerContractError as exc:
+                return self._error(str(exc))
+            except Exception:
+                return self._error("KITE_PNL_UNAVAILABLE")
+
+    def get_entry_funds(self, instrument_id):
+        """R01 evidence: real margin, daily ledger and selected-contract limit.
+
+        Separate from the legacy margin API so protection/recovery and non-R01
+        paths do not depend on exchange CSV availability.
+        """
+        with self._lock:
+            try:
+                self._ensure_verified()
+                if self.default_exchange != "NFO" or self.default_product not in ("NRML", "MIS"):
+                    raise BrokerContractError("KITE_R01_SEGMENT_UNSUPPORTED")
+                account, credentials = self.get_account_id(), (self.api_key, self.access_token)
+                contract = self._contract_evidence.for_entry(
+                    str(instrument_id),
+                    self.execution_symbol(instrument_id),
+                    lot_size=LOT_SIZE,
+                    tick_size="0.05",
+                )
+                funds = self.get_funds()
+                pnl = self.get_daily_pnl()
+                if funds.get("error") or pnl.get("error"):
+                    return funds if funds.get("error") else pnl
+                if (
+                    not self.is_connected()
+                    or account != self.get_account_id()
+                    or credentials != (self.api_key, self.access_token)
+                    or funds.get("account_id") != account
+                    or pnl.get("pnl_account_id") != account
+                ):
+                    raise BrokerContractError("KITE_ENTRY_ACCOUNT_CHANGED")
+                return {**funds, **pnl, **contract}
+            except BrokerContractError as exc:
+                return self._error(str(exc))
+            except Exception:
+                return self._error("KITE_ENTRY_EVIDENCE_UNAVAILABLE")
 
     def get_contract_quote(self, instrument_id, *, timeout_sec=1.0):
         return self._get_quotes([instrument_id], timeout_sec)[str(instrument_id)]

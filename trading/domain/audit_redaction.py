@@ -8,9 +8,20 @@ from collections.abc import Mapping
 from typing import Any
 
 _SENSITIVE = (
-    "api_key", "access_token", "api_secret", "secret_key", "token",
-    "password", "passwd", "authorization", "credential", "cookie",
-    "account_id", "client_id", "user_id", "session_key",
+    "api_key",
+    "access_token",
+    "api_secret",
+    "secret_key",
+    "token",
+    "password",
+    "passwd",
+    "authorization",
+    "credential",
+    "cookie",
+    "account_id",
+    "client_id",
+    "user_id",
+    "session_key",
 )
 
 

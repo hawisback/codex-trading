@@ -219,7 +219,10 @@ class StopLossConsultationTests(unittest.TestCase):
         self.assertFalse(ac.PENDING_SL_FILE_JSON.exists())
         self.ratchet.side_effect = None
         owner = SimpleNamespace(
-            ai_consultant=self.consultant, ratchet_stops=self.ratchet, save_active_position=self.save
+            ai_consultant=self.consultant,
+            ratchet_stops=self.ratchet,
+            save_active_position=self.save,
+            trading_cfg={},
         )
         NiftyOptionsTrader._check_ai_stop_loss(owner, self.trade, {})
         self.assertEqual(2, self.ratchet.call_count)

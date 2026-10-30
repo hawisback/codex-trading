@@ -9,6 +9,7 @@ from trading.domain.states import PositionStatus
 from trading.domain.owner_lot_policy import preview_owner_lot_ceiling
 from trading.domain.daily_loss_policy import daily_loss_decision
 from trading.domain.broker_contracts import BrokerContractError, BrokerFundsView
+from trading.domain.pretrade_evidence import entry_control_block
 
 import copy
 import json
@@ -59,6 +60,17 @@ class PositionLifecycle:
 
     def next_intent(self, kind):
         return intent_id(kind)
+
+    def _entry_control_block(self):
+        if self.execution_scope.get("mode") != "LIVE":
+            return None
+        reader = getattr(self, "entry_control_reader", None)
+        if reader is not None:
+            try:
+                return reader()
+            except Exception:
+                return "ENTRY_CONTROLS_UNAVAILABLE"
+        return entry_control_block(getattr(self, "trading_cfg", {}), require_all=False)
 
     def _record_flat_entry_limits(self, scoped, today_entries):
         """Persist the first verified flat observation per entry set, across restarts.
@@ -613,6 +625,9 @@ class PositionLifecycle:
             self._entry_guard.release()
 
     def _submit_entry(self, decision, *, today_entries=0):
+        blocked = self._entry_control_block()
+        if blocked:
+            return {"error": True, "detail": blocked}
         blocked = self._entry_limit_block(today_entries)
         if blocked:
             return {"error": True, "detail": blocked}
@@ -639,17 +654,18 @@ class PositionLifecycle:
                 register_contract(decision["instrument_id"], decision.get("symbol"))
             except ValueError as exc:
                 return {"error": True, "detail": str(exc)}
-        funds = self.client.get_funds()
+        r01 = (self.trading_cfg.get("r01_policy", {}).get("enabled") is True
+               and self.execution_scope.get("mode") == "LIVE")
+        entry_funds = getattr(self.client, "get_entry_funds", None)
+        funds = entry_funds(decision["instrument_id"]) if r01 and entry_funds else self.client.get_funds()
         try:
             if not isinstance(funds, dict) or funds.get("error"):
                 raise EntryBlocked("UNVERIFIED_FUNDS_OR_PRICE")
             margin = number(funds.get("available_margin"))
         except EntryBlocked:
             return {"error": True, "detail": "UNVERIFIED_FUNDS_OR_PRICE"}
-        # Opt-in R01: a verified account/day P&L baseline is mandatory for
+        # Opt-in R01: verified account/day realized and unrealized P&L is mandatory for
         # NEW orders. Missing data can never be interpreted as zero loss.
-        r01 = (self.trading_cfg.get("r01_policy", {}).get("enabled") is True
-               and self.execution_scope.get("mode") == "LIVE")
         if r01:
             # Unified, strategy-neutral protective logic is mandatory for
             # the R01 policy. An incomplete opt-in must never mix exit rules.
@@ -663,14 +679,15 @@ class PositionLifecycle:
                 )
             except BrokerContractError as exc:
                 return {"error": True, "detail": str(exc)}
+            remaining = funds.get("expiry_sessions_remaining")
+            minimum = self.trading_cfg.get("option_selection", {}).get("minimum_expiry_sessions_remaining", 2)
+            if type(remaining) is not int or type(minimum) is not int or minimum < 0 or remaining < minimum:
+                return {"error": True, "detail": "EXPIRY_SESSION_BUDGET_UNVERIFIED"}
+            if remaining == 0 and self.trading_cfg.get("option_selection", {}).get("use_current_expiry_on_0dte") is not True:
+                return {"error": True, "detail": "ZERO_DTE_ENTRY_BLOCKED"}
             # The validated broker funds record, rather than a static
             # config value, supplies both bracket capital and order limit.
             margin = float(broker_funds.available_margin)
-            result = daily_loss_decision(
-                funds, self.execution_scope, MarketClock.now_ist(),
-                self.trading_cfg.get("risk", {}).get("max_daily_loss_pct", 1.5))
-            if not result.allowed:
-                return {"error": True, "detail": result.reason}
         spot_quote = None
         quote_reader = getattr(self, "quote_reader", self.client)
         batch_quotes = getattr(quote_reader, "get_entry_quotes", None)
@@ -716,6 +733,13 @@ class PositionLifecycle:
             qty = (qty // 65) * LOT_SIZE
         if qty <= 0:
             return {"error": True, "detail": "INSUFFICIENT_MARGIN_BLOCKED"}
+        if r01:
+            result = daily_loss_decision(
+                funds, self.execution_scope, MarketClock.now_ist(),
+                lots=qty // LOT_SIZE,
+                loss_per_lot=self.trading_cfg.get("r01_policy", {}).get("daily_loss_per_lot_inr", 3000))
+            if not result.allowed:
+                return {"error": True, "detail": result.reason}
         now = MarketClock.now_ist()
         verdict = decision["ai_verdict"]
         cancel_after = min(now + timedelta(seconds=policy.order_timeout),
@@ -739,6 +763,18 @@ class PositionLifecycle:
                  "setup_type": decision.get("setup_type", "TREND_PULLBACK"),
                  "invalidation_level": decision.get("invalidation_level"), "entry_execution": evidence}
         if r01:
+            evidence["daily_risk"] = {
+                "basis": "proposed_entry_lots", "lots": qty // LOT_SIZE,
+                "limit_inr": str(result.limit_amount), "pnl_asof": funds.get("pnl_asof"),
+                "breach_action": "BLOCK_NEW_ENTRIES_ONLY",
+            }
+            evidence["contract_evidence"] = copy.deepcopy(funds.get("contract_evidence"))
+            evidence["expiry_sessions_remaining"] = funds.get("expiry_sessions_remaining")
+            evidence["daily_risk"].update(
+                realized_pnl_today=funds.get("realized_pnl_today"),
+                unrealized_pnl_today=funds.get("unrealized_pnl_today"),
+                pnl_source=funds.get("pnl_source"),
+            )
             state["r01_policy_version"] = "r01-owner-20261029-v1"
             # Freeze the risk percentage for the position's lifetime.
             # Disabling R01 for new entries cannot loosen existing stops.
@@ -756,6 +792,9 @@ class PositionLifecycle:
         # Atomic persistence can also stall. A pre-submit failure is a known non-order,
         # unlike a lost POST response, and is safe to discard after saving its rejection.
         def preflight():
+            blocked = self._entry_control_block()
+            if blocked:
+                raise EntryBlocked(blocked)
             if r01:
                 # Also validate the snapshot at the actual mutation boundary:
                 # a submission delayed by broker pacing cannot reuse expired
@@ -769,7 +808,8 @@ class PositionLifecycle:
                     raise EntryBlocked(str(exc)) from exc
                 latest_loss = daily_loss_decision(
                     funds, self.execution_scope, MarketClock.now_ist(),
-                    self.trading_cfg.get("risk", {}).get("max_daily_loss_pct", 1.5))
+                    lots=qty // LOT_SIZE,
+                    loss_per_lot=self.trading_cfg.get("r01_policy", {}).get("daily_loss_per_lot_inr", 3000))
                 if not latest_loss.allowed:
                     raise EntryBlocked(latest_loss.reason)
             if MarketClock.now_ist().strftime("%H:%M") >= HARD_ENTRY_CUTOFF:

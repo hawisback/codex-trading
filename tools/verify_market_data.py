@@ -123,6 +123,18 @@ class BrokerHeaderObserver:
             raise
 
 
+def probe_option_depth(provider, options, timeout):
+    """Check the ATM call using the provider's normal entry-read budget.
+
+    The first strike can be deep ITM and unrepresentative of candidate depth.
+    Pacing is included in the read budget; the provider still enforces the
+    executable quote's unchanged identity, age, tick and liquidity checks.
+    """
+    atm = options["atm_strike"]
+    strike = min(options["strikes"], key=lambda row: abs(row["strike"] - atm))
+    return provider.get_contract_quote(strike["call"]["instrument_id"], timeout_sec=min(3.0, timeout))
+
+
 def verify_live(broker, timeout, *, after_hours=False):
     rows, payloads = [], {}
     observer = BrokerHeaderObserver(urllib.request.urlopen)
@@ -158,8 +170,7 @@ def verify_live(broker, timeout, *, after_hours=False):
             def book():
                 if "options" not in payloads:
                     raise MarketDataError("Option chain unavailable")
-                identity = payloads["options"]["strikes"][0]["call"]["instrument_id"]
-                return provider.get_contract_quote(identity, timeout_sec=min(1.0, timeout))
+                return probe_option_depth(provider, payloads["options"], timeout)
 
             reads["option_depth"] = book
             for name, read in reads.items():

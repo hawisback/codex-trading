@@ -4,11 +4,19 @@
 > ### ⚖️ DETERMINISTIC RULES & RISK GUARDRAILS (NOT ARTIFICIAL INTELLIGENCE)
 > **This document defines deterministic, hardcoded algorithmic heuristics, boundary filters, and trap-avoidance rules enforced in code (`ai_consultant.py`).**
 > * **It is NOT Artificial Intelligence or a Machine Learning model.**
-> * In this codebase, **"AI" refers STRICTLY and EXCLUSIVELY to the Antigravity AI Code Companion (neural LLM)** operating interactively in `--ai-mode chat`.
+> * In this codebase, **"AI" refers to an explicitly invoked neural companion: Codex in ChatGPT IDE or the legacy Antigravity companion**, evaluating the current dossier in `--ai-mode chat`. An idle watcher alone is not inference.
 > * When the scheduler runs in `--ai-mode playbook` (or `--ai-mode rules`), it is running **100% deterministic code-based rule checks** with zero neural/AI inference.
 > * Whenever the user/operator asks *"Are we using AI?"*, the answer is:
->   - **YES** only if running with the **Antigravity AI Code Companion** (`--ai-mode chat`).
+>   - **YES** only when the configured neural companion actually evaluates the current request (`--ai-mode chat`).
 >   - **NO** if running with these deterministic code rules (`--ai-mode playbook` / `--ai-mode rules`).
+
+---
+
+## Active policy precedence (owner direction, 2026-10-30)
+
+The request's `authoritative_risk_policy` and each existing position's frozen policy are binding. Current MACD and R01 initial protection is **25%**. R01 uses the shared unified stop schedule and does not request competing legacy post-fill refinements. The 15–20% refinement band applies only to eligible legacy positions with that frozen band. Preserve stronger existing stops and the attached minimum invalidation buffer (currently 25 Spot points for MACD).
+
+The setup examples below describe historical patterns; their targets, timers and trailing examples cannot override the active/frozen policy. Removed Trap 1 must not be reinstated. Missing or conflicting policy/evidence requires an entry veto or retained stop protection.
 
 ---
 
@@ -110,7 +118,7 @@ This playbook catalogs the deterministic risk filters and institutional traps en
   1. Spot retests 5m EMA9 on low volume.
   2. Enter closest ITM strike.
   3. **Risk Management:**
-     - Initial Stop: 30% or VWAP invalidation ($\pm 15$ pts).
+     - Current MACD/R01 initial protection: **25%**. The attached authoritative/frozen policy controls technical invalidation and any permitted refinement; preserve stronger stops. Historical setup examples cannot override the active policy.
      - Once in profit ($+15\%$), **lock breakeven floor at $+2\%$**.
      - Trail dynamically using **5m EMA9**: stay in the position as long as spot holds above 5m EMA9.
      - Exit on 10% pullback from peak or target hit ($+50\%$).
@@ -129,10 +137,10 @@ This playbook catalogs the deterministic risk filters and institutional traps en
 
 ## 📋 Trade Consultation Checklist
 
-When evaluating candidate trades against these deterministic rules or presenting to the Antigravity AI Companion:
+When evaluating candidate trades against deterministic rules or presenting to the Codex/legacy neural companion:
 
 1. **Market Regime:** Is the market trending with conviction, or oscillating inside a flat-VWAP chop box?
-2. **Trap Detection:** Does this setup trigger Trap 1 (Midday dead zone), Trap 2 (0DTE gamma whipsaw), Trap 3 (V-reversal), Trap 4 (Ceiling resistance), Trap 7 (VWAP slope mismatch), or Trap 8 (Climax overextension)?
+2. **Trap Detection:** Check active Traps 2 through 8 under the attached policy. Trap 1 is removed and must not be reinstated as a midday/dead-zone veto. R01's explicitly disabled price-only veto must not be silently reintroduced; all remaining risk and data checks still apply.
 3. **Value Proximity:** Did price retest 5m EMA9, or are we buying in mid-air?
 4. **Order Flow & Runway:** Are overhead call writers unwinding, or is there a massive OI wall right above current spot?
 5. **Verdict:**

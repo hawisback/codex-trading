@@ -6,7 +6,7 @@ from pathlib import Path
 import tempfile
 from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from market_clock import MarketClock
 from tests.test_market_data import NOW, ROOT, FixtureSource, contract_rows, JsonResponse
@@ -16,7 +16,7 @@ from trading.adapters.market_sources import KiteSessionSource, BreezeMarketSourc
 from trading.adapters.gateways.breeze import BreezeExecutionGateway
 from trading.application.market_context import MarketContextService
 from trading.domain.market_contracts import ContractError, SCHEMAS, validate_market_contract
-from tools.verify_market_data import BrokerHeaderObserver, verify_live
+from tools.verify_market_data import BrokerHeaderObserver, probe_option_depth, verify_live
 from tools.after_hours_market import verify_after_hours
 
 
@@ -62,6 +62,22 @@ class SchemaContractTests(unittest.TestCase):
         for name, payload in self.payloads.items():
             with self.subTest(name=name):
                 self.assertTrue(validate_market_contract(name, payload))
+
+    def test_depth_probe_selects_atm_and_preserves_requested_read_deadline(self):
+        provider = Mock()
+        options = dict(
+            atm_strike=23000,
+            strikes=[
+                dict(strike=22500, call=dict(instrument_id="DEEP-ITM")),
+                dict(strike=23000, call=dict(instrument_id="ATM-CALL")),
+                dict(strike=23500, call=dict(instrument_id="FAR-OTM")),
+            ],
+        )
+        probe_option_depth(provider, options, 45)
+        provider.get_contract_quote.assert_called_once_with("ATM-CALL", timeout_sec=3.0)
+        provider.reset_mock()
+        probe_option_depth(provider, options, 0.25)
+        provider.get_contract_quote.assert_called_once_with("ATM-CALL", timeout_sec=0.25)
 
     def test_every_required_field_is_enforced_at_every_schema_node(self):
         for name, schema in SCHEMAS.items():

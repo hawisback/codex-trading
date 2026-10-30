@@ -21,7 +21,9 @@ class ReplayService:
         self.configuration = configuration
         self.quantity = quantity
         self.ai_consultant = AIConsultant(
-            mode="playbook", timeout_seconds=configuration.ai_timeout, trading_config=configuration.trading,
+            mode="playbook",
+            timeout_seconds=configuration.ai_timeout,
+            trading_config=configuration.trading,
             strategy_config=configuration.strategy,
         )
         self.dossiers = DossierService(configuration.trading, strategy_config=configuration.strategy)
@@ -29,7 +31,11 @@ class ReplayService:
             configuration.strategy_name, configuration.strategy, build_radar(configuration.strategy)
         )
         self.selection = CandidateSelectionService(
-            configuration.strategy_name, configuration.strategy, quantity, self.calculate_quantity, strategy,
+            configuration.strategy_name,
+            configuration.strategy,
+            quantity,
+            self.calculate_quantity,
+            strategy,
             trading_cfg=configuration.trading,
         )
 

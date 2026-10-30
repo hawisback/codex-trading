@@ -4,9 +4,7 @@
 import argparse
 import hashlib
 import json
-import os
 import re
-import sys
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -85,9 +83,7 @@ def exchange_request_token(api_key, api_secret, request_token_or_url):
         return False, "Invalid request token format"
 
     checksum = hashlib.sha256(f"{api_key}{token}{api_secret}".encode()).hexdigest()
-    data = urllib.parse.urlencode(
-        {"api_key": api_key, "request_token": token, "checksum": checksum}
-    ).encode()
+    data = urllib.parse.urlencode({"api_key": api_key, "request_token": token, "checksum": checksum}).encode()
     req = urllib.request.Request("https://api.kite.trade/session/token", data=data)
     try:
         with urllib.request.urlopen(req, timeout=5) as resp:
@@ -136,26 +132,26 @@ def main():
         current_token = new_token
 
     # Verify token
-    print(f"\nVerifying access token against Kite API...")
+    print("\nVerifying access token against Kite API...")
     ok, profile = verify_token(api_key, current_token)
     if ok:
         margin = verify_margin(api_key, current_token)
-        print(f"TOKEN VALID!")
+        print("TOKEN VALID!")
         print(f"  - User: {profile.get('user_name')} ({profile.get('user_id')})")
         print(f"  - Email: {profile.get('email')}")
         print(f"  - Broker: {profile.get('broker')}")
         print(f"  - Available Margin: Rs. {margin if margin is not None else 'N/A'}")
         return 0
     else:
-        print(f"TOKEN INVALID / EXPIRED:")
+        print("TOKEN INVALID / EXPIRED:")
         print(f"  - Error: {profile.get('message', 'Unknown error')}")
         print(f"  - Error Type: {profile.get('error_type', 'N/A')}")
         login_url = f"https://kite.zerodha.com/connect/login?v=3&api_key={api_key}"
-        print(f"\nTo generate a new session:")
+        print("\nTo generate a new session:")
         print(f"1. Open this URL in your browser:\n   {login_url}")
-        print(f"2. Log in with Kite credentials.")
-        print(f"3. Copy the redirected URL (contains request_token=...) and run:")
-        print(f"   python tools/kite_token.py --exchange <URL_OR_REQUEST_TOKEN>")
+        print("2. Log in with Kite credentials.")
+        print("3. Copy the redirected URL (contains request_token=...) and run:")
+        print("   python tools/kite_token.py --exchange <URL_OR_REQUEST_TOKEN>")
         return 1
 
 

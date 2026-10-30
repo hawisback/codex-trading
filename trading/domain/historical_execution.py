@@ -20,9 +20,10 @@ def simulate_option_path(signal_index, direction, spot_bars, options, strike, ex
     if entry_bar is None:
         return None
     entry = entry_bar["open"]
-    recent = spot_bars[max(0, signal_index - 4):signal_index + 1]
-    invalidation = (min(b["low"] for b in recent) - 2 if direction == "CE"
-                    else max(b["high"] for b in recent) + 2)
+    recent = spot_bars[max(0, signal_index - 4) : signal_index + 1]
+    invalidation = (
+        min(b["low"] for b in recent) - 2 if direction == "CE" else max(b["high"] for b in recent) + 2
+    )
     stop = entry * (1 - exit_config.get("initial_stop_pct", 20) / 100)
     peak = entry
     last = None
@@ -42,8 +43,9 @@ def simulate_option_path(signal_index, direction, spot_bars, options, strike, ex
         if bar["low"] <= stop:
             last = (index, min(stop, bar["open"]), "EXISTING_STOP_OR_GAP")
             break
-        if ((direction == "CE" and spot["low"] <= invalidation)
-                or (direction == "PE" and spot["high"] >= invalidation)):
+        if (direction == "CE" and spot["low"] <= invalidation) or (
+            direction == "PE" and spot["high"] >= invalidation
+        ):
             # Spot/option wick ordering is unavailable: use the adverse option low.
             last = (index, bar["low"], "STRUCTURAL_INVALIDATION_OHLC_ESTIMATE")
             break
@@ -54,9 +56,21 @@ def simulate_option_path(signal_index, direction, spot_bars, options, strike, ex
         # An open position at the end of a partial history is not realized PnL.
         return None
     exit_index, exit_price, reason = last
-    return dict(entry_idx=first, exit_idx=exit_index, signal_idx=signal_index, direction=direction,
-                strike=strike, entry_price=entry, exit_price=exit_price, peak_price=peak,
-                peak_gain_pct=(peak / entry - 1) * 100, invalidation_spot=invalidation,
-                pnl_pts=exit_price - entry, pnl_inr=(exit_price - entry) * 65,
-                ret_pct=(exit_price / entry - 1) * 100, exit_reason=reason,
-                pricing_source="EXACT_CONTRACT_OHLC_ESTIMATE", ai_used=False)
+    return dict(
+        entry_idx=first,
+        exit_idx=exit_index,
+        signal_idx=signal_index,
+        direction=direction,
+        strike=strike,
+        entry_price=entry,
+        exit_price=exit_price,
+        peak_price=peak,
+        peak_gain_pct=(peak / entry - 1) * 100,
+        invalidation_spot=invalidation,
+        pnl_pts=exit_price - entry,
+        pnl_inr=(exit_price - entry) * 65,
+        ret_pct=(exit_price / entry - 1) * 100,
+        exit_reason=reason,
+        pricing_source="EXACT_CONTRACT_OHLC_ESTIMATE",
+        ai_used=False,
+    )

@@ -1,36 +1,53 @@
-"""Offline characterization of the R01 owner ladder; do not run without approval."""
+"""Revised 2026-10-30 capital milestones and independent funding ceilings."""
 
 import unittest
 from decimal import Decimal
 
 from trading.domain.owner_lot_policy import (
-    owner_ladder_max_lots, preview_owner_lot_ceiling,
+    owner_ladder_max_lots,
+    preview_owner_lot_ceiling,
 )
 
 
 class OwnerLotPolicyTests(unittest.TestCase):
-    def preview(self, capital, *, ask="50", margin=None, basis="available_margin",
-                broker_cap=650, lot_size=65):
+    def preview(
+        self, capital, *, ask="50", margin=None, basis="available_margin", broker_cap=650, lot_size=65
+    ):
         return preview_owner_lot_ceiling(
-            capital_basis=basis, bracket_capital=capital,
+            capital_basis=basis,
+            bracket_capital=capital,
             available_margin=capital if margin is None else margin,
-            executable_option_ask=ask, lot_size=lot_size,
+            executable_option_ask=ask,
+            lot_size=lot_size,
             broker_single_order_quantity_limit=broker_cap,
         )
 
-    def test_all_inclusive_upper_band_boundaries(self):
+    def test_capital_milestones_and_drawdown_boundaries(self):
         cases = [
-            ("0", 0), ("-1", 0), ("20000", 2), ("20000.01", 4),
-            ("40000", 4), ("40000.01", 6),
-            ("60000", 6), ("60000.01", 8),
-            ("80000", 8), ("80000.01", 10), ("100001", 10),
+            ("0", 0),
+            ("-1", 0),
+            ("19999.99", 2),
+            ("20000", 2),
+            ("20000.01", 2),
+            ("39999.99", 2),
+            ("40000", 4),
+            ("40000.01", 4),
+            ("59999.99", 4),
+            ("60000", 6),
+            ("60000.01", 6),
+            ("79999.99", 6),
+            ("80000", 8),
+            ("80000.01", 8),
+            ("99999.99", 8),
+            ("100000", 10),
+            ("100001", 10),
         ]
         for capital, expected in cases:
             with self.subTest(capital=capital):
                 self.assertEqual(expected, owner_ladder_max_lots(capital))
 
     def test_full_ten_lots_only_when_margin_and_broker_support_them(self):
-        result = self.preview("80000.01")
+        result = self.preview("100000")
         self.assertEqual(10, result.ladder_lots)
         self.assertEqual(10, result.ceiling_lots)
         self.assertEqual(650, result.ceiling_contracts)
@@ -42,8 +59,8 @@ class OwnerLotPolicyTests(unittest.TestCase):
         self.assertEqual(65, result.ceiling_contracts)
 
     def test_affordability_uses_executable_option_ask_and_fee_reserve(self):
-        result = self.preview("20000.01", ask="100", broker_cap=650)
-        # floor((20000.01 - 150) / (100 * 65)) = 3 whole lots
+        result = self.preview("40000", ask="200", broker_cap=650)
+        # floor((40000 - 150) / (200 * 65)) = 3 whole lots
         self.assertEqual(4, result.ladder_lots)
         self.assertEqual(3, result.ceiling_lots)
         self.assertEqual(195, result.ceiling_contracts)

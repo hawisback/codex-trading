@@ -9,18 +9,23 @@ class PolicyInventoryTests(unittest.TestCase):
     def setUp(self):
         self.trading = {
             "risk": {"max_order_quantity": 65, "max_trades_per_day": 5, "account_equity": 500000},
-            "session": {"no_new_trade_before": "09:20", "no_new_trade_after": "14:45",
-                        "force_exit_time": "15:20"},
+            "session": {
+                "no_new_trade_before": "09:20",
+                "no_new_trade_after": "14:45",
+                "force_exit_time": "15:20",
+            },
             "option_selection": {"max_option_premium": 135, "exchange_holidays": ["2026-10-20"]},
             "mode": "LIVE",
         }
         self.strategies = {
             "active_strategy": "macd_momentum",
             "ai_consultation": {"default_mode": "chat"},
-            "strategies": {"macd_momentum": {
-                "compounding": {"enabled": True, "max_lots_cap": 10, "max_order_quantity": 650},
-                "entry": {"max_daily_entries": 2},
-            }},
+            "strategies": {
+                "macd_momentum": {
+                    "compounding": {"enabled": True, "max_lots_cap": 10, "max_order_quantity": 650},
+                    "entry": {"max_daily_entries": 2},
+                }
+            },
         }
 
     def test_observations_preserve_conflicting_values_without_enforcing_them(self):
@@ -37,8 +42,11 @@ class PolicyInventoryTests(unittest.TestCase):
     def test_precedence_reports_source_without_mutating_inputs(self):
         before = repr(self.trading), repr(self.strategies)
         snapshot = build_policy_snapshot(
-            self.trading, self.strategies, strategy="macd_momentum",
-            ai_mode="rules", execution_broker="kite",
+            self.trading,
+            self.strategies,
+            strategy="macd_momentum",
+            ai_mode="rules",
+            execution_broker="kite",
             environ={"AI_CONSULTATION_MODE": "chat", "EXECUTION_BROKER": "breeze"},
         )
         self.assertEqual("rules", snapshot.ai_mode)
@@ -59,9 +67,7 @@ class PolicyInventoryTests(unittest.TestCase):
         snapshot = build_policy_snapshot(self.trading, self.strategies)
         fields = {row.key: row for row in snapshot.observations}
         self.trading["option_selection"]["exchange_holidays"].append("2026-11-01")
-        self.assertEqual(
-            ("2026-10-20",), fields["option_selection.exchange_holidays"].configured
-        )
+        self.assertEqual(("2026-10-20",), fields["option_selection.exchange_holidays"].configured)
 
     def test_digest_is_deterministic_for_identical_allowlisted_policy(self):
         first = build_policy_snapshot(self.trading, self.strategies)

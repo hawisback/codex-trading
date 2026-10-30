@@ -13,15 +13,26 @@ from trading.strategies.registry import StrategyRegistry
 class TestMacdMomentumStrategy(unittest.TestCase):
     def bars(self, count):
         start = MarketClock.parse_to_ist("2026-10-27T09:15:00+05:30")
-        return [dict(start_time=(start + timedelta(minutes=i)).isoformat(), open=p, high=p + 1,
-                     low=p - 1, close=p, volume=100)
-                for i in range(count) for p in [23000 + 30 * math.sin(i * .31) + .1 * i]]
+        return [
+            dict(
+                start_time=(start + timedelta(minutes=i)).isoformat(),
+                open=p,
+                high=p + 1,
+                low=p - 1,
+                close=p,
+                volume=100,
+            )
+            for i in range(count)
+            for p in [23000 + 30 * math.sin(i * 0.31) + 0.1 * i]
+        ]
 
     def evaluate(self, bars, elapsed=None):
         with MarketClock.at("2026-10-27T09:15:00+05:30") as start:
             with MarketClock.at(start + timedelta(minutes=elapsed or len(bars))):
                 spot = bars[-1]["close"] if bars else 23000
-                return MacdMomentumStrategy().evaluate({"candles_1m": bars, "spot": spot, "session_vwap": spot})
+                return MacdMomentumStrategy().evaluate(
+                    {"candles_1m": bars, "spot": spot, "session_vwap": spot}
+                )
 
     def test_resampling_preserves_ohlcv_and_drops_incomplete_tail(self):
         bars = self.bars(5)
@@ -56,8 +67,12 @@ class TestMacdMomentumStrategy(unittest.TestCase):
 
     def test_timestamp_gaps_duplicates_unordered_missing_and_stale_fail_closed(self):
         bars = self.bars(64)
-        for bad in (bars[:20] + bars[21:], bars[:20] + [bars[19]] + bars[21:], list(reversed(bars)),
-                    [dict(b, start_time="invalid") for b in bars]):
+        for bad in (
+            bars[:20] + bars[21:],
+            bars[:20] + [bars[19]] + bars[21:],
+            list(reversed(bars)),
+            [dict(b, start_time="invalid") for b in bars],
+        ):
             self.assertEqual("NEUTRAL", self.evaluate(bad, elapsed=64).signal)
         self.assertEqual("NEUTRAL", self.evaluate(bars, elapsed=90).signal)
 
@@ -82,8 +97,12 @@ class TestMacdMomentumStrategy(unittest.TestCase):
         spot = bars[-1]["close"]
         ctx = dict(candles_1m=bars, spot=spot, session_vwap=spot, ema_9=spot, ema_20=spot)
         ctx.update(changes or {})
-        entry = dict(require_ema_confirmation=True, require_ema20_trend_alignment=True,
-                     ema_proximity_pts=10, min_invalidation_buffer_pts=15)
+        entry = dict(
+            require_ema_confirmation=True,
+            require_ema20_trend_alignment=True,
+            ema_proximity_pts=10,
+            min_invalidation_buffer_pts=15,
+        )
         entry.update(config_changes or {})
         now = MarketClock.parse_to_ist(bars[-1]["start_time"]) + timedelta(minutes=1)
         with MarketClock.at(now):
@@ -110,7 +129,9 @@ class TestMacdMomentumStrategy(unittest.TestCase):
             candidate, _ = self.hybrid_evaluate(direction, {"ema_9": spot + 10.01})
             self.assertEqual("NEUTRAL", candidate.signal)
             self.assertIn("extended", candidate.reasons[0])
-            candidate, _ = self.hybrid_evaluate(direction, {"ema_20": spot + (1 if direction == "BUY_CE" else -1)})
+            candidate, _ = self.hybrid_evaluate(
+                direction, {"ema_20": spot + (1 if direction == "BUY_CE" else -1)}
+            )
             self.assertEqual("NEUTRAL", candidate.signal)
             self.assertIn("wrong side", candidate.reasons[0])
 
@@ -125,13 +146,17 @@ class TestMacdMomentumStrategy(unittest.TestCase):
 
     def test_ema20_filter_is_independent_of_ema9_filter(self):
         spot = self.hybrid_case("BUY_CE")[-1]["close"]
-        candidate, _ = self.hybrid_evaluate("BUY_CE", {"ema_20": spot + 1}, {"require_ema_confirmation": False})
+        candidate, _ = self.hybrid_evaluate(
+            "BUY_CE", {"ema_20": spot + 1}, {"require_ema_confirmation": False}
+        )
         self.assertEqual("NEUTRAL", candidate.signal)
         self.assertIn("wrong side", candidate.reasons[0])
 
     def test_active_profile_proposes_crossovers_beyond_ema9_and_against_ema20(self):
         config = json.loads((Path(__file__).resolve().parents[1] / "config/strategies.json").read_text())
-        config["strategies"]["macd_momentum"]["entry"].update(use_rolling_2m=False, prior_session_warmup_enabled=False)
+        config["strategies"]["macd_momentum"]["entry"].update(
+            use_rolling_2m=False, prior_session_warmup_enabled=False
+        )
         strategy = MacdMomentumStrategy(config["strategies"]["macd_momentum"])
         for direction in ("BUY_CE", "BUY_PE"):
             bars = self.hybrid_case(direction)
@@ -139,14 +164,27 @@ class TestMacdMomentumStrategy(unittest.TestCase):
             offset = 100 if direction == "BUY_CE" else -100
             now = MarketClock.parse_to_ist(bars[-1]["start_time"]) + timedelta(minutes=1)
             with MarketClock.at(now):
-                candidate = strategy.evaluate(dict(candles_1m=bars, spot=spot, session_vwap=spot,
-                                                    ema_9=spot + offset, ema_20=spot + offset))
+                candidate = strategy.evaluate(
+                    dict(
+                        candles_1m=bars,
+                        spot=spot,
+                        session_vwap=spot,
+                        ema_9=spot + offset,
+                        ema_20=spot + offset,
+                    )
+                )
             self.assertEqual(direction, candidate.signal)
             self.assertGreaterEqual(abs(candidate.invalidation_level - spot), 15)
 
     def test_invalid_hybrid_parameters_are_rejected(self):
-        for entry in ({"ema_proximity_pts": float("nan")}, {"ema_proximity_pts": -1},
-                      {"min_invalidation_buffer_pts": 0}, {"min_invalidation_buffer_pts": float("inf")},
-                      {"require_ema_confirmation": "false"}, {"macd_fast": 1.5}, {"macd_slow": 1}):
+        for entry in (
+            {"ema_proximity_pts": float("nan")},
+            {"ema_proximity_pts": -1},
+            {"min_invalidation_buffer_pts": 0},
+            {"min_invalidation_buffer_pts": float("inf")},
+            {"require_ema_confirmation": "false"},
+            {"macd_fast": 1.5},
+            {"macd_slow": 1},
+        ):
             with self.subTest(entry=entry), self.assertRaises(ValueError):
                 MacdMomentumStrategy({"entry": entry})

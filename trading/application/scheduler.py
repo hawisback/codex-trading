@@ -51,7 +51,13 @@ def run_scheduler(trader_factory, *, default_interval=60, default_quantity=65):
         "--strategy",
         type=str,
         default=None,
-        choices=["legacy_scalper", "structural_runner", "institutional_pullback", "ai_opportunity_radar", "macd_momentum"],
+        choices=[
+            "legacy_scalper",
+            "structural_runner",
+            "institutional_pullback",
+            "ai_opportunity_radar",
+            "macd_momentum",
+        ],
         help="Strategy profile to run (default: active_strategy from config/strategies.json)",
     )
     parser.add_argument(

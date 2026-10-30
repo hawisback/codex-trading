@@ -20,6 +20,7 @@ from trading.adapters.gateways import BreezeExecutionGateway, KiteExecutionGatew
 from trading.adapters.gateways.journal import broker_tag
 from trading.adapters.gateways.rate_limiter import TokenBucketRateLimiter
 from trading.application.scheduler import run_scheduler
+from tests.gateway_lifecycle import end_gateway_process
 
 ROOT = Path(__file__).resolve().parents[1]
 NOW = "2026-10-21T10:00:00+05:30"
@@ -170,6 +171,7 @@ class GatewayTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory(prefix=".native-test-", dir=ROOT)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
+        self.gateways = []
         self.server = Server()
         self.now = MarketClock.parse_to_ist(NOW)
         clock = patch.object(MarketClock, "now_ist", side_effect=lambda: self.now)
@@ -187,12 +189,20 @@ class GatewayTests(unittest.TestCase):
             account_id=account,
             journal_path=self.root / journal_name,
         )
+        self.gateways.append(gateway)
+        self.addCleanup(end_gateway_process, gateway)
         # Broker pacing has separate tests; deterministic OMS cases don't sleep.
         gateway.rate_limiter.acquire = lambda **kw: True
         gateway.quote_limiter.acquire = lambda **kw: True
         if arm:
             self.assertTrue(gateway.set_mode("LIVE").get("live_authorized"))
         return gateway
+
+    def restart_gateway(self, **kwargs):
+        for gateway in self.gateways:
+            end_gateway_process(gateway)
+        self.gateway = self.gateway_new(**kwargs)
+        return self.gateway
 
     def seed(self, qty=130, sell=65):
         self.gateway.journal.put(
@@ -336,7 +346,7 @@ class GatewayTests(unittest.TestCase):
         self.server.lose_next = "BUY"
         result = self.gateway.place_buy_order(SYMBOL, 65, 67, request_id=request)
         self.assertTrue(result["outcome_unknown"])
-        other = self.gateway_new()
+        other = self.restart_gateway()
         recovered = other.place_buy_order(SYMBOL, 65, 67, request_id=request)
         self.assertEqual("1", recovered["order_id"])
         self.assertTrue(recovered["recovered"])
@@ -356,7 +366,7 @@ class GatewayTests(unittest.TestCase):
     def test_failed_mutation_http_responses_are_not_retried(self):
         for code in (400, 403, 429, 500, 502, 504):
             with self.subTest(code=code):
-                gateway = self.gateway_new(journal_name=f"http-{code}.json")
+                gateway = self.restart_gateway(journal_name=f"http-{code}.json")
                 self.server.fail = urllib.error.HTTPError("https://invalid.test", code, "test", {}, None)
                 before = len(self.server.calls)
                 result = gateway.place_buy_order(SYMBOL, 65, 67, request_id=f"failure-{code}")
@@ -446,7 +456,7 @@ class GatewayTests(unittest.TestCase):
         trader = self.trader()
         result = trader.execute_trade(self.decision(trader))
         self.assertEqual("SUCCESS", result["status"], result)
-        other = self.gateway_new()
+        other = self.restart_gateway()
         recovered = self.trader(other)
         trades, _ = recovered.get_trades_state()
         self.assertTrue(recovered.state_verified, recovered.last_reconciliation_error)
@@ -486,7 +496,7 @@ class GatewayTests(unittest.TestCase):
         state = trader.load_active_position()
         self.assertEqual(internal, state["entry_execution"]["quote"]["instrument_id"])
         self.assertEqual(internal, state["entry_execution"]["ai_verdict"]["entry_instrument_id"])
-        recovered = self.trader(self.gateway_new())
+        recovered = self.trader(self.restart_gateway())
         trades, _ = recovered.get_trades_state()
         self.assertTrue(recovered.state_verified, recovered.last_reconciliation_error)
         self.assertEqual(internal, trades[0]["instrument_id"])
@@ -534,12 +544,13 @@ class GatewayTests(unittest.TestCase):
         self.assertFalse(self.server.posts())
 
     def test_metadata_from_other_instances_is_preserved_and_missing_file_blocks_writes(self):
-        other = self.gateway_new()
+        other = self.gateway_new(arm=False)
+        other.get_status()  # Bind its read-only journal without acquiring a second LIVE lease.
         self.gateway.journal.put("first", kind="ENTRY", symbol=SYMBOL, phase="REJECTED")
         other.journal.put("second", kind="ENTRY", symbol=SYMBOL, phase="REJECTED")
         self.assertEqual({"first", "second"}, set(self.gateway.journal.records))
         (self.root / "broker_intents.json").unlink()
-        self.assertTrue(other.place_buy_order(SYMBOL, 65, 67, request_id="never-sent")["error"])
+        self.assertTrue(self.gateway.place_buy_order(SYMBOL, 65, 67, request_id="never-sent")["error"])
         self.assertFalse(self.server.posts())
 
     def test_unresolved_intent_blocks_a_new_request_id(self):
@@ -556,7 +567,7 @@ class GatewayTests(unittest.TestCase):
                 trader = self.trader()
                 self.server.lose_next = lost
                 trader.execute_trade(self.decision(trader))
-                other = self.trader(self.gateway_new())
+                other = self.trader(self.restart_gateway())
                 trades, _ = other.get_trades_state()
                 self.assertTrue(other.state_verified, other.last_reconciliation_error)
                 self.assertTrue(trades[0]["protection_confirmed"])
@@ -578,7 +589,7 @@ class GatewayTests(unittest.TestCase):
         self.server.lose_next = "SELL"
         outcome = trader.exit_trade(result["order_id"], "lost exit")
         self.assertTrue(outcome["outcome_unknown"])
-        other = self.trader(self.gateway_new())
+        other = self.trader(self.restart_gateway())
         self.assertEqual([], other.get_trades_state()[0])
         self.assertTrue(other.state_verified, other.last_reconciliation_error)
         self.assertEqual(3, len(self.server.posts()))

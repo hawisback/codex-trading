@@ -24,9 +24,7 @@ class PositionStateCodec:
         state["schema_version"] = cls.SCHEMA_VERSION
         state["entry_order_ids"] = [e["order_id"] for e in state.get("entries", []) if e.get("order_id")]
         state["stop_order_ids"] = [
-            s["order_id"]
-            for s in state.get("stops", [])
-            if s.get("order_id") and status(s) not in TERMINAL
+            s["order_id"] for s in state.get("stops", []) if s.get("order_id") and status(s) not in TERMINAL
         ]
         state["entry_order_id"] = next(iter(state["entry_order_ids"]), None)
         state["trade_id"] = state["entry_order_id"] or "RECONCILIATION-PENDING"
@@ -47,8 +45,7 @@ class PositionStateCodec:
             not isinstance(stop_order_ids, list)
             or any(
                 not (
-                    (isinstance(order_id, str) and bool(order_id))
-                    or (type(order_id) is int and order_id > 0)
+                    (isinstance(order_id, str) and bool(order_id)) or (type(order_id) is int and order_id > 0)
                 )
                 for order_id in stop_order_ids
             )

@@ -100,12 +100,17 @@ def resample_two_minutes(bars, *, as_of=None):
             raise ValueError("Gap inside a two-minute candle")
         if as_of is not None and start + timedelta(minutes=2) > as_of:
             continue
-        result.append(dict(
-            start_time=start.isoformat(), open=bar["open"],
-            high=max(bar["high"], following["high"]), low=min(bar["low"], following["low"]),
-            close=following["close"], volume=bar.get("volume", 0) + following.get("volume", 0),
-            minute_idx=index + 1,
-        ))
+        result.append(
+            dict(
+                start_time=start.isoformat(),
+                open=bar["open"],
+                high=max(bar["high"], following["high"]),
+                low=min(bar["low"], following["low"]),
+                close=following["close"],
+                volume=bar.get("volume", 0) + following.get("volume", 0),
+                minute_idx=index + 1,
+            )
+        )
     return result
 
 
@@ -122,7 +127,7 @@ def resample_rolling_two_minutes(bars, *, as_of=None):
         opening = start.replace(hour=9, minute=15, second=0, microsecond=0)
         if start.second or start.microsecond or not opening <= start < opening + timedelta(minutes=375):
             raise ValueError("Unaligned or out-of-session rolling minute")
-        bar = {k: number(raw[k], minimum=.01) for k in ("open", "high", "low", "close")}
+        bar = {k: number(raw[k], minimum=0.01) for k in ("open", "high", "low", "close")}
         if bar["low"] > min(bar["open"], bar["close"]) or bar["high"] < max(bar["open"], bar["close"]):
             raise ValueError("Invalid rolling minute range")
         bar["volume"] = number(raw.get("volume", 0), minimum=0)
@@ -134,10 +139,18 @@ def resample_rolling_two_minutes(bars, *, as_of=None):
                 if start != old_start + timedelta(minutes=1):
                     raise ValueError("Gap in rolling minute history")
                 if as_of is None or start + timedelta(minutes=1) <= as_of:
-                    result.append(dict(start_time=old_start.isoformat(), end_time=start.isoformat(),
-                        minute_idx=index, open=old["open"], high=max(old["high"], bar["high"]),
-                        low=min(old["low"], bar["low"]), close=bar["close"],
-                        volume=old["volume"] + bar["volume"]))
+                    result.append(
+                        dict(
+                            start_time=old_start.isoformat(),
+                            end_time=start.isoformat(),
+                            minute_idx=index,
+                            open=old["open"],
+                            high=max(old["high"], bar["high"]),
+                            low=min(old["low"], bar["low"]),
+                            close=bar["close"],
+                            volume=old["volume"] + bar["volume"],
+                        )
+                    )
         previous = start, bar
     return result
 
@@ -152,8 +165,15 @@ def prior_session_warmup(bars, now, *, holidays=()):
     previous = now.date() - timedelta(days=1)
     while previous.weekday() >= 5 or previous.isoformat() in holidays:
         previous -= timedelta(days=1)
-    end = now.replace(year=previous.year, month=previous.month, day=previous.day,
-                      hour=15, minute=30, second=0, microsecond=0)
+    end = now.replace(
+        year=previous.year,
+        month=previous.month,
+        day=previous.day,
+        hour=15,
+        minute=30,
+        second=0,
+        microsecond=0,
+    )
     expected = [end - timedelta(minutes=i) for i in range(60, 0, -1)]
     selected = [dict(b) for b in bars if expected[0] <= exchange_time(b["start_time"]) < end]
     if [exchange_time(b["start_time"]) for b in selected] != expected:
@@ -201,7 +221,7 @@ def two_minute_macd_metrics(bars, *, periods=(12, 26, 9), rolling=False):
     fast, slow, signal_period = periods
     if len(bars) < slow + 1:
         raise ValueError(f"At least {slow + 1} completed two-minute candles are required for MACD")
-    closes = [number(bar["close"], minimum=.01) for bar in bars]
+    closes = [number(bar["close"], minimum=0.01) for bar in bars]
     macd = [f - s for f, s in zip(ema_series(closes, fast), ema_series(closes, slow))]
     signal = ema_series(macd, signal_period)
     histogram = [line - sig for line, sig in zip(macd, signal)]
@@ -219,10 +239,18 @@ def two_minute_macd_metrics(bars, *, periods=(12, 26, 9), rolling=False):
     else:
         momentum = "Neutral"
     start = exchange_time(bars[-1]["start_time"])
-    return dict(macd=macd[-1], signal=signal[-1], histogram=current,
-                previous_histogram=previous, expanding_positive=current > 0 and current > previous,
-                momentum_status=momentum, interval="rolling_2m" if rolling else "2m", periods=list(periods),
-                candle_start=start.isoformat(), candle_closed_at=(start + timedelta(minutes=2)).isoformat())
+    return dict(
+        macd=macd[-1],
+        signal=signal[-1],
+        histogram=current,
+        previous_histogram=previous,
+        expanding_positive=current > 0 and current > previous,
+        momentum_status=momentum,
+        interval="rolling_2m" if rolling else "2m",
+        periods=list(periods),
+        candle_start=start.isoformat(),
+        candle_closed_at=(start + timedelta(minutes=2)).isoformat(),
+    )
 
 
 def causal_hybrid_context(rows, now, *, expiry, prior_rows=()):
@@ -236,16 +264,27 @@ def causal_hybrid_context(rows, now, *, expiry, prior_rows=()):
     today = [b for b in bars if exchange_time(b["start_time"]).date() == now.date()]
     opening = now.replace(hour=9, minute=15, second=0, microsecond=0)
     minute = now.replace(second=0, microsecond=0)
-    expected = [opening + timedelta(minutes=i)
-                for i in range(max(0, int((minute - opening).total_seconds() // 60)))]
+    expected = [
+        opening + timedelta(minutes=i) for i in range(max(0, int((minute - opening).total_seconds() // 60)))
+    ]
     if not today or [exchange_time(b["start_time"]) for b in today] != expected:
         raise ValueError("Incomplete replay session candles")
     five_minute = resample_five_minutes(bars)[-50:]
     metrics = technical_metrics(five_minute)
     typicals = [(b["high"] + b["low"] + b["close"]) / 3 for b in today]
-    return dict(spot=today[-1]["close"], candles_1m=today, expiry=expiry,
-                ema_9=metrics["ema_9"], ema_20=metrics["ema_20"], ema_50=metrics["ema_50"],
-                session_vwap=sum(typicals) / len(typicals), observed_at=now.isoformat(),
-                candle_time=today[-1]["start_time"], ema_observed_through=five_minute[-1]["start_time"],
-                day_high=max(b["high"] for b in today), day_low=min(b["low"] for b in today),
-                day_change=0, order_flow={})
+    return dict(
+        spot=today[-1]["close"],
+        candles_1m=today,
+        expiry=expiry,
+        ema_9=metrics["ema_9"],
+        ema_20=metrics["ema_20"],
+        ema_50=metrics["ema_50"],
+        session_vwap=sum(typicals) / len(typicals),
+        observed_at=now.isoformat(),
+        candle_time=today[-1]["start_time"],
+        ema_observed_through=five_minute[-1]["start_time"],
+        day_high=max(b["high"] for b in today),
+        day_low=min(b["low"] for b in today),
+        day_change=0,
+        order_flow={},
+    )

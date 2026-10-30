@@ -25,9 +25,14 @@ def _finite(value: Any) -> Decimal | None:
     return number if number.is_finite() else None
 
 
-def unified_floor(entry_price: Any, highest_verified_bid: Any,
-                  existing_floor: Any, time_ist: str,
-                  *, initial_loss_pct: Any = 25) -> StopFloorDecision | None:
+def unified_floor(
+    entry_price: Any,
+    highest_verified_bid: Any,
+    existing_floor: Any,
+    time_ist: str,
+    *,
+    initial_loss_pct: Any = 25,
+) -> StopFloorDecision | None:
     """Compute R01 monotonic stop floor from the active MACD trailing schedule.
 
     This policy is independent of strategy name. An external caller must
@@ -38,7 +43,7 @@ def unified_floor(entry_price: Any, highest_verified_bid: Any,
     peak = _finite(highest_verified_bid)
     prior = _finite(existing_floor)
     loss = _finite(initial_loss_pct)
-    if any(x is None for x in (price, peak, prior, loss)):
+    if price is None or peak is None or prior is None or loss is None:
         return None
     if price <= 0 or peak <= 0 or prior < 0 or not 0 < loss < 100:
         return None

@@ -230,7 +230,9 @@ class DailyLogsTests(unittest.TestCase):
                     "setup_type": "TREND_PULLBACK",
                     "candidate_timestamp": NOW,
                 }
-                dossier = entry_dossier(67, vwap_distance_pts=80 if outcome == "VETOED" else 10, candidate_timestamp=NOW)
+                dossier = entry_dossier(
+                    67, vwap_distance_pts=80 if outcome == "VETOED" else 10, candidate_timestamp=NOW
+                )
                 if outcome == "TIMEOUT_EXPIRED":
                     trader.ai_consultant.timeout_seconds = 0
                 with MarketClock.at(NOW), patch.object(trader, "build_dossier", return_value=dossier):

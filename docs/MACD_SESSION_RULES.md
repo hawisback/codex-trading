@@ -5,7 +5,7 @@
 
 The active `macd_momentum` profile uses deterministic entry filters and exit
 rules. `rules` and `playbook` modes use **NO AI**; true neural AI evaluation is
-only provided by the Antigravity companion in `chat` mode. Every candidate must
+provided by the explicitly invoked Codex or legacy neural companion in `chat` mode. Every candidate must
 still pass the actual consultant. Vetoes, errors and consultation timeouts
 preserve cash.
 

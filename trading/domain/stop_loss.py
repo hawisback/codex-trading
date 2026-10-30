@@ -41,8 +41,10 @@ def validate_stop_policy(policy):
     if not isinstance(policy, Mapping):
         raise ValueError("Invalid frozen stop policy")
     try:
-        result = {key: positive_price(policy[key]) for key in (
-            "min_loss_pct", "max_loss_pct", "min_invalidation_buffer_pts", "initial_stop_pct")}
+        result = {
+            key: positive_price(policy[key])
+            for key in ("min_loss_pct", "max_loss_pct", "min_invalidation_buffer_pts", "initial_stop_pct")
+        }
     except (KeyError, TypeError) as exc:
         raise ValueError("Incomplete frozen stop policy") from exc
     if not 0 < result["min_loss_pct"] <= result["max_loss_pct"] <= result["initial_stop_pct"] < 100:
@@ -83,13 +85,17 @@ def validate_stop_response(dossier, stop_price, invalidation=None, *, current_fl
     lower, upper = stop_price_band(dossier["fill_price"], policy)
     floor = max(float(current_floor or 0), positive_price(dossier["active_stop_price"]))
     if not lower - 1e-9 <= positive_price(stop_price) <= max(upper, floor) + 1e-9:
-        raise ValueError(f"Post-fill stop must be within {lower:.2f}..{upper:.2f}; existing tighter floors are preserved")
+        raise ValueError(
+            f"Post-fill stop must be within {lower:.2f}..{upper:.2f}; existing tighter floors are preserved"
+        )
     if invalidation is not None:
-        limit = structural_stop_limit(dossier["current_spot"], dossier["direction"], policy,
-                                      dossier.get("entry_invalidation_level"))
+        limit = structural_stop_limit(
+            dossier["current_spot"], dossier["direction"], policy, dossier.get("entry_invalidation_level")
+        )
         level = positive_price(invalidation)
-        if ((dossier["direction"] == "CE" and level > limit + 1e-9)
-                or (dossier["direction"] == "PE" and level < limit - 1e-9)):
+        if (dossier["direction"] == "CE" and level > limit + 1e-9) or (
+            dossier["direction"] == "PE" and level < limit - 1e-9
+        ):
             raise ValueError("Spot invalidation is inside the frozen minimum entry buffer")
 
 

@@ -18,7 +18,7 @@ _TICK = Decimal("0.05")
 
 @dataclass(frozen=True)
 class UnifiedStopAction:
-    kind: str                  # EXIT, RATCHET, HOLD
+    kind: str  # EXIT, RATCHET, HOLD
     reason: str
     trigger: float | None = None
     phase: str = ""
@@ -28,8 +28,7 @@ def r01_unified_active(state: Mapping[str, Any], trading_cfg: Mapping[str, Any])
     # The flag governs NEW entries. Once an entry has been stamped, its
     # original stop authority remains active even if runtime config is
     # disabled mid-session; this prevents retroactive policy migration.
-    return (isinstance(state, Mapping)
-            and state.get("r01_policy_version") == R01_STOP_VERSION)
+    return isinstance(state, Mapping) and state.get("r01_policy_version") == R01_STOP_VERSION
 
 
 def _positive(value: Any) -> Decimal | None:
@@ -57,11 +56,13 @@ def ceil_protective_tick(price: Decimal) -> float:
     return float((price / _TICK).to_integral_value(rounding=ROUND_CEILING) * _TICK)
 
 
-def r01_stop_floor(state: Mapping[str, Any], now: datetime,
-                   *, initial_loss_pct: Any = 25) -> tuple[float, str] | None:
+def r01_stop_floor(
+    state: Mapping[str, Any], now: datetime, *, initial_loss_pct: Any = 25
+) -> tuple[float, str] | None:
     if not isinstance(now, datetime) or now.tzinfo is None:
         return None
     from market_clock import IST_TZ
+
     now = now.astimezone(IST_TZ)
     entry = _positive(state.get("entry_price"))
     if entry is None:
@@ -78,15 +79,18 @@ def r01_stop_floor(state: Mapping[str, Any], now: datetime,
         if not isinstance(record, Mapping):
             return None
         reference = record.get("entry_order_id") or record.get("parent_order_id")
-        if reference in balances and balances.get(reference, 0) > 0 and (
-            str(record.get("status", "")).upper() not in (
-                "FILLED", "COMPLETE", "CANCELLED", "CANCELED", "REJECTED", "EXPIRED"
+        if (
+            reference in balances
+            and balances.get(reference, 0) > 0
+            and (
+                str(record.get("status", "")).upper()
+                not in ("FILLED", "COMPLETE", "CANCELLED", "CANCELED", "REJECTED", "EXPIRED")
             )
         ):
             existing.append(_nonnegative(record.get("trigger_price") or 0))
     if any(v is None for v in existing):
         return None
-    prior = max(existing, default=Decimal(0))
+    prior = max((value for value in existing if value is not None), default=Decimal(0))
     # Broker-verified historical peaks may be reused on a new, fresh quote,
     # but never tighten a stop using stale/unverified quote state.
     fresh = False
@@ -101,15 +105,13 @@ def r01_stop_floor(state: Mapping[str, Any], now: datetime,
     peak = _positive(state.get("peak_bid")) if fresh else entry
     if peak is None:
         return None
-    decision = unified_floor(
-        entry, peak, prior, now.strftime("%H:%M"), initial_loss_pct=initial_loss_pct
-    )
+    decision = unified_floor(entry, peak, prior, now.strftime("%H:%M"), initial_loss_pct=initial_loss_pct)
     return (ceil_protective_tick(decision.trigger_floor), decision.phase) if decision else None
 
 
-def decide_unified_stop(state: Mapping[str, Any], now: datetime, *,
-                        initial_loss_pct: Any = 25,
-                        max_quote_age_sec: float = 2.0) -> UnifiedStopAction:
+def decide_unified_stop(
+    state: Mapping[str, Any], now: datetime, *, initial_loss_pct: Any = 25, max_quote_age_sec: float = 2.0
+) -> UnifiedStopAction:
     """Select a requested action from trusted position/quote evidence.
 
     A breached floor produces an EXIT request, not a competing SELL: the
@@ -119,6 +121,7 @@ def decide_unified_stop(state: Mapping[str, Any], now: datetime, *,
     if not isinstance(now, datetime) or now.tzinfo is None:
         return UnifiedStopAction("HOLD", "CLOCK_UNVERIFIED")
     from market_clock import IST_TZ
+
     now_ist = now.astimezone(IST_TZ)
     if now_ist.strftime("%H:%M") >= "15:15":
         return UnifiedStopAction("EXIT", "SESSION_HARD_SQUARE_OFF")
@@ -144,7 +147,5 @@ def decide_unified_stop(state: Mapping[str, Any], now: datetime, *,
         return UnifiedStopAction("HOLD", "STOP_INPUT_INVALID")
     floor, phase = proposal
     if bid <= Decimal(str(floor)):
-        return UnifiedStopAction(
-            "EXIT", "UNIFIED_PROTECTIVE_FLOOR_BREACHED", floor, phase
-        )
+        return UnifiedStopAction("EXIT", "UNIFIED_PROTECTIVE_FLOOR_BREACHED", floor, phase)
     return UnifiedStopAction("RATCHET", "UNIFIED_PROTECTIVE_FLOOR", floor, phase)

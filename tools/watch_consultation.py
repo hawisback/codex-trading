@@ -33,7 +33,9 @@ def read_pending(path, expected_status):
             return None
         if expected_status == "AWAITING_STOP_LOSS" and not (data.get("request_id") and data.get("trade_id")):
             return None
-        if expected_status == "AWAITING_VERDICT" and not (data.get("request_id") and data.get("candidate_id")):
+        if expected_status == "AWAITING_VERDICT" and not (
+            data.get("request_id") and data.get("candidate_id")
+        ):
             return None
         return data
     except (OSError, ValueError, TypeError, KeyError, AttributeError):
@@ -63,7 +65,9 @@ def watch(timeout_seconds=21600):
                 print("\n>>> ENTRY CANDIDATE DETECTED <<<")
                 print(f"Signal: BUY_{dossier.get('direction', 'UNKNOWN')} {dossier.get('strike', 0)}")
                 print(f"Consultation File: {PENDING_FILE}")
-                print(f"Submit: python ai_consultant.py --approve --request-id {data['request_id']} --reason <RATIONALE>")
+                print(
+                    f"Submit: python ai_consultant.py --approve --request-id {data['request_id']} --reason <RATIONALE>"
+                )
                 print("Use --veto to reject. Read config/rules_playbook.md before deciding.")
             print("Rearm: python tools/watch_consultation.py after submitting this verdict.", flush=True)
             return 0

@@ -7,6 +7,21 @@ this *pure* checker is not permission to place a BUY.
 
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+from typing import Mapping
+
+
+def entry_control_block(config, *, require_all=True):
+    """Stop new entries unless operator controls have exact boolean values."""
+    if not isinstance(config, Mapping):
+        return "ENTRY_CONTROLS_UNVERIFIED"
+    for key, expected, reason in (
+        ("kill_switch", False, "KILL_SWITCH_ENGAGED_OR_UNVERIFIED"),
+        ("auto_trade_enabled", True, "AUTO_TRADE_DISABLED_OR_UNVERIFIED"),
+        ("system_armed", True, "SYSTEM_DISARMED_OR_UNVERIFIED"),
+    ):
+        if (require_all or key in config) and config.get(key) is not expected:
+            return reason
+    return None
 
 
 def _positive(value):
@@ -63,10 +78,14 @@ def check_entry_evidence(e: PreTradeEvidence) -> RiskCheck:
     reasons = [code for code, valid in flags if valid is not True]
     if e.kill_switch_engaged is not False:
         reasons.append("KILL_SWITCH_ENGAGED_OR_UNVERIFIED")
-    if (any(type(x) is not int for x in (e.requested_quantity, e.lot_size, e.maximum_quantity))
-            or e.lot_size <= 0 or e.requested_quantity <= 0 or
-            e.maximum_quantity <= 0 or e.requested_quantity % e.lot_size or
-            e.requested_quantity > e.maximum_quantity):
+    if (
+        any(type(x) is not int for x in (e.requested_quantity, e.lot_size, e.maximum_quantity))
+        or e.lot_size <= 0
+        or e.requested_quantity <= 0
+        or e.maximum_quantity <= 0
+        or e.requested_quantity % e.lot_size
+        or e.requested_quantity > e.maximum_quantity
+    ):
         reasons.append("ORDER_QUANTITY_INVALID")
     ask, margin, reserve = (
         _positive(e.executable_option_price),

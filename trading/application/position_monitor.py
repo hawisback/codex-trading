@@ -13,7 +13,9 @@ logger = logging.getLogger("NiftyAI")
 
 
 class PositionMonitor:
-    def __init__(self, strategy_cfg, state_verified, exit_trade, ratchet_stops, save_position=None, trading_cfg=None):
+    def __init__(
+        self, strategy_cfg, state_verified, exit_trade, ratchet_stops, save_position=None, trading_cfg=None
+    ):
         self.strategy_cfg = strategy_cfg
         self.state_verified = state_verified
         self.exit_trade = exit_trade
@@ -81,7 +83,8 @@ class PositionMonitor:
                 # Technical entry invalidation remains an independent safety
                 # exit and is never allowed to relax the unified floor.
                 action = decide_unified_stop(
-                    t, MarketClock.now_ist(),
+                    t,
+                    MarketClock.now_ist(),
                     initial_loss_pct=t.get(
                         "r01_initial_stop_pct",
                         self.trading_cfg.get("risk", {}).get("option_hard_stop_pct", 25),
@@ -97,7 +100,8 @@ class PositionMonitor:
                     pe = symbol.endswith("PE") or "-PE" in instrument
                     try:
                         technical_breach = (
-                            level is not None and spot_price is not None
+                            level is not None
+                            and spot_price is not None
                             and (
                                 (ce and float(spot_price) <= float(level))
                                 or (pe and float(spot_price) >= float(level))
@@ -113,15 +117,14 @@ class PositionMonitor:
                     result = self.exit_trade(trade_id, reason, limit_price=t.get("last_bid"))
                     if result.get("status") != "CLOSED":
                         remaining_open.append(t)
-                elif action.kind == "RATCHET":
+                elif action.kind == "RATCHET" and action.trigger is not None:
                     # Avoid redundant broker reads on every 5s monitor tick.
                     # Unconfirmed protection is always rechecked by the OMS.
                     known_floor = max(
                         float(t.get("desired_stop_trigger") or 0),
                         float(t.get("current_stop_trigger") or 0),
                     )
-                    if (action.trigger > known_floor + 0.0001
-                            or t.get("protection_confirmed") is not True):
+                    if action.trigger > known_floor + 0.0001 or t.get("protection_confirmed") is not True:
                         self.ratchet_stops(t, action.trigger)
                     remaining_open.append(t)
                 else:
@@ -192,7 +195,9 @@ class PositionMonitor:
             # 0. Session Hard Square-off (Strictly flat book overnight by 15:15 IST)
             now_ist = MarketClock.now_ist()
             now_time = now_ist.strftime("%H:%M")
-            session_window, session_stop, session_label = session_trigger(entry_price, peak_bid, exit_cfg, now_time)
+            session_window, session_stop, session_label = session_trigger(
+                entry_price, peak_bid, exit_cfg, now_time
+            )
             trade_hm = entry_hm or now_time
             is_first_trade = t.get("today_entry_number") == 1
             is_morning_eligible = (
@@ -251,7 +256,11 @@ class PositionMonitor:
                     self.ratchet_stops(t, trigger)
 
             # 4. Dynamic Trailing Runner outside session-specific windows.
-            elif not session_window and enable_runner_trailing and peak_gain_pct + 1e-9 >= runner_activation_pct:
+            elif (
+                not session_window
+                and enable_runner_trailing
+                and peak_gain_pct + 1e-9 >= runner_activation_pct
+            ):
                 trail_stop = max(known_floor, runner_trigger(entry_price, peak_bid, exit_cfg))
 
                 if last_bid <= trail_stop:
@@ -264,7 +273,9 @@ class PositionMonitor:
                     self.ratchet_stops(t, trail_stop)
 
             # 4b. AI Morning Micro-Trailing (Protects morning first trade in 09:15-09:45 window once peak reaches +10%)
-            elif not session_window and is_morning_eligible and peak_gain_pct + 1e-9 >= morning_activation_pct:
+            elif (
+                not session_window and is_morning_eligible and peak_gain_pct + 1e-9 >= morning_activation_pct
+            ):
                 pullback_pct = exit_cfg.get("trail_pullback_pct", exit_cfg.get("peak_pullback_pct", 10.0))
                 morning_floor = entry_price * (1.0 + morning_floor_pct / 100.0)
                 morning_trailing = peak_bid * (1.0 - pullback_pct / 100.0)
@@ -279,7 +290,10 @@ class PositionMonitor:
 
             # 4c. AI Late-Day Micro-Trailing (Protects +4% gains after 14:00 against afternoon theta decay)
             elif (
-                not session_window and enable_micro_trail and now_time >= micro_trail_time and peak_gain_pct >= micro_activation_pct
+                not session_window
+                and enable_micro_trail
+                and now_time >= micro_trail_time
+                and peak_gain_pct >= micro_activation_pct
             ):
                 micro_floor_trigger = round_tick(entry_price * (1.0 + micro_floor_pct / 100.0))
                 micro_floor_limit = round_tick(micro_floor_trigger * 0.98)
@@ -292,24 +306,49 @@ class PositionMonitor:
 
             # 5. Structural Stops (Only active if runner trailing is not active and structural stops enabled)
             # Session ratchets never suppress the configured structural safety checks.
-            if exit_reason is None and enable_structural_stops and (
-                session_window or not (
-                    (enable_runner_trailing and peak_gain_pct + 1e-9 >= runner_activation_pct)
-                    or (is_morning_eligible and peak_gain_pct + 1e-9 >= morning_activation_pct)
-                    or (enable_micro_trail and now_time >= micro_trail_time and peak_gain_pct >= micro_activation_pct)
+            if (
+                exit_reason is None
+                and enable_structural_stops
+                and (
+                    session_window
+                    or not (
+                        (enable_runner_trailing and peak_gain_pct + 1e-9 >= runner_activation_pct)
+                        or (is_morning_eligible and peak_gain_pct + 1e-9 >= morning_activation_pct)
+                        or (
+                            enable_micro_trail
+                            and now_time >= micro_trail_time
+                            and peak_gain_pct >= micro_activation_pct
+                        )
+                    )
                 )
             ):
                 if is_ce:
                     if vwap_armed and vwap and spot and spot < (vwap - vwap_stop_buffer):
                         exit_reason = f"STRUCTURAL STOP: Spot ({spot:.1f}) broke below Session VWAP ({vwap:.1f}) by >{vwap_stop_buffer:.1f} pts"
-                    elif ema20_armed and ema20_stop and spot and ema20 and ema9 and (spot < ema20) and (ema9 < ema20):
+                    elif (
+                        ema20_armed
+                        and ema20_stop
+                        and spot
+                        and ema20
+                        and ema9
+                        and (spot < ema20)
+                        and (ema9 < ema20)
+                    ):
                         exit_reason = (
                             f"TREND STOP: Spot ({spot:.1f}) below 5m EMA20 ({ema20:.1f}) & EMA9 bear cross"
                         )
                 elif is_pe:
                     if vwap_armed and vwap and spot and spot > (vwap + vwap_stop_buffer):
                         exit_reason = f"STRUCTURAL STOP: Spot ({spot:.1f}) rallied above Session VWAP ({vwap:.1f}) by >{vwap_stop_buffer:.1f} pts"
-                    elif ema20_armed and ema20_stop and spot and ema20 and ema9 and (spot > ema20) and (ema9 > ema20):
+                    elif (
+                        ema20_armed
+                        and ema20_stop
+                        and spot
+                        and ema20
+                        and ema9
+                        and (spot > ema20)
+                        and (ema9 > ema20)
+                    ):
                         exit_reason = (
                             f"TREND STOP: Spot ({spot:.1f}) above 5m EMA20 ({ema20:.1f}) & EMA9 bull cross"
                         )

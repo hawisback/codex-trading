@@ -9,8 +9,12 @@ from typing import List, Dict, Optional, Tuple
 from trading.models import CandidateSignal
 from market_clock import MarketClock
 from trading.domain.market_data import (
-    exchange_time, number, resample_two_minutes, resample_rolling_two_minutes,
-    macd_observation_bars, prior_session_warmup,
+    exchange_time,
+    number,
+    resample_two_minutes,
+    resample_rolling_two_minutes,
+    macd_observation_bars,
+    prior_session_warmup,
 )
 from trading.domain.limits import HARD_ENTRY_CUTOFF
 
@@ -35,7 +39,9 @@ def calculate_ema(series: List[float], period: int) -> List[float]:
     return res
 
 
-def calculate_macd(closes: List[float], fast_period: int = 12, slow_period: int = 26, signal_period: int = 9) -> Tuple[List[float], List[float], List[float]]:
+def calculate_macd(
+    closes: List[float], fast_period: int = 12, slow_period: int = 26, signal_period: int = 9
+) -> Tuple[List[float], List[float], List[float]]:
     """Computes MACD line, signal line, and histogram."""
     if len(closes) < slow_period:
         zeros = [0.0] * len(closes)
@@ -53,6 +59,7 @@ class MacdMomentumStrategy:
     Path A: completed 2m MACD crossovers with optional 5m EMA confirmation.
     The active profile leaves EMA proximity and trend alignment advisory.
     """
+
     fast_period: int
     slow_period: int
     signal_period: int
@@ -69,13 +76,19 @@ class MacdMomentumStrategy:
         self.cfg = strategy_cfg or {}
         entry = self.cfg.get("entry", {})
         for key, default in (("macd_fast", 12), ("macd_slow", 26), ("macd_signal", 9)):
-            alias = {"macd_fast": "fast_period", "macd_slow": "slow_period", "macd_signal": "signal_period"}[key]
+            alias = {"macd_fast": "fast_period", "macd_slow": "slow_period", "macd_signal": "signal_period"}[
+                key
+            ]
             if key in entry and alias in entry and entry[key] != entry[alias]:
                 raise ValueError(f"Conflicting {key} and {alias}")
             value = number(entry.get(key, entry.get(alias, default)), minimum=1)
             if value != int(value):
                 raise ValueError(f"{key} must be an integer")
-            setattr(self, {"macd_fast": "fast_period", "macd_slow": "slow_period", "macd_signal": "signal_period"}[key], int(value))
+            setattr(
+                self,
+                {"macd_fast": "fast_period", "macd_slow": "slow_period", "macd_signal": "signal_period"}[key],
+                int(value),
+            )
         if not self.fast_period < self.slow_period:
             raise ValueError("MACD fast period must be below the slow period")
         for key in ("require_ema_confirmation", "require_ema20_trend_alignment"):
@@ -84,10 +97,10 @@ class MacdMomentumStrategy:
                 raise ValueError(f"{key} must be a boolean")
             setattr(self, key, value)
         self.ema_proximity_pts = number(entry.get("ema_proximity_pts", 10), minimum=0)
-        self.min_invalidation_buffer_pts = number(entry.get("min_invalidation_buffer_pts", 25), minimum=.01)
-        self.min_hist_threshold = number(entry.get("min_hist_threshold", .20), minimum=0)
+        self.min_invalidation_buffer_pts = number(entry.get("min_invalidation_buffer_pts", 25), minimum=0.01)
+        self.min_hist_threshold = number(entry.get("min_hist_threshold", 0.20), minimum=0)
         self.vwap_tolerance_pts = number(entry.get("vwap_tolerance_pts", 12), minimum=0)
-        self.vwap_climax_pts = number(entry.get("vwap_climax_pts", 50), minimum=.01)
+        self.vwap_climax_pts = number(entry.get("vwap_climax_pts", 50), minimum=0.01)
         self.opening_range_buffer_pts = number(entry.get("opening_range_buffer_pts", 8), minimum=0)
         for key in ("require_candle_alignment", "require_vwap_alignment", "opening_range_filter_enabled"):
             value = entry.get(key, True)
@@ -111,13 +124,22 @@ class MacdMomentumStrategy:
         self.entry_start_time = entry.get("entry_start_time", "09:30" if self.use_rolling_2m else "09:15")
         self.early_orb_cutoff_time = entry.get("early_orb_cutoff_time", "10:00")
         for value in (self.entry_start_time, self.early_orb_cutoff_time):
-            if (not isinstance(value, str) or len(value) != 5 or value[2] != ":"
-                    or not value[:2].isdigit() or not value[3:].isdigit()
-                    or int(value[:2]) > 23 or int(value[3:]) > 59):
+            if (
+                not isinstance(value, str)
+                or len(value) != 5
+                or value[2] != ":"
+                or not value[:2].isdigit()
+                or not value[3:].isdigit()
+                or int(value[:2]) > 23
+                or int(value[3:]) > 59
+            ):
                 raise ValueError("Invalid MACD entry window")
         if not "09:15" <= self.entry_start_time < HARD_ENTRY_CUTOFF:
             raise ValueError("Invalid MACD entry start")
-        if self.early_orb_required and not "09:30" <= self.entry_start_time < self.early_orb_cutoff_time <= HARD_ENTRY_CUTOFF:
+        if (
+            self.early_orb_required
+            and not "09:30" <= self.entry_start_time < self.early_orb_cutoff_time <= HARD_ENTRY_CUTOFF
+        ):
             raise ValueError("Early ORB requires a completed opening range and ordered window")
         for key, default in (("min_spacing_bars", 10), ("max_daily_entries", 2)):
             value = number(entry.get(key, default), minimum=1)
@@ -129,8 +151,11 @@ class MacdMomentumStrategy:
             return CandidateSignal("NEUTRAL", [reason], "NONE")
 
         candles = ctx.get("candles_1m") or []
-        minimum = 15 if self.prior_session_warmup_enabled else (
-            self.slow_period + 2 if self.use_rolling_2m else 2 * (self.slow_period + 1))
+        minimum = (
+            15
+            if self.prior_session_warmup_enabled
+            else (self.slow_period + 2 if self.use_rolling_2m else 2 * (self.slow_period + 1))
+        )
         if len(candles) < minimum:
             return neutral("Insufficient completed one-minute candles for a two-minute MACD crossover.")
         now = MarketClock.now_ist()
@@ -146,8 +171,11 @@ class MacdMomentumStrategy:
             prior = []
             if self.prior_session_warmup_enabled:
                 try:
-                    prior = prior_session_warmup(ctx.get("prior_session_warmup_candles") or [], now,
-                        holidays=ctx.get("exchange_holidays", ()))
+                    prior = prior_session_warmup(
+                        ctx.get("prior_session_warmup_candles") or [],
+                        now,
+                        holidays=ctx.get("exchange_holidays", ()),
+                    )
                 except (ValueError, TypeError, KeyError, OverflowError):
                     return neutral("Previous trading session warmup is missing or invalid; preserving cash.")
             bars = macd_observation_bars(candles, prior=prior, as_of=now, rolling=self.use_rolling_2m)
@@ -158,24 +186,30 @@ class MacdMomentumStrategy:
                 return neutral("Waiting for the current two-minute candle to close.")
             if now - exchange_time(latest["start_time"]) >= timedelta(minutes=3):
                 return neutral("Latest completed two-minute candle is stale.")
-            closes = [number(b["close"], minimum=.01) for b in bars]
+            closes = [number(b["close"], minimum=0.01) for b in bars]
         except (ValueError, TypeError, KeyError, OverflowError):
             return neutral("Invalid or incomplete timestamped candle history.")
         macd, signal, hist = calculate_macd(closes, self.fast_period, self.slow_period, self.signal_period)
         ce_cross = macd[-1] > signal[-1] and macd[-2] <= signal[-2]
         pe_cross = macd[-1] < signal[-1] and macd[-2] >= signal[-2]
         if not (ce_cross or pe_cross):
-            return neutral(f"2m MACD in-range: MACD={macd[-1]:.2f}, Signal={signal[-1]:.2f}; no fresh crossover.")
+            return neutral(
+                f"2m MACD in-range: MACD={macd[-1]:.2f}, Signal={signal[-1]:.2f}; no fresh crossover."
+            )
         if abs(hist[-1]) < self.min_hist_threshold:
-            return neutral(f"2m MACD crossover rejected: Histogram ({hist[-1]:+.2f}) below threshold ({self.min_hist_threshold:.2f}).")
+            return neutral(
+                f"2m MACD crossover rejected: Histogram ({hist[-1]:+.2f}) below threshold ({self.min_hist_threshold:.2f})."
+            )
         direction = "CE" if ce_cross else "PE"
         try:
-            spot = number(ctx.get("spot"), minimum=.01)
-            session_vwap = number(ctx.get("session_vwap"), minimum=.01)
+            spot = number(ctx.get("spot"), minimum=0.01)
+            session_vwap = number(ctx.get("session_vwap"), minimum=0.01)
             if self.require_candle_alignment:
-                body = latest["close"] - number(latest["open"], minimum=.01)
+                body = latest["close"] - number(latest["open"], minimum=0.01)
                 if (ce_cross and body < 0) or (pe_cross and body > 0):
-                    return neutral(f"2m MACD {direction} crossover rejected: Trigger candle opposes crossover.")
+                    return neutral(
+                        f"2m MACD {direction} crossover rejected: Trigger candle opposes crossover."
+                    )
             if self.require_vwap_alignment and (
                 (ce_cross and spot < session_vwap - self.vwap_tolerance_pts)
                 or (pe_cross and spot > session_vwap + self.vwap_tolerance_pts)
@@ -183,50 +217,66 @@ class MacdMomentumStrategy:
                 return neutral(f"2m MACD {direction} crossover rejected: Spot is fighting session VWAP flow.")
             distance = abs(spot - session_vwap)
             if distance >= self.vwap_climax_pts:
-                return neutral(f"2m MACD {direction} cross rejected: Spot extended {distance:.1f} pts from VWAP (>= {self.vwap_climax_pts:.1f} pts climax cap).")
+                return neutral(
+                    f"2m MACD {direction} cross rejected: Spot extended {distance:.1f} pts from VWAP (>= {self.vwap_climax_pts:.1f} pts climax cap)."
+                )
             early_orb = self.early_orb_required and now.strftime("%H:%M") < self.early_orb_cutoff_time
             if self.opening_range_filter_enabled or early_orb:
-                orh = max(number(b["high"], minimum=.01) for b in candles[:15])
-                orl = min(number(b["low"], minimum=.01) for b in candles[:15])
+                orh = max(number(b["high"], minimum=0.01) for b in candles[:15])
+                orl = min(number(b["low"], minimum=0.01) for b in candles[:15])
                 # Before 10:00 require a completed trigger close outside the OR;
                 # testing inside resistance conflicts with the existing 8pt veto.
-                if early_orb and ((ce_cross and min(spot, latest["close"]) <= orh)
-                                  or (pe_cross and max(spot, latest["close"]) >= orl)):
-                    return neutral(f"2m MACD {direction} rejected: Early ORB requires a confirmed opening-range breakout.")
+                if early_orb and (
+                    (ce_cross and min(spot, latest["close"]) <= orh)
+                    or (pe_cross and max(spot, latest["close"]) >= orl)
+                ):
+                    return neutral(
+                        f"2m MACD {direction} rejected: Early ORB requires a confirmed opening-range breakout."
+                    )
                 distance = orh - spot if ce_cross else spot - orl
                 if self.opening_range_filter_enabled and 0 <= distance <= self.opening_range_buffer_pts:
-                    return neutral(f"2m MACD {direction} cross rejected: Spot is within {self.opening_range_buffer_pts:.1f} pts of Opening Range {'High' if ce_cross else 'Low'}.")
+                    return neutral(
+                        f"2m MACD {direction} cross rejected: Spot is within {self.opening_range_buffer_pts:.1f} pts of Opening Range {'High' if ce_cross else 'Low'}."
+                    )
             session_minute = (now - opening).total_seconds() / 60
             if self.midday_enabled and self.midday_start <= session_minute < self.midday_end:
                 # Calculate from completed candles; never substitute a permissive default.
                 recent_box = candles[-15:]
-                spread = max(number(b["high"], minimum=.01) for b in recent_box) - min(
-                    number(b["low"], minimum=.01) for b in recent_box
+                spread = max(number(b["high"], minimum=0.01) for b in recent_box) - min(
+                    number(b["low"], minimum=0.01) for b in recent_box
                 )
                 if spread < self.midday_min_range:
-                    return neutral(f"2m MACD crossover stand aside: Midday flatline (15m Range {spread:.1f} pts < {self.midday_min_range:.1f} pts).")
+                    return neutral(
+                        f"2m MACD crossover stand aside: Midday flatline (15m Range {spread:.1f} pts < {self.midday_min_range:.1f} pts)."
+                    )
             confirmation = []
             if self.require_ema_confirmation:
-                ema9 = number(ctx.get("ema_9"), minimum=.01)
+                ema9 = number(ctx.get("ema_9"), minimum=0.01)
                 distance = abs(spot - ema9)
                 if distance > self.ema_proximity_pts:
-                    return neutral(f"2m MACD {direction} cross rejected: Spot is extended {distance:.2f} pts from 5m EMA9.")
+                    return neutral(
+                        f"2m MACD {direction} cross rejected: Spot is extended {distance:.2f} pts from 5m EMA9."
+                    )
                 confirmation.append(f"EMA9 distance {distance:.2f} pts <= {self.ema_proximity_pts:.2f}")
             if self.require_ema20_trend_alignment:
-                ema20 = number(ctx.get("ema_20"), minimum=.01)
+                ema20 = number(ctx.get("ema_20"), minimum=0.01)
                 if (ce_cross and spot < ema20) or (pe_cross and spot > ema20):
-                    return neutral(f"2m MACD {direction} cross rejected: Spot is on the wrong side of 5m EMA20.")
+                    return neutral(
+                        f"2m MACD {direction} cross rejected: Spot is on the wrong side of 5m EMA20."
+                    )
                 confirmation.append("EMA20 trend aligned")
             recent = candles[-5:]
             if ce_cross:
-                raw = min(number(b["low"], minimum=.01) for b in recent) - 2
+                raw = min(number(b["low"], minimum=0.01) for b in recent) - 2
                 invalidation = min(raw, spot - self.min_invalidation_buffer_pts)
             else:
-                raw = max(number(b["high"], minimum=.01) for b in recent) + 2
+                raw = max(number(b["high"], minimum=0.01) for b in recent) + 2
                 invalidation = max(raw, spot + self.min_invalidation_buffer_pts)
-            number(invalidation, minimum=.01)
+            number(invalidation, minimum=0.01)
         except (ValueError, TypeError, KeyError, OverflowError):
             return neutral("Required Spot/VWAP/EMA or structural prices are missing, non-finite or invalid.")
-        reason = (f"2m MACD {direction} crossover: MACD={macd[-1]:.2f}, Signal={signal[-1]:.2f}, "
-                  f"Histogram={hist[-1]:+.2f}, Spot={spot:.1f}, VWAP={session_vwap:.1f}. " + "; ".join(confirmation))
+        reason = (
+            f"2m MACD {direction} crossover: MACD={macd[-1]:.2f}, Signal={signal[-1]:.2f}, "
+            f"Histogram={hist[-1]:+.2f}, Spot={spot:.1f}, VWAP={session_vwap:.1f}. " + "; ".join(confirmation)
+        )
         return CandidateSignal("BUY_" + direction, [reason], "MACD_2M_MOMENTUM", invalidation)

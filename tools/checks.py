@@ -40,6 +40,7 @@ PURE_BOUNDARIES = (
     "trading/strategies/macd_momentum.py",
     "trading/domain/trailing.py",
     "trading/domain/market_data.py",
+    "trading/domain/companion_contract.py",
     "trading/domain/market_contracts.py",
     "trading/domain/volatility.py",
     "trading/domain/limits.py",

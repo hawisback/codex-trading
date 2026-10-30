@@ -18,9 +18,19 @@ class PathAHistoryTests(unittest.TestCase):
         self.root = Path(directory.name)
         (self.root / "data").mkdir()
         self.start = MarketClock.parse_to_ist("2026-10-27T10:00:00+05:30")
-        self.spot = [dict(start_time=(self.start + timedelta(minutes=i)).isoformat(),
-                          open=23000, high=23002, low=22998, close=23000) for i in range(4)]
-        self.rows = [dict(start_time=b["start_time"], open=100, high=101, low=99, close=100) for b in self.spot]
+        self.spot = [
+            dict(
+                start_time=(self.start + timedelta(minutes=i)).isoformat(),
+                open=23000,
+                high=23002,
+                low=22998,
+                close=23000,
+            )
+            for i in range(4)
+        ]
+        self.rows = [
+            dict(start_time=b["start_time"], open=100, high=101, low=99, close=100) for b in self.spot
+        ]
         self.config = dict(initial_stop_pct=20, runner_activation_pct=15, trail_pullback_pct=10)
 
     def history(self):
@@ -70,11 +80,18 @@ class PathAHistoryTests(unittest.TestCase):
         result = load_option_history("2026-10-27", "2026-10-27", root=self.root)
         self.assertFalse(result.contracts)
         self.assertEqual([path.name], result.excluded_files)
-        meta = dict(session="2026-10-27", expiry="2026-10-27", strike=23000, right="CE", symbol="NIFTY-TEST-CE")
+        meta = dict(
+            session="2026-10-27", expiry="2026-10-27", strike=23000, right="CE", symbol="NIFTY-TEST-CE"
+        )
         path.with_suffix(".meta.json").write_text(json.dumps(meta))
         result = load_option_history("2026-10-27", "2026-10-27", root=self.root)
         self.assertEqual(100, result.bar(23000, "CE", self.start)["close"])
         self.assertIsNone(result.bar(23050, "CE", self.start))
-        for changes in (dict(expiry="2026-11-03"), dict(strike=23050), dict(right="PE"), dict(session="2026-10-26")):
+        for changes in (
+            dict(expiry="2026-11-03"),
+            dict(strike=23050),
+            dict(right="PE"),
+            dict(session="2026-10-26"),
+        ):
             path.with_suffix(".meta.json").write_text(json.dumps(dict(meta, **changes)))
             self.assertFalse(load_option_history("2026-10-27", "2026-10-27", root=self.root).contracts)

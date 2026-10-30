@@ -10,8 +10,9 @@
 
 > [!IMPORTANT]
 > **Whenever the USER asks "Are we using AI?" or asks about AI status, the definition is STRICT and ABSOLUTE:**
-> 1. **"AI" = ONLY AND STRICTLY the Antigravity AI Code Companion (Neural LLM):**
->    - Active ONLY in `--ai-mode chat` (interactive pair-trading where the Antigravity AI assistant evaluates candidate dossiers in real time).
+> 1. **"AI" = an explicitly invoked neural companion (Codex in ChatGPT IDE, or the legacy Antigravity companion):**
+>    - Active ONLY in `--ai-mode chat` when the neural companion actually evaluates the current dossier. A running scheduler or idle watcher alone does not prove AI inference occurred.
+>    - The persistent Codex worker supplies structured judgment only. Application helpers validate identity/deadline and publish verdicts atomically; the deterministic OMS owns broker execution.
 >    - If the engine is running in `--ai-mode playbook` or `--ai-mode rules`, the answer to *"Are we using AI?"* is **STRICTLY "NO"**.
 > 2. **"Deterministic Rules & Risk Guardrails" = Hardcoded Code Heuristics:**
 >    - The 8 cataloged institutional traps, EMA ribbon checks, VWAP blender filters, and RSI cutoffs in `ai_consultant.py` and [`config/rules_playbook.md`](config/rules_playbook.md) are **100% deterministic, rule-based algorithmic filters**.
@@ -43,14 +44,14 @@
 
 ## 🔒 Rule #2: Strict Workspace Isolation
 
-* **Permitted Directory:** Strictly work ONLY inside `c:\Users\hawis\Documents\antigravity\splendid-bardeen`.
-* **Prohibited Directories:** **NEVER** edit, create, or touch files in `icici-breeze-api-trading` or any directory outside `splendid-bardeen`.
+* **Permitted Directory:** Strictly work ONLY inside `C:\Users\hridesh.gupta\vscode-repo\trading\chatgpt-ai-trading`.
+* **Prohibited Directories:** **NEVER** edit, create, or touch files in `icici-breeze-api-trading` or another project checkout. Installed tooling and its authentication remain environment-managed.
 
 ---
 
 ## 💰 Rule #3: Account Constraints, Step-Ladder Compounding & Sizing
 
-> **Current policy note:** The approved R01 upper-bound ladder is **₹20k/₹40k/₹60k/₹80k**, not the older 70k/100k research bands. R01 is implemented only on `feature/live-activation-guardrails-20261030` and **disabled** by `r01_policy.enabled=false`. No real-money safety or execution test has passed for this increment. See [canonical status](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).
+> **Current policy (owner update, 2026-10-30):** R01 uses up to 2 lots below INR 40k, 4 at 40k, 6 at 60k, 8 at 80k and 10 at 100k, always limited by actual option-premium affordability and the INR 150 reserve. Daily realized + unrealized loss blocks NEW entries at INR 3,000 times each proposed entry's actual lot count; existing stop management continues. Kite is the current release target; Breeze is deferred. R01 remains disabled pending actual broker acceptance. See [canonical status](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).
 
 
 * **Baseline Capital:** **₹10,000 Margin**.
@@ -58,14 +59,16 @@
   The engine scales lot sizing dynamically strictly upon crossing verified broker margin milestones:
   | Verified Broker Available Margin | Active Sizing | Contract Quantity | Risk Rationale |
   |---|:---:|:---:|---|
-  | **Positive funds through ₹20,000 inclusive** | **Up to 2 Lots** | **130 max** | Authenticated broker margin tier |
-  | **Above ₹20,000 through ₹40,000 inclusive** | **Up to 4 Lots** | **260 max** | Broker funding and order limit still apply |
-  | **Above ₹40,000 through ₹60,000 inclusive** | **Up to 6 Lots** | **390 max** | Broker funding and order limit still apply |
-  | **Above ₹60,000 through ₹80,000 inclusive** | **Up to 8 Lots** | **520 max** | Broker funding and order limit still apply |
-  | **Above ₹80,000** | **Up to 10 Lots** | **650 max** | Hard position cap and order limit still apply |
+  | **Positive funds below ₹40,000** | **Up to 2 Lots** | **130 max** | One lot if only one is affordable |
+  | **₹40,000 to below ₹60,000** | **Up to 4 Lots** | **260 max** | Broker funding and exchange limit still apply |
+  | **₹60,000 to below ₹80,000** | **Up to 6 Lots** | **390 max** | Broker funding and exchange limit still apply |
+  | **₹80,000 to below ₹100,000** | **Up to 8 Lots** | **520 max** | Broker funding and exchange limit still apply |
+  | **₹100,000 and above** | **Up to 10 Lots** | **650 max** | Hard position cap and exchange limit still apply |
 * **Dynamic Drawdown De-escalation:** If account equity pulls back below any milestone threshold during adverse conditions, lot sizing **instantly drops** to the lower bracket to protect accumulated capital.
 * **Zero-Shortfall Purchasing Power Buffer:** Sizing is hard-capped by `(available_margin - 150) // (contract_price * 65)`. Orders never exceed verified liquid funds minus a ₹150 buffer for exchange fees and STT.
 * **Order Cap:** Maximum **1 concurrent open position** at any time.
+* **Current initial protection:** **25%** for MACD and the approved R01 unified policy. The request's `authoritative_risk_policy` and existing position's frozen policy are binding. Legacy post-fill refinement is allowed only inside its frozen band and may never loosen protection; R01 positions retain the unified stop authority.
+* **Companion deadlines:** 45-second consultation window, including startup/reasoning/validation/handoff. Entry approval lifetime is at most 15 seconds after application submission and never beyond the consultation deadline. Errors and late/malformed replies preserve cash; stop-consultation failures retain existing protection.
 * **Overnight Rule:** Target **zero positions overnight** with a mandatory 15:15 IST square-off request. Broker outages/failed fills can prevent verified flatness; preserve the exposure incident and reconcile.
 * **Zero Cost Architecture:** Operates with **zero paid API fees** (uses local broker sessions on Kite/Breeze and free web RSS/market ingestion).
 
@@ -76,7 +79,7 @@
 The repository maintains an institutional division of responsibilities:
 ```
 +---------------------------------------------------------------------------------------------------+
-|  DETERMINISTIC CORE (Muscles)      |  DETERMINISTIC RULES (Filters)     |  ANTIGRAVITY AI (Brain) |
+|  DETERMINISTIC CORE (Muscles)      |  DETERMINISTIC RULES (Filters)     |  NEURAL COMPANION (Brain) |
 |  - 100% Rule-Based Math & OMS      |  - 8 Hardcoded Institutional Traps |  - True Neural LLM      |
 |------------------------------------+------------------------------------+-------------------------|
 |  1. 1m to 5m Candle Resampling     |  1. VWAP Blender / Dead Zone Veto  |  1. Live Macro NLP      |
@@ -88,7 +91,7 @@ The repository maintains an institutional division of responsibilities:
 ```
 
 > **The Operating Principle:**
-> *"Deterministic Math Proposes $\longrightarrow$ Deterministic Rules Filter $\longrightarrow$ Antigravity AI Disposes (Chat) $\longrightarrow$ Deterministic OMS Executes"*
+> *"Deterministic Math Proposes $\longrightarrow$ Deterministic Rules Filter $\longrightarrow$ Neural Companion Judges (Chat) $\longrightarrow$ Deterministic OMS Executes"*
 
 ---
 
@@ -123,17 +126,19 @@ To launch on **ICICI Breeze**:
 python nifty_trader_scheduler.py --broker breeze --market-data-broker breeze --live --strategy macd_momentum --ai-mode rules --wait-until-market-open
 ```
 
-### 2. Antigravity AI Companion Mode (True Neural AI Pair-Trading - Path A Recommended):
-To launch with interactive Antigravity AI Chat Pair-Trading directly in the IDE:
-1. Arm the AI Watcher daemon:
+### 2. Codex Companion in ChatGPT IDE (Neural AI, chat mode):
+The persistent worker invokes the installed Codex CLI with its ChatGPT login, validates structured judgments, and stays armed for entry and stop requests. The older watcher only prints a one-shot notification and does not invoke a model.
+1. Check the CLI/session and a nontradable canary, then arm the persistent worker:
    ```powershell
-   python tools/watch_consultation.py
+   python -m tools.codex_companion --check
+   python -m tools.codex_companion --self-test
+   python -m tools.codex_companion
    ```
-2. Launch the live scheduler:
+2. The operator launches the scheduler for controlled acceptance; initial startup uses `auto_trade_enabled=false`. See the local acceptance procedure before enabling new entries:
    ```powershell
    python nifty_trader_scheduler.py --broker kite --market-data-broker kite --live --strategy macd_momentum --ai-mode chat --wait-until-market-open
    ```
-   *(For full architecture, purchasing power math, and reactive wakeup protocol, see [`docs/AI_COMPANION_PAIR_TRADING.md`](docs/AI_COMPANION_PAIR_TRADING.md))*.
+   See [Codex companion](docs/CODEX_COMPANION.md) and [operator acceptance](docs/operations/KITE_LOCAL_ACCEPTANCE_20261030.md). R01 positions keep unified stops; the worker also handles legacy stop consultations when the engine publishes them.
 
 ### 3. Account & Data Verification (Read-Only Pre-Flight):
 To run read-only pre-flight account & data verification before market open:

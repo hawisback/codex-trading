@@ -1,50 +1,35 @@
 # LIVE integration hardening and activation hold — 2026-10-30
 
-**Repository:** `hawisback/codex-trading`  
-**Work branch:** `feature/live-activation-guardrails-20261030`  
-**Base:** `refactor/r02-r10-safety-foundations-20261029`  
-**Status:** INTEGRATION CODE OWNER-REVIEWED; **NOT ENABLED / NOT TESTED / NOT BROKER-UAT VERIFIED / NOT MERGED OR DEPLOYED.**  
+**Repository:** `hawisback/codex-trading`
+**Work branch:** `feature/live-activation-guardrails-20261030`
+**Current release target:** **Kite only; Breeze deferred by owner.** Breeze authentication is outside this release's gates. Kite R01 read-only evidence passes; actual broker order acceptance remains required.
+**Base:** `refactor/r02-r10-safety-foundations-20261029`
+**Status:** PRIOR INTEGRATION OWNER-REVIEWED; **LOCAL OFFLINE REPAIRS PASS / NOT ENABLED / NOT BROKER-UAT VERIFIED / NOT MERGED OR DEPLOYED.** See [executed validation and local candidate identity](OFFLINE_VALIDATION_20261030.md).
 **Owner request:** Implement and enable all phases for LIVE. The engineering integration can progress; a real-money go-live cannot be certified or executed without missing broker evidence and validation.
 
-See [canonical current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md) and [unified stop integration specification](R01_UNIFIED_STOP_EXECUTION.md). Owner code review does **not** replace the still-unexecuted offline regression, adverse OMS recovery or supervised broker acceptance gates.
+See [canonical current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md), [executed offline validation](OFFLINE_VALIDATION_20261030.md) and [unified stop integration specification](R01_UNIFIED_STOP_EXECUTION.md). Passing local fixtures does not establish real broker behavior or satisfy supervised broker acceptance.
 
 ## Implemented in this increment
 
 - **Kite/Breeze authenticated funds receipt provenance:** Native `_fetch_broker_funds()` now includes `account_id`, `funds_asof` and a provider-specific `source`. The time is when the authenticated broker response was received by this process, **not** a broker-supplied exchange timestamp, position P&L, or broker account-equity ledger. Funds are still live broker response values, not JSON assumptions.
 - **R01 submission-time funds validation:** `position_lifecycle._submit_entry` uses `BrokerFundsView.validated()` before lot sizing and again inside the broker pretransmit callback. An account mismatch, expired receipt, missing order limit or malformed funds response blocks only the NEW entry. It rechecks the independently required daily P&L gate. It does **not** fetch a second broker funds read after queueing and does not change OMS exit/protect procedures.
 - **Single-account native LIVE writer:** `BaseBrokerGateway.set_mode("LIVE")` obtains an OS-based account lease from a broker-verified account; every native BUY/STOP/SELL/CANCEL/MODIFY transport verifies lease ownership before mutation. A second native gateway in a competing process cannot arm the same broker/account through the same lock namespace. Disarming to PAPER does **not** release the lease mid-process, because this is not evidence that broker orders are flat. OS lock release occurs at process exit; operator reconciliation remains mandatory. Legacy external broker clients and a differently deployed engine version cannot be fenced by this local lock; this is not a distributed lock.
-- Offline unit fixtures were written and registered. No tests were run, as previously directed.
+- The owner subsequently authorized testing and repairs. The quality wrapper and 574 registered offline tests now pass locally; see the validation record. The feature-branch repair candidate still requires operator-run broker acceptance.
 
-## Mandatory missing LIVE inputs
+## Kite source integration and remaining acceptance
 
-Neither current native broker `get_funds()` normalization establishes all requirements for R01:
+The owner revised the risk policy on 2026-10-30: up to 2 lots below INR 40k; 4/6/8/10 at INR 40k/60k/80k/100k, limited by executable premium and the INR 150 reserve. Daily realized + unrealized account loss is capped at INR 3,000 per actual proposed entry lot, recalculated at every entry. At a breach, only new entries are blocked; existing stop management continues. Opening-equity and the older 1.5% rule are not R01 requirements.
 
-| Missing evidence | Why it is required | Safe behavior until supplied |
-| --- | --- | --- |
-| `max_single_order_quantity` | Real broker/instrument-specific freeze quantity; cannot assume one lot or 650 is the broker's order limit | Block NEW R01 BUY |
-| `pnl_account_id`, `pnl_session_date`, `pnl_asof` | Match a broker-reconciled current-day P&L ledger to the authenticated account/time | Block NEW R01 BUY |
-| `start_of_day_equity` | Actual day opening equity baseline for 1.5% loss threshold, not arbitrary configured capital | Block NEW R01 BUY |
-| `realized_pnl_today`, `unrealized_pnl_today` | Verified loss including live open exposure | Block NEW R01 BUY |
-| Current exchange calendar and validated broker instrument master | R05 code only defines a source-evidence resolver; it is not a connected authoritative feed | Do not allow unverified new expiries |
-| Unified stop parity and OMS recovery proof | R01-stamped positions now use one shared monitor and StopManager policy; legacy stops remain intentionally available for non-R01 positions. End-to-end broker/crash/partial-fill tests remain outstanding | No replacement of active LIVE OMS before verification |
-| Broker-specific rate/partial-fill/order-cancel UAT | Offline types cannot prove real broker response identity, stop coverage, quantities or live order semantics | No LIVE release |
+`KiteExecutionGateway.get_entry_funds()` now combines real authenticated margin, raw net/day positions reconciled against today's fills, exact current-master contract identity/lot/tick, published NSE NIFTY freeze quantity, and current-year FO holiday evidence through the R05 resolver. Account/session/credential changes, stale receipts, ambiguous/missing books, carry positions, unsupported calendars and changed contracts block new entries. The selected contract must meet the configured minimum remaining regular-session budget. These sources passed read-only acceptance against the refreshed Kite session; see [validation](OFFLINE_VALIDATION_20261030.md).
 
-**Do not create synthetic positive data or hardcode these fields.** A broker endpoint that reports available cash alone is **not** evidence of real-time daily realized+unrealized P&L. Broker freeze quantity may depend on exchange instrument, contract and current notices.
+Actual broker order/protection/recovery acceptance is still pending. Follow the [local acceptance procedure](../operations/KITE_LOCAL_ACCEPTANCE_20261030.md). The operator must perform actual order submissions and activation; the assistant can inspect books and logs. No fake broker funds or arbitrary quantity constants were substituted to clear the gate.
 
-## Required before a supervised LIVE activation
-
-1. Implement account-verified normalized broker P&L aggregation from authoritative broker positions/trades and opening account equity. Establish timestamps, source identity, reset at IST session boundaries, and behavior on partial/closed trades. No inferred zero values.
-2. Load and verify the current broker instrument master; derive and check broker-specific order freeze limits against the current contract, with appropriate source provenance. Do not split orders without new OMS design/approval.
-3. Connect the exchange holiday and expiry source to R05 without guessing session weekdays, then enforce new-entry market-data freshness while leaving existing-position protection active.
-4. Complete and test OMS account-lease lifecycle through every permitted entrypoint, crash restart, stop replacement, partial fills and unknown broker acknowledgments.
-5. **Validate the newly integrated R01 unified stop path** with legacy parity, stale quote, tick floor, stronger-stop, active-position policy freeze, partial-fill, order modification and crash/restart tests; preserve all pre-existing legacy stops. Integration is coded but not proven by execution.
-6. Run (with the owner's explicit changed instruction) the complete offline suites, replay adverse-event scenarios, and broker sandbox/supervised UAT with known-safe size and recovery drill.
-7. Obtain a separate review/approval of exact deployed commit, verified account, risk limits, operator ownership, kill switch and rollback plan. Only then consider turning `r01_policy.enabled` to true and authorizing a controlled LIVE start.
+This is a single-machine Windows release. No CI, Linux/distributed rollout, or new security project is required. Keep existing account identity, the local account lease, mandatory consultation and risk/OMS protections. The tested source fingerprint identifies the candidate. The owner requested feature-branch check-in; Git publication does not complete broker acceptance or authorize LIVE activation.
 
 ## Current activation facts
 
 - Current branch config remains `r01_policy.enabled=false`.
 - Config text `mode: LIVE`, `system_armed: true` does not itself authorize native broker LIVE; the CLI still requires `--live` and the gateway's account authorization.
 - `main` is unchanged and no broker order was submitted, canceled or modified in this change.
-- Only *static syntax* was examined for this increment; this is not a pass of integration or regression tests.
+- The local repair candidate passed the quality wrapper and registered offline integration/regression tests. This does not establish real broker conformance or approve the final release commit.
 - `tools/refactor_readiness.py` intentionally reports BLOCKED, because the required proof is not present.

@@ -54,8 +54,7 @@ class BrokerFundsView:
     source: str
 
     @classmethod
-    def validated(cls, payload: Mapping[str, Any], *, account_id: str,
-                  now: datetime, max_age_sec: int = 60):
+    def validated(cls, payload: Mapping[str, Any], *, account_id: str, now: datetime, max_age_sec: int = 60):
         if not isinstance(payload, Mapping) or payload.get("error"):
             raise BrokerContractError("BROKER_FUNDS_UNAVAILABLE")
         if not isinstance(account_id, str) or not account_id:
@@ -92,20 +91,28 @@ class BrokerOrderView:
         if not account_id or payload.get("account_id") != account_id:
             raise BrokerContractError("BROKER_ACCOUNT_MISMATCH")
         order_id, symbol = payload.get("order_id"), payload.get("symbol")
-        if not all(isinstance(s, str) and s for s in (order_id, symbol)):
+        if not isinstance(order_id, str) or not order_id or not isinstance(symbol, str) or not symbol:
             raise BrokerContractError("BROKER_ORDER_IDENTITY_UNVERIFIED")
         status = payload.get("status")
         allowed_statuses = (
-            "PENDING", "OPEN", "PARTIALLY_FILLED", "TRIGGER_PENDING",
-            "FILLED", "CANCELLED", "REJECTED", "EXPIRED", "UNKNOWN",
+            "PENDING",
+            "OPEN",
+            "PARTIALLY_FILLED",
+            "TRIGGER_PENDING",
+            "FILLED",
+            "CANCELLED",
+            "REJECTED",
+            "EXPIRED",
+            "UNKNOWN",
         )
         if status not in allowed_statuses:
             raise BrokerContractError("BROKER_ORDER_STATUS_UNKNOWN")
         q, f, remaining = (
-            payload.get("quantity"), payload.get("filled_quantity"),
+            payload.get("quantity"),
+            payload.get("filled_quantity"),
             payload.get("pending_quantity"),
         )
-        if any(type(x) is not int for x in (q, f, remaining)):
+        if type(q) is not int or type(f) is not int or type(remaining) is not int:
             raise BrokerContractError("BROKER_FILL_UNVERIFIED")
         if q <= 0 or not 0 <= f <= q or not 0 <= remaining <= q:
             raise BrokerContractError("BROKER_QUANTITY_INVALID")

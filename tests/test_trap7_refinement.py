@@ -2,6 +2,7 @@ import unittest
 from ai_context_dossier import MarketDossier
 from ai_consultant import AIConsultant
 
+
 class TestTrap7Refinement(unittest.TestCase):
     def setUp(self):
         self.ai = AIConsultant(mode="playbook")
@@ -24,7 +25,7 @@ class TestTrap7Refinement(unittest.TestCase):
             gamma_hazard_flag=False,
             session_vwap=22750.0,
             vwap_distance_pts=50.0,
-            vwap_slope_15m=-0.35, # Counter-trend slope for CE
+            vwap_slope_15m=-0.35,  # Counter-trend slope for CE
             vwap_cross_count_60m=1,
             vwap_blender_warning=False,
             box_range_15m=30.0,
@@ -53,7 +54,7 @@ class TestTrap7Refinement(unittest.TestCase):
             is_counter_trend_slope=True,
             is_climax_extended=False,
             is_candle_aligned=True,
-            is_reversal_inflection=True
+            is_reversal_inflection=True,
         )
         defaults.update(kwargs)
         return MarketDossier(**defaults)
@@ -62,7 +63,7 @@ class TestTrap7Refinement(unittest.TestCase):
         """Extreme slope > 0.85 pts/min is an avalanche and MUST be vetoed."""
         d = self._create_mock_dossier(
             vwap_slope_15m=-1.20,
-            is_reversal_inflection=False # Fails inflection due to extreme slope
+            is_reversal_inflection=False,  # Fails inflection due to extreme slope
         )
         verdict = self.ai.evaluate(d)
         self.assertFalse(verdict.is_approved)
@@ -73,7 +74,7 @@ class TestTrap7Refinement(unittest.TestCase):
         """Counter-trend trade with opposing candle must be vetoed."""
         d = self._create_mock_dossier(
             is_candle_aligned=False,
-            is_reversal_inflection=False # Fails inflection due to candle against trade
+            is_reversal_inflection=False,  # Fails inflection due to candle against trade
         )
         verdict = self.ai.evaluate(d)
         self.assertFalse(verdict.is_approved)
@@ -83,10 +84,7 @@ class TestTrap7Refinement(unittest.TestCase):
     def test_trap7_approves_valid_reversal_inflection(self):
         """Moderate slope, aligned candle, and runway allows reversal inflection."""
         d = self._create_mock_dossier(
-            vwap_slope_15m=-0.35,
-            vwap_distance_pts=60.0,
-            is_candle_aligned=True,
-            is_reversal_inflection=True
+            vwap_slope_15m=-0.35, vwap_distance_pts=60.0, is_candle_aligned=True, is_reversal_inflection=True
         )
         verdict = self.ai.evaluate(d)
         self.assertTrue(verdict.is_approved)
@@ -102,12 +100,13 @@ class TestTrap7Refinement(unittest.TestCase):
             vwap_distance_pts=100.0,
             is_counter_trend_slope=False,
             vwap_slope_15m=+0.25,
-            is_reversal_inflection=False
+            is_reversal_inflection=False,
         )
         verdict = self.ai.evaluate(d)
         self.assertFalse(verdict.is_approved)
         self.assertEqual(verdict.action, "VETOED")
         self.assertIn("Trap 8", verdict.trap_detected)
+
 
 if __name__ == "__main__":
     unittest.main()

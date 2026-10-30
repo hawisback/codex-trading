@@ -33,7 +33,11 @@ def review_session(session, *, root=None):
     reviewer = HybridHistoricalReview(settings.strategy, settings.trading)
     observations = []
     entry = settings.strategy.get("entry", {})
-    first = 15 if entry.get("prior_session_warmup_enabled", False) else (28 if entry.get("use_rolling_2m", False) else 54)
+    first = (
+        15
+        if entry.get("prior_session_warmup_enabled", False)
+        else (28 if entry.get("use_rolling_2m", False) else 54)
+    )
     cadence = 1 if entry.get("use_rolling_2m", False) else 2
     if not entry.get("use_rolling_2m", False) and first % 2:
         first += 1
@@ -43,12 +47,20 @@ def review_session(session, *, root=None):
             break
         result = reviewer.evaluate(rows, now=now, expiry=expiry, options=options, prior_rows=prior)
         observations.append(dict(result, observed_at=now.isoformat()))
-    return dict(session=session, evaluation_mode="rules", ai_used=False, scope="DECISION_REPLAY_ONLY",
-                limitations=["No historical companion verdicts or fills", "Macro/news and executable depth unavailable",
-                             "No portfolio simulation, PnL or ROI validation"],
-                excluded_option_files=options.excluded_files,
-                counts=dict(Counter(row["blocked"] or row["signal"] for row in observations)),
-                observations=observations)
+    return dict(
+        session=session,
+        evaluation_mode="rules",
+        ai_used=False,
+        scope="DECISION_REPLAY_ONLY",
+        limitations=[
+            "No historical companion verdicts or fills",
+            "Macro/news and executable depth unavailable",
+            "No portfolio simulation, PnL or ROI validation",
+        ],
+        excluded_option_files=options.excluded_files,
+        counts=dict(Counter(row["blocked"] or row["signal"] for row in observations)),
+        observations=observations,
+    )
 
 
 def main(argv=None):

@@ -14,6 +14,7 @@ Operating Modes:
 
 import os
 import sys
+import copy
 
 
 import time
@@ -59,8 +60,11 @@ confirmed confluence; state the uncertainty and veto if it cannot be resolved.
 EMA9 proximity and EMA20 alignment are advisory in the active profile; do not
 reinstate either as an unconditional pre-entry veto. All remaining playbook
 traps and risk guardrails remain mandatory. Confluence never auto-approves.
-Preserve 30% initial broker protection, the frozen 15-20% post-fill loss band,
-and at least 15 adverse Spot points for structural invalidation. Sizing, quote
+Use the attached authoritative_risk_policy for the initial broker stop,
+post-fill refinement eligibility/band and minimum structural invalidation buffer.
+Never substitute research-example stop percentages or reintroduce removed Trap 1.
+R01 uses the engine's unified stop policy; no competing post-fill override.
+Sizing, quote
 revalidation, one-position cap, 15:15 square-off and timeout-to-cash still apply.
 """
 
@@ -80,7 +84,7 @@ class StopLossDossier:
     ema_9: float                       # 5m EMA9
     ema_20: float                      # 5m EMA20
     setup_type: str                    # "TREND_PULLBACK", "CLIMAX_SPRING", etc.
-    active_stop_price: float           # Current baseline broker stop (e.g. 30% initial stop)
+    active_stop_price: float           # Actual current broker stop; preserve its frozen policy.
     trigger_candle_open: float = 0.0
     trigger_candle_high: float = 0.0
     trigger_candle_low: float = 0.0
@@ -208,6 +212,18 @@ class AIConsultant:
     ):
         self.mode = mode.lower()
         self.stop_policy = configured_stop_policy(strategy_config or {})
+        r01 = (trading_config or {}).get("r01_policy", {}).get("enabled") is True
+        initial = ((trading_config or {}).get("risk", {}).get("option_hard_stop_pct", 25)
+                   if r01 else (strategy_config or {}).get("exit", {}).get("initial_stop_pct"))
+        self.companion_risk_policy = {
+            "source": "R01_UNIFIED" if r01 else "FROZEN_STRATEGY",
+            "initial_stop_pct": initial,
+            "post_fill_refinement_enabled": bool(self.stop_policy) and not r01,
+            "post_fill_policy": dict(self.stop_policy) if not r01 else {},
+            "min_invalidation_buffer_pts": (strategy_config or {}).get("entry", {}).get("min_invalidation_buffer_pts"),
+            "price_only_veto_disabled": (trading_config or {}).get("r01_policy", {}).get("enabled") is True
+                and (trading_config or {}).get("r01_policy", {}).get("price_only_veto_disabled") is True,
+        }
         self.timeout_seconds = timeout_seconds
         pb_path = Path(playbook_path)
         if not pb_path.exists() and str(playbook_path) == "config/ai_learning_playbook.md":
@@ -219,7 +235,7 @@ class AIConsultant:
         if self.mode in ("rules", "playbook"):
             logger.info(f"AI Consultant initialized in [{self.mode.upper()}] mode (Deterministic Rules Gateway)")
         elif self.mode == "chat":
-            logger.info(f"AI Consultant initialized in [CHAT] mode (Antigravity AI Companion Pair-Trading, Timeout: {self.timeout_seconds}s)")
+            logger.info(f"AI Consultant initialized in [CHAT] mode (Neural companion, Timeout: {self.timeout_seconds}s)")
         else:
             logger.info(f"AI Consultant initialized in [{self.mode.upper()}] mode (Timeout: {self.timeout_seconds}s)")
 
@@ -538,7 +554,7 @@ class AIConsultant:
         )
 
     def _evaluate_chat_inbox(self, d: MarketDossier) -> AIVerdict:
-        """Yield to Antigravity, accepting only a response to this live request."""
+        """Yield to the neural companion; accept only this live request's response."""
         now = MarketClock.now_ist()
         expires = now + timedelta(seconds=self.timeout_seconds)
         request_id = uuid.uuid4().hex
@@ -548,6 +564,7 @@ class AIConsultant:
             "created_at": now.isoformat(), "expires_at_timestamp": expires.timestamp(),
             "timeout_seconds": self.timeout_seconds, "dossier": asdict(d),
             "evaluation_rubric": COMPANION_ENTRY_RUBRIC,
+            "authoritative_risk_policy": copy.deepcopy(self.companion_risk_policy),
         }
         lower, upper = self.entry_policy.band(d.option_entry_price, d.setup_type)
         payload["proposed_entry_band"] = {"min_entry_price": lower, "max_entry_price": upper,
@@ -560,6 +577,7 @@ class AIConsultant:
                 d.to_markdown() + f"\n\nRequest ID: `{request_id}`\nCandidate ID: `{candidate_id}`\n"
                 f"Read `{self.playbook_path}` and enforce its risk rules before deciding.\n"
                 f"{COMPANION_ENTRY_RUBRIC}\n"
+                f"Authoritative risk policy: `{json.dumps(self.companion_risk_policy, sort_keys=True)}`\n"
                 f"Submit: `python ai_consultant.py --approve --request-id {request_id} --reason <RATIONALE>`\n"
                 f"Use `--veto` to reject. Deadline: {expires.isoformat()}.\n", encoding="utf-8")
             temporary.replace(PENDING_FILE_MD)
@@ -723,6 +741,7 @@ class AIConsultant:
             "created_at": trade["ai_stop_requested_at"],
             "timeout_seconds": trade["ai_stop_timeout_seconds"],
             "dossier": asdict(dossier),
+            "evaluation_rubric": "Refine only within the frozen dossier risk_policy; never loosen active protection. HOLD if evidence is insufficient.",
         }
         # Publish JSON last: its appearance signals a fully written dossier to the watcher.
         PENDING_SL_FILE_MD.parent.mkdir(parents=True, exist_ok=True)
@@ -925,9 +944,14 @@ class AIConsultant:
         return None
 
 
-def submit_stop_loss_verdict(request_id, stop_price, invalidation=None, trailing="standard", reasoning=""):
+def submit_stop_loss_verdict(request_id, stop_price, invalidation=None, trailing="standard", reasoning="", *,
+                             expected_pending=None, pending_path=None, verdict_path=None):
     """Bind a CLI response to the explicitly selected, still-live consultation."""
-    pending = json.loads(PENDING_SL_FILE_JSON.read_text(encoding="utf-8"))
+    pending_path = Path(pending_path) if pending_path is not None else PENDING_SL_FILE_JSON
+    verdict_path = Path(verdict_path) if verdict_path is not None else SL_VERDICT_FILE
+    pending = json.loads(pending_path.read_text(encoding="utf-8"))
+    if expected_pending is not None:
+        _validate_worker_publication(pending, expected_pending, verdict_path)
     if (not request_id or pending.get("status") != "AWAITING_STOP_LOSS"
             or pending.get("request_id") != request_id or not pending.get("trade_id")):
         raise ValueError("No matching pending stop consultation; use --request-id from the current dossier")
@@ -948,7 +972,7 @@ def submit_stop_loss_verdict(request_id, stop_price, invalidation=None, trailing
         "reasoning": reasoning or "Manual stop-loss set via CLI",
         "submitted_at": now.isoformat(),
     }
-    atomic_save(SL_VERDICT_FILE, payload)
+    atomic_save(verdict_path, payload)
     return payload
 
 
@@ -967,7 +991,7 @@ def entry_response_action(data):
 
 
 def validate_entry_response(pending, data, now):
-    """Validate the Antigravity handoff independently of the eventual execution band."""
+    """Validate the companion handoff independently of the eventual execution band."""
     if not isinstance(data, dict) or pending.get("status") != "AWAITING_VERDICT":
         raise ValueError("No active entry consultation")
     for key in ("request_id", "candidate_id"):
@@ -991,17 +1015,35 @@ def validate_entry_response(pending, data, now):
             raise ValueError("Entry band must be positive")
 
 
-def submit_entry_verdict(request_id, action, reasoning="", trailing="standard"):
+def _validate_worker_publication(pending, expected, verdict_path):
+    """Application-owned handoff rejects replaced requests and prior verdicts."""
+    if pending != expected:
+        raise ValueError("Consultation changed during model evaluation")
+    if verdict_path.exists():
+        existing = json.loads(verdict_path.read_text(encoding="utf-8"))
+        if isinstance(existing, dict) and existing.get("request_id") == pending.get("request_id"):
+            raise ValueError("A verdict already exists for this consultation")
+
+
+def submit_entry_verdict(request_id, action, reasoning="", trailing="standard", *,
+                         expected_pending=None, pending_path=None, verdict_path=None,
+                         confidence=95, trap=None):
     """Submit only to the explicitly selected, still-live candidate consultation."""
-    pending = json.loads(PENDING_FILE_JSON.read_text(encoding="utf-8"))
+    pending_path = Path(pending_path) if pending_path is not None else PENDING_FILE_JSON
+    verdict_path = Path(verdict_path) if verdict_path is not None else VERDICT_FILE
+    pending = json.loads(pending_path.read_text(encoding="utf-8"))
+    if expected_pending is not None:
+        _validate_worker_publication(pending, expected_pending, verdict_path)
     if not request_id or request_id != pending.get("request_id"):
         raise ValueError("Use --request-id from the current entry dossier")
     now = MarketClock.now_ist()
     payload = dict(request_id=request_id, candidate_id=pending.get("candidate_id"),
                    submitted_at=now.isoformat(), action=action, trailing=trailing,
-                   reason=reasoning or "Entry verdict submitted via CLI", confidence=95)
+                   reason=reasoning or "Entry verdict submitted via CLI", confidence=confidence)
+    if trap is not None:
+        payload["trap"] = trap
     validate_entry_response(pending, payload, now)
-    atomic_save(VERDICT_FILE, payload)
+    atomic_save(verdict_path, payload)
     return payload
 
 

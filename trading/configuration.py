@@ -134,7 +134,9 @@ def load_configuration(
     ai_timeout = int(ai_cfg.get("timeout_seconds", 45))
     if str(selected_ai_mode).lower() == "disabled":
         raise ValueError("AI consultation cannot be disabled for the scheduler")
-    if (strategy_name or environ.get("STRATEGY_MODE")) == "macd_momentum" and strategy_mode != "macd_momentum":
+    if (
+        strategy_name or environ.get("STRATEGY_MODE")
+    ) == "macd_momentum" and strategy_mode != "macd_momentum":
         raise ValueError("The requested macd_momentum profile is missing; refusing another strategy")
     validate_trailing_configuration(strategy_cfg)
     if strategy_mode == "macd_momentum":

@@ -11,7 +11,15 @@ import time
 import uuid
 from typing import Any, Iterable, Optional
 
-from execution_safety import ReconciliationError, SchedulerLock, TERMINAL, filled, rows, same_scope, status, symbol_of
+from execution_safety import (
+    ReconciliationError,
+    TERMINAL,
+    filled,
+    rows,
+    same_scope,
+    status,
+    symbol_of,
+)
 from entry_policy import EntryBlocked
 from trading.adapters.gateways.journal import GatewayJournal
 from trading.adapters.gateways.rate_limiter import TokenBucketRateLimiter
@@ -90,9 +98,11 @@ class BaseBrokerGateway(ABC):
         return timeout > 0 and self.rate_limiter.acquire(timeout=timeout)
 
     def _owns_account_lease(self):
-        return (self._account_lease is not None
-                and self._leased_account == self.get_account_id()
-                and SchedulerLock.is_held(self._account_lease.path))
+        return (
+            self._account_lease is not None
+            and self._leased_account == self.get_account_id()
+            and self._account_lease.owns_current_process()
+        )
 
     def get_status(self):
         connected = self.is_connected()
@@ -103,8 +113,9 @@ class BaseBrokerGateway(ABC):
             "mode": self._mode,
             "broker": self.broker_name,
             "connected": connected,
-            "live_authorized": (self._mode == "LIVE" and self._live_authorized
-                                and connected and self._owns_account_lease()),
+            "live_authorized": (
+                self._mode == "LIVE" and self._live_authorized and connected and self._owns_account_lease()
+            ),
             "account_id": account,
         }
 
@@ -123,7 +134,8 @@ class BaseBrokerGateway(ABC):
                 account = current["account_id"]
                 if self._account_lease is None:
                     lease = AccountSessionLease(
-                        self.journal.path.parent, broker=self.broker_name,
+                        self.journal.path.parent,
+                        broker=self.broker_name,
                         verified_account=account,
                     )
                     lease.__enter__()

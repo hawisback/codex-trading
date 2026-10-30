@@ -1,8 +1,7 @@
-"""Owner-approved R01 lot ladder as a pure, OFFLINE sizing preview.
+"""Owner-approved capital milestones shared by R01 preview and submission.
 
-This module is intentionally not called by the LIVE sizing, OMS, scheduler or
-broker gateway. A preview is NOT approval to submit an order. The capital basis
-(available margin vs equity) remains an explicit input, never an implicit choice.
+Pure arithmetic cannot authorize an order. Broker evidence, consultation and
+the existing OMS remain responsible for validation and execution.
 """
 
 from __future__ import annotations
@@ -13,12 +12,13 @@ from typing import Any
 
 from trading.domain.limits import FEE_RESERVE, MAX_POSITION_QUANTITY
 
-# Inclusive upper boundaries, per owner direction on 2026-10-29.
-_OWNER_LOT_BANDS = (
-    (Decimal("20000"), 2),
+# Minimum capital milestones, per revised owner direction on 2026-10-30.
+# Positive funds below 40k permit up to two lots, subject to affordability.
+_OWNER_LOT_MILESTONES = (
     (Decimal("40000"), 4),
     (Decimal("60000"), 6),
     (Decimal("80000"), 8),
+    (Decimal("100000"), 10),
 )
 _OWNER_MAX_LOTS = 10
 _CAPITAL_BASES = frozenset(("available_margin", "account_equity"))
@@ -26,7 +26,7 @@ _CAPITAL_BASES = frozenset(("available_margin", "account_equity"))
 
 @dataclass(frozen=True)
 class OwnerLotCeilingPreview:
-    """Diagnostic limits only; not a live risk check, order plan, or authorization."""
+    """Arithmetic ceilings; the caller must enforce broker, risk and OMS checks."""
 
     capital_basis: str
     ladder_lots: int
@@ -56,10 +56,10 @@ def owner_ladder_max_lots(bracket_capital: Any) -> int:
     capital = _money(bracket_capital)
     if capital is None or capital <= 0:
         return 0
-    for upper_limit, maximum_lots in _OWNER_LOT_BANDS:
-        if capital <= upper_limit:
-            return maximum_lots
-    return _OWNER_MAX_LOTS
+    for minimum_capital, maximum_lots in reversed(_OWNER_LOT_MILESTONES):
+        if capital >= minimum_capital:
+            return min(maximum_lots, _OWNER_MAX_LOTS)
+    return 2
 
 
 def preview_owner_lot_ceiling(
@@ -75,18 +75,24 @@ def preview_owner_lot_ceiling(
     """Calculate only a potential upper bound using externally supplied figures.
 
     All funds and the executable option ask MUST have been independently verified
-    against the intended broker account, quote age and contract by a future caller.
+    against the intended broker account, quote age and contract by the caller.
     This function cannot perform that verification. A real order must additionally
     pass risk, loss, existing-position, freshness, market-time, and AI veto gates.
 
-    capital_basis is deliberately required; owner has not resolved which broker
-    field determines the ladder bracket. No basis is silently defaulted.
+    capital_basis is explicit. R01 submission uses authenticated available
+    margin and independently verifies the account and contract evidence.
     """
+
     def blocked(reason: str) -> OwnerLotCeilingPreview:
         return OwnerLotCeilingPreview(
-            capital_basis=str(capital_basis), ladder_lots=0, affordable_lots=0,
-            broker_single_order_lots=0, hard_position_lots=0, ceiling_lots=0,
-            ceiling_contracts=0, blocked_reason=reason,
+            capital_basis=str(capital_basis),
+            ladder_lots=0,
+            affordable_lots=0,
+            broker_single_order_lots=0,
+            hard_position_lots=0,
+            ceiling_lots=0,
+            ceiling_contracts=0,
+            blocked_reason=reason,
         )
 
     if capital_basis not in _CAPITAL_BASES:
@@ -115,9 +121,7 @@ def preview_owner_lot_ceiling(
     try:
         safe_funds = max(Decimal(0), funds - reserve)
         option_cost_per_lot = ask * lot_size
-        affordable_lots = int(min(
-            Decimal(_OWNER_MAX_LOTS), safe_funds // option_cost_per_lot
-        ))
+        affordable_lots = int(min(Decimal(_OWNER_MAX_LOTS), safe_funds // option_cost_per_lot))
     except (ArithmeticError, ValueError, OverflowError):
         return blocked("SIZING_ARITHMETIC_UNAVAILABLE")
     ceiling_lots = min(ladder_lots, affordable_lots, broker_lots, hard_lots)

@@ -12,6 +12,7 @@ from market_clock import IST_TZ
 class DailyLossDecision:
     allowed: bool
     reason: str
+    limit_amount: Decimal | None = None
 
 
 def _decimal(value):
@@ -24,12 +25,15 @@ def _decimal(value):
     return result if result.is_finite() else None
 
 
-def daily_loss_decision(funds: Mapping, scope: Mapping, now: datetime,
-                        limit_pct=1.5) -> DailyLossDecision:
+def daily_loss_decision(
+    funds: Mapping, scope: Mapping, now: datetime, *, lots: int, loss_per_lot=3000
+) -> DailyLossDecision:
     """Require authenticated matching account, current IST session, fresh P&L.
 
     Expected broker-reconciled keys: pnl_account_id, pnl_session_date,
-    pnl_asof, start_of_day_equity, realized_pnl_today, unrealized_pnl_today.
+    pnl_asof, realized_pnl_today, unrealized_pnl_today. The owner-approved
+    cash cap is recalculated for the actual proposed entry lot count. It
+    blocks new entries only; existing-position protection remains active.
     Missing data or a loss at the threshold forbids new entries.
     """
     deny = lambda code: DailyLossDecision(False, code)
@@ -51,14 +55,14 @@ def daily_loss_decision(funds: Mapping, scope: Mapping, now: datetime,
         return deny("PNL_TIMESTAMP_UNVERIFIED")
     if stamp.tzinfo is None or not 0 <= age <= 60:
         return deny("PNL_STALE")
-    start = _decimal(funds.get("start_of_day_equity"))
     realized = _decimal(funds.get("realized_pnl_today"))
     unrealized = _decimal(funds.get("unrealized_pnl_today"))
-    limit = _decimal(limit_pct)
-    if any(v is None for v in (start, realized, unrealized, limit)):
+    per_lot = _decimal(loss_per_lot)
+    if realized is None or unrealized is None or per_lot is None:
         return deny("PNL_INVALID")
-    if start <= 0 or limit <= 0 or limit > 100:
+    if type(lots) is not int or not 1 <= lots <= 10 or per_lot <= 0:
         return deny("PNL_LIMIT_INVALID")
-    if realized + unrealized <= -(start * limit / 100):
-        return deny("DAILY_LOSS_LIMIT")
-    return DailyLossDecision(True, "OK")
+    limit = per_lot * lots
+    if realized + unrealized <= -limit:
+        return DailyLossDecision(False, "DAILY_LOSS_LIMIT", limit)
+    return DailyLossDecision(True, "OK", limit)

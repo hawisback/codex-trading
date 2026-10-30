@@ -6,10 +6,14 @@ from entry_policy import EntryBlocked, number, tick_price, validate_quote
 def order_book_snapshot(quote, instrument_id, policy):
     bid, ask = validate_quote(quote, instrument_id, policy)
     raw = quote.get("depth")
-    depth = raw if raw is not None else {
-        "buy": [{"price": bid, "quantity": quote["best_bid_qty"]}],
-        "sell": [{"price": ask, "quantity": quote["best_ask_qty"]}],
-    }
+    depth = (
+        raw
+        if raw is not None
+        else {
+            "buy": [{"price": bid, "quantity": quote["best_bid_qty"]}],
+            "sell": [{"price": ask, "quantity": quote["best_ask_qty"]}],
+        }
+    )
     if not isinstance(depth, dict):
         raise EntryBlocked("INVALID_CONSULTATION_DEPTH")
     sides = {}
@@ -26,8 +30,10 @@ def order_book_snapshot(quote, instrument_id, policy):
                 continue  # Broker padding is not liquidity.
             if price <= 0 or qty <= 0 or qty != int(qty) or tick_price(price) != price:
                 raise EntryBlocked("INVALID_CONSULTATION_DEPTH")
-            if cleaned and ((side == "buy" and price >= cleaned[-1]["price"])
-                            or (side == "sell" and price <= cleaned[-1]["price"])):
+            if cleaned and (
+                (side == "buy" and price >= cleaned[-1]["price"])
+                or (side == "sell" and price <= cleaned[-1]["price"])
+            ):
                 raise EntryBlocked("UNORDERED_CONSULTATION_DEPTH")
             cleaned.append(dict(price=price, quantity=int(qty)))
         if not cleaned:
@@ -40,9 +46,14 @@ def order_book_snapshot(quote, instrument_id, policy):
     buy_qty = sum(level["quantity"] for level in sides["buy"])
     sell_qty = sum(level["quantity"] for level in sides["sell"])
     return dict(
-        instrument_id=instrument_id, timestamp=quote["timestamp"],
+        instrument_id=instrument_id,
+        timestamp=quote["timestamp"],
         source="BROKER_DEPTH" if raw is not None else "BROKER_TOP_OF_BOOK",
-        best_bid=bid, best_ask=ask, spread=round(ask - bid, 4),
-        bid_quantity=buy_qty, ask_quantity=sell_qty,
-        quantity_imbalance=round((buy_qty - sell_qty) / (buy_qty + sell_qty), 6), depth=sides,
+        best_bid=bid,
+        best_ask=ask,
+        spread=round(ask - bid, 4),
+        bid_quantity=buy_qty,
+        ask_quantity=sell_qty,
+        quantity_imbalance=round((buy_qty - sell_qty) / (buy_qty + sell_qty), 6),
+        depth=sides,
     )

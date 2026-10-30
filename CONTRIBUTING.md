@@ -1,6 +1,6 @@
 # Working on this engine
 
-> **Current working-branch status:** [2026-10-30 implementation/release summary](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md). Tests for the new LIVE guardrails and unified stops were written but **not executed** under the owner's standing instruction. Previous test results in staged-refactor records do not certify the new R01 path. Never run native `--live` as a development check.
+> **Current working-branch status:** [2026-10-30 implementation/release summary](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md). The owner authorized testing and repairs; the local quality wrapper and 574 offline tests now pass. See [candidate identity, repairs and remaining broker gates](docs/architecture/OFFLINE_VALIDATION_20261030.md). Never run native `--live` as a development check.
 
 
 Read `AGENTS.md` before changing or running trading code. All work and temporary

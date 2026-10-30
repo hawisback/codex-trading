@@ -1,7 +1,7 @@
 # R01 Unified Stop Loss — Integrated Execution Contract
 
-**Branch:** `feature/live-activation-guardrails-20261030`  
-**Status:** Implementation reviewed by the owner; regression fixtures authored, **NOT run**, not merged, enabled, deployed or broker-UAT validated.  
+**Branch:** `feature/live-activation-guardrails-20261030`
+**Status:** Implementation reviewed by the owner; local regression and native fake-transport fixtures pass, not merged, enabled, deployed or broker-UAT validated.
 **Activation:** `config/trading.json:r01_policy.enabled=false` remains unchanged.
 
 Current implementation/release record: [CURRENT_IMPLEMENTATION_STATUS_20261030.md](CURRENT_IMPLEMENTATION_STATUS_20261030.md).
@@ -38,8 +38,8 @@ These values reproduce the prior R01 MACD-based opt-in baseline; this commit doe
 
 ## What this work does NOT prove
 
-- The new offline fixtures in `tests/test_unified_stop_integration.py` have not been executed per owner instruction.
-- No crash/partial-fill/replacement, broker UAT, real-time session monitoring, or LIVE order protection was tested.
+- The unified stop, native workflow and process-ownership fixtures pass locally as part of [574 registered offline tests](OFFLINE_VALIDATION_20261030.md). The repair candidate remains uncommitted.
+- Fake-transport crash/restart, partial-fill and replacement tests do not establish real broker UAT, real-time session monitoring, or LIVE order protection.
 - Broker P&L, quantity limits, authoritative contract master, expiry source, and unrelated R02–R10 integration blockers still prevent activation.
 - The current R01 flag is **off**; `main` and LIVE deployment are unchanged.
 

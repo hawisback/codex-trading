@@ -98,7 +98,6 @@ class RateLimiterBoundaryTests(unittest.TestCase):
             self.assertTrue(limiter.try_acquire())
 
 
-
 class PositionCodecBoundaryTests(unittest.TestCase):
     def test_save_compatibility_aliases_include_only_nonterminal_stops(self):
         from trading.adapters.position_codec import PositionStateCodec

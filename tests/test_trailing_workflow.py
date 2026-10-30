@@ -446,7 +446,7 @@ class NativeTrailingTests(unittest.TestCase):
         self.assertNotIn("cancel_requested_at", state["exits"][0])
         self.assertEqual("KITE_HTTP_429", state["exits"][0]["last_cancel_error"])
         self.assertEqual(1, len(self.exit_posts()))
-        restarted = self.fixture.trader(self.fixture.gateway_new())
+        restarted = self.fixture.trader(self.fixture.restart_gateway())
         self.assertEqual("CLOSED", restarted.exit_trade(self.entry["order_id"], "resume")["status"])
         self.assertEqual("CANCELLED", server.orders[oid]["status"])
         self.assertEqual(2, len(self.exit_posts()))
@@ -469,7 +469,7 @@ class NativeTrailingTests(unittest.TestCase):
         self.assertEqual([oid], cancels)
         self.assertEqual(1, len(self.exit_posts()))
         self.fixture.now += timedelta(seconds=6)
-        restarted = self.fixture.trader(self.fixture.gateway_new())
+        restarted = self.fixture.trader(self.fixture.restart_gateway())
         self.assertEqual("CLOSED", restarted.exit_trade(self.entry["order_id"], "resume")["status"])
         self.assertEqual("CANCELLED", server.orders[oid]["status"])
         self.assertEqual(2, len(self.exit_posts()))
@@ -516,7 +516,7 @@ class NativeTrailingTests(unittest.TestCase):
     def test_daily_entry_number_is_persisted_and_recovered_from_broker_history(self):
         self.assertEqual(1, self.trader.load_active_position()["today_entry_number"])
         self.assertEqual("CLOSED", self.trader.exit_trade(self.entry["order_id"], "close first")["status"])
-        restarted = self.fixture.trader(self.fixture.gateway_new())
+        restarted = self.fixture.trader(self.fixture.restart_gateway())
         self.fixture.now += timedelta(minutes=1)
         result = restarted.execute_trade(self.fixture.decision(restarted))
         self.assertEqual("SUCCESS", result["status"])
@@ -524,7 +524,7 @@ class NativeTrailingTests(unittest.TestCase):
         self.assertEqual(2, state["today_entry_number"])
         state.pop("today_entry_number")  # Migrate older position files on restart.
         restarted.save_active_position(state)
-        recovered = self.fixture.trader(self.fixture.gateway_new())
+        recovered = self.fixture.trader(self.fixture.restart_gateway())
         self.assertEqual(2, recovered.get_trades_state()[0][0]["today_entry_number"])
         self.assertEqual(2, recovered.load_active_position()["today_entry_number"])
 

@@ -1,6 +1,6 @@
 # Documentation index — NIFTY options engine
 
-> **Current as of 2026-10-30 on** `feature/live-activation-guardrails-20261030`. This index is the entry point for engineering decisions and the release gate. **The branch is not merged or deployed; R01 is disabled and the new LIVE/stop integration has not been tested or broker-UAT verified.** Retain the owner's standing prohibition on running tests until explicitly lifted.
+> **Current as of 2026-10-30 on** `feature/live-activation-guardrails-20261030`. The owner authorized testing and repairs. The local quality wrapper and **574 offline tests pass**; the repair candidate remains uncommitted. **The branch is not merged or deployed; R01 is disabled and broker UAT is outstanding.** See [executed validation and remaining gates](architecture/OFFLINE_VALIDATION_20261030.md).
 
 ## Read these first (current working-branch facts)
 
@@ -8,14 +8,15 @@
 | --- | --- | --- |
 | Branch and release truth | [Current implementation status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) | New R01/guardrail/unified stop implementation versus remaining verification and broker contracts |
 | Production decision | [Production readiness](PRODUCTION_READINESS.md) | Explicit BLOCKED acceptance matrix for offline, broker UAT and final operator approval |
-| Real-money release blockers | [LIVE activation hold](architecture/LIVE_ACTIVATION_HOLD_20261030.md) | Missing authenticated day P&L, instrument freeze limits, source-of-truth calendar/master, tests and UAT |
+| Offline validation | [Executed validation](architecture/OFFLINE_VALIDATION_20261030.md) | Candidate source identity, 574 passing tests, repairs, environment and remaining gates |
+| Real-money release blockers | [LIVE activation hold](architecture/LIVE_ACTIVATION_HOLD_20261030.md) | Missing authenticated day P&L, instrument freeze limits, source-of-truth calendar/master and broker UAT |
 | R01 policy activation contract | [R01 activation runbook](architecture/R01_ACTIVATION_RUNBOOK.md) | Exact broker fields, lot and risk policy, enabled flag and rollback constraints |
 | Unified position stops | [R01 unified stop execution](architecture/R01_UNIFIED_STOP_EXECUTION.md) | Stamped per-position policy, strategy-neutral stop schedule, broker OMS and freshness |
 | Human operations | [R02–R10 operator runbook](operations/REFACTOR_OPERATOR_RUNBOOK.md) | Single-writer ownership, unknown orders, uncovered residuals, startup/rollback/square-off; **draft, untested** |
 | Broker setup and limitations | [Broker integrations](BROKER_INTEGRATIONS.md), [native safety](NATIVE_GATEWAY_SAFETY.md) | Authenticated session, account lease, funds provenance, exclusions from P&L/freeze data |
 | Persistence and order recovery | [OMS recovery](OMS_RECOVERY.md) | Position/state, stop and exit reconciliation; adverse-event validation still open |
 | Behavior of **legacy** positions | [Trailing stops](TRAILING_STOPS.md), [MACD session rules](MACD_SESSION_RULES.md) | Original strategy-specific paths and the R01 difference |
-| Engineering quality procedure | [CONTRIBUTING.md](../CONTRIBUTING.md), [fixture matrix](architecture/FIXTURE_MATRIX.md), [change review checklist](architecture/CHANGE_REVIEW_CHECKLIST.md) | Exact offline suite, case coverage, validation-before-merge; no new suite executed |
+| Engineering quality procedure | [CONTRIBUTING.md](../CONTRIBUTING.md), [fixture matrix](architecture/FIXTURE_MATRIX.md), [change review checklist](architecture/CHANGE_REVIEW_CHECKLIST.md) | Exact offline suite, case coverage and validation before merge; local execution recorded above |
 
 ## Historical/baseline material (do not use as a current release verdict)
 

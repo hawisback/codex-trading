@@ -77,8 +77,16 @@ def _nested(config: Mapping[str, Any], path: str) -> tuple[Any, bool]:
     return value, True
 
 
-def _choose(cli_value: str | None, env_value: str | None, config_value: str | None,
-            default: str, *, cli: str, env: str, file: str) -> tuple[str, str]:
+def _choose(
+    cli_value: str | None,
+    env_value: str | None,
+    config_value: str | None,
+    default: str,
+    *,
+    cli: str,
+    env: str,
+    file: str,
+) -> tuple[str, str]:
     if cli_value:
         return cli_value, cli
     if env_value:
@@ -124,8 +132,12 @@ def build_policy_snapshot(
         profiles = {}
 
     chosen_strategy, chosen_strategy_source = _choose(
-        strategy, env.get("STRATEGY_MODE"), strategies.get("active_strategy"),
-        "institutional_pullback", cli="--strategy", env="STRATEGY_MODE",
+        strategy,
+        env.get("STRATEGY_MODE"),
+        strategies.get("active_strategy"),
+        "institutional_pullback",
+        cli="--strategy",
+        env="STRATEGY_MODE",
         file="config/strategies.json:active_strategy",
     )
     if chosen_strategy not in profiles:
@@ -146,19 +158,33 @@ def build_policy_snapshot(
         entry = {}
 
     mode, mode_source = _choose(
-        ai_mode, env.get("AI_CONSULTATION_MODE"), ai_cfg.get("default_mode"),
-        "playbook", cli="--ai-mode", env="AI_CONSULTATION_MODE",
+        ai_mode,
+        env.get("AI_CONSULTATION_MODE"),
+        ai_cfg.get("default_mode"),
+        "playbook",
+        cli="--ai-mode",
+        env="AI_CONSULTATION_MODE",
         file="config/strategies.json:ai_consultation.default_mode",
     )
     if mode not in ("rules", "playbook", "chat", "interactive"):
         diagnostics.append("ai_mode: unrecognized or disabled; actual scheduler may reject")
     broker, broker_source = _choose(
-        execution_broker, env.get("EXECUTION_BROKER"), None, "proxy",
-        cli="--broker", env="EXECUTION_BROKER", file="",
+        execution_broker,
+        env.get("EXECUTION_BROKER"),
+        None,
+        "proxy",
+        cli="--broker",
+        env="EXECUTION_BROKER",
+        file="",
     )
     data_broker, data_source = _choose(
-        market_data_broker, env.get("MARKET_DATA_BROKER"), None, "kite",
-        cli="--market-data-broker", env="MARKET_DATA_BROKER", file="",
+        market_data_broker,
+        env.get("MARKET_DATA_BROKER"),
+        None,
+        "kite",
+        cli="--market-data-broker",
+        env="MARKET_DATA_BROKER",
+        file="",
     )
     if broker not in ("proxy", "kite", "breeze"):
         diagnostics.append("execution_broker: invalid selection")
@@ -169,11 +195,16 @@ def build_policy_snapshot(
 
     def observe(key: str, *, rule: str, code: str, assessment: str) -> Any:
         value, exists = _nested(trading, key)
-        observations.append(PolicyObservation(
-            key=key, configured=_freeze(value),
-            source=f"config/trading.json:{key}" if exists else "not configured",
-            runtime_rule=rule, runtime_source=code, assessment=assessment,
-        ))
+        observations.append(
+            PolicyObservation(
+                key=key,
+                configured=_freeze(value),
+                source=f"config/trading.json:{key}" if exists else "not configured",
+                runtime_rule=rule,
+                runtime_source=code,
+                assessment=assessment,
+            )
+        )
         return value if exists else _MISSING
 
     cap = observe(
@@ -185,33 +216,44 @@ def build_policy_snapshot(
     if cap is not _MISSING:
         _validate_scalar("risk.max_order_quantity", cap, diagnostics)
     strategy_cap = compounding.get("max_order_quantity")
-    observations.append(PolicyObservation(
-        "selected_strategy.compounding.max_order_quantity", _freeze(strategy_cap),
-        f"config/strategies.json:strategies.{chosen_strategy}.compounding.max_order_quantity",
-        f"Current strategy cap precedes trading risk cap; eventual global guard {MAX_POSITION_QUANTITY} contracts.",
-        "trading/domain/sizing.py; position_lifecycle.py:_submit_entry",
-        "This is a *potential upper bound*, not a promised order size.",
-    ))
+    observations.append(
+        PolicyObservation(
+            "selected_strategy.compounding.max_order_quantity",
+            _freeze(strategy_cap),
+            f"config/strategies.json:strategies.{chosen_strategy}.compounding.max_order_quantity",
+            f"Current strategy cap precedes trading risk cap; eventual global guard {MAX_POSITION_QUANTITY} contracts.",
+            "trading/domain/sizing.py; position_lifecycle.py:_submit_entry",
+            "This is a *potential upper bound*, not a promised order size.",
+        )
+    )
     if strategy_cap is not None:
         _validate_scalar("selected_strategy.compounding.max_order_quantity", strategy_cap, diagnostics)
-    observations.append(PolicyObservation(
-        "selected_strategy.entry.max_daily_entries", _freeze(entry.get("max_daily_entries")),
-        f"config/strategies.json:strategies.{chosen_strategy}.entry.max_daily_entries",
-        "Lifecycle entry gate uses this value, default 2; cycle workflow also checks a shared daily cap.",
-        "position_lifecycle.py:_entry_limit_block; trading/application/workflows.py",
-        "Per-strategy cap and shared cycle cap are both relevant.",
-    ))
+    observations.append(
+        PolicyObservation(
+            "selected_strategy.entry.max_daily_entries",
+            _freeze(entry.get("max_daily_entries")),
+            f"config/strategies.json:strategies.{chosen_strategy}.entry.max_daily_entries",
+            "Lifecycle entry gate uses this value, default 2; cycle workflow also checks a shared daily cap.",
+            "position_lifecycle.py:_entry_limit_block; trading/application/workflows.py",
+            "Per-strategy cap and shared cycle cap are both relevant.",
+        )
+    )
     if entry.get("max_daily_entries") is not None:
         _validate_scalar("selected_strategy.entry.max_daily_entries", entry["max_daily_entries"], diagnostics)
-    observations.append(PolicyObservation(
-        "selected_strategy.compounding.max_lots_cap", _freeze(compounding.get("max_lots_cap")),
-        f"config/strategies.json:strategies.{chosen_strategy}.compounding.max_lots_cap",
-        "Current sizing function uses the strategy compounding max_lots_cap.",
-        "trading/domain/sizing.py:calculate_compounding_quantity",
-        "Potential strategy preference, not guaranteed submitted lots.",
-    ))
+    observations.append(
+        PolicyObservation(
+            "selected_strategy.compounding.max_lots_cap",
+            _freeze(compounding.get("max_lots_cap")),
+            f"config/strategies.json:strategies.{chosen_strategy}.compounding.max_lots_cap",
+            "Current sizing function uses the strategy compounding max_lots_cap.",
+            "trading/domain/sizing.py:calculate_compounding_quantity",
+            "Potential strategy preference, not guaranteed submitted lots.",
+        )
+    )
     if compounding.get("max_lots_cap") is not None:
-        _validate_scalar("selected_strategy.compounding.max_lots_cap", compounding["max_lots_cap"], diagnostics)
+        _validate_scalar(
+            "selected_strategy.compounding.max_lots_cap", compounding["max_lots_cap"], diagnostics
+        )
     observe(
         "risk.max_lots_per_trade",
         rule=f"Current sizing function uses strategy compounding.max_lots_cap, lot size {LOT_SIZE}; global lots setting is not referenced by that sizing calculation.",
@@ -219,23 +261,40 @@ def build_policy_snapshot(
         assessment="Not proof this key is unenforced on every other path.",
     )
     for key, code, rule in (
-        ("risk.max_trades_per_day", "trading/application/workflows.py; trading/domain/limits.py",
-         f"CycleWorkflow uses MAX_DAILY_ENTRIES={MAX_DAILY_ENTRIES}; lifecycle also applies strategy entry.max_daily_entries."),
-        ("risk.account_equity", "position_lifecycle.py:_submit_entry",
-         "Submission budget reads verified broker available_margin and subtracts the fee reserve."),
-        ("risk.max_concurrent_positions", "position_lifecycle.py",
-         "One-position gate is enforced through reconciliation and existing exposure checks."),
+        (
+            "risk.max_trades_per_day",
+            "trading/application/workflows.py; trading/domain/limits.py",
+            f"CycleWorkflow uses MAX_DAILY_ENTRIES={MAX_DAILY_ENTRIES}; lifecycle also applies strategy entry.max_daily_entries.",
+        ),
+        (
+            "risk.account_equity",
+            "position_lifecycle.py:_submit_entry",
+            "Submission budget reads verified broker available_margin and subtracts the fee reserve.",
+        ),
+        (
+            "risk.max_concurrent_positions",
+            "position_lifecycle.py",
+            "One-position gate is enforced through reconciliation and existing exposure checks.",
+        ),
     ):
-        val = observe(key, rule=rule, code=code,
-                assessment="Configured setting is not necessarily the operative limit for this workflow.")
+        val = observe(
+            key,
+            rule=rule,
+            code=code,
+            assessment="Configured setting is not necessarily the operative limit for this workflow.",
+        )
         if key != "risk.account_equity" and val is not _MISSING:
             _validate_scalar(key, val, diagnostics)
-    observations.append(PolicyObservation(
-        "runtime.fee_reserve", FEE_RESERVE, "trading/domain/limits.py:FEE_RESERVE",
-        f"Safe cash = verified available margin minus {FEE_RESERVE}, constrained by lot size {LOT_SIZE}.",
-        "trading/domain/sizing.py; position_lifecycle.py",
-        "Observed runtime constant, not a change proposal.",
-    ))
+    observations.append(
+        PolicyObservation(
+            "runtime.fee_reserve",
+            FEE_RESERVE,
+            "trading/domain/limits.py:FEE_RESERVE",
+            f"Safe cash = verified available margin minus {FEE_RESERVE}, constrained by lot size {LOT_SIZE}.",
+            "trading/domain/sizing.py; position_lifecycle.py",
+            "Observed runtime constant, not a change proposal.",
+        )
+    )
 
     entry_after = observe(
         "session.no_new_trade_after",
@@ -255,9 +314,11 @@ def build_policy_snapshot(
         code="position_lifecycle.py; nifty_trader_scheduler.py",
         assessment="The configured later time does not guarantee later exposure is allowed.",
     )
-    for key, value in (("session.no_new_trade_before", before),
-                       ("session.no_new_trade_after", entry_after),
-                       ("session.force_exit_time", force_exit)):
+    for key, value in (
+        ("session.no_new_trade_before", before),
+        ("session.no_new_trade_after", entry_after),
+        ("session.force_exit_time", force_exit),
+    ):
         if value is not _MISSING and (not isinstance(value, str) or not _TIME.fullmatch(value)):
             diagnostics.append(f"{key}: expected HH:MM string")
 
@@ -293,11 +354,21 @@ def build_policy_snapshot(
             diagnostics.append(f"{key}: expected boolean")
 
     observation_data = [asdict(o) for o in observations]
-    digest = hashlib.sha256(json.dumps(
-        {"strategy": chosen_strategy, "ai_mode": mode, "execution_broker": broker,
-         "market_data_broker": data_broker, "observations": observation_data},
-        sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False,
-    ).encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(
+        json.dumps(
+            {
+                "strategy": chosen_strategy,
+                "ai_mode": mode,
+                "execution_broker": broker,
+                "market_data_broker": data_broker,
+                "observations": observation_data,
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=True,
+            allow_nan=False,
+        ).encode("utf-8")
+    ).hexdigest()
     return TradingPolicySnapshot(
         schema_version=1,
         strategy_name=chosen_strategy,

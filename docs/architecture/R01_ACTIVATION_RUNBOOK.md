@@ -1,33 +1,14 @@
 # R01 opt-in implementation and activation contract
 
-**Original R01 branch:** `feature/r01-approved-policy-contracts-20261029`  
-**Current integrated branch:** `feature/live-activation-guardrails-20261030`  
-**Status:** Implemented behind `config/trading.json:r01_policy.enabled=false`. **NOT activated, merged, broker-validated or deployed.**  
-**Tests:** Guardrail and unified stop integration regressions have been authored/registered but **not executed** per owner instruction. The owner has reviewed code; neither offline parity nor broker UAT has passed. See [current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md).
+**Original R01 branch:** `feature/r01-approved-policy-contracts-20261029`
+**Current integrated branch:** `feature/live-activation-guardrails-20261030`
+**Status:** Implemented behind `config/trading.json:r01_policy.enabled=false`. **NOT activated, merged, broker-validated or deployed.**
+**Tests:** The owner authorized testing and repairs. The local quality wrapper and **574 registered offline tests pass**; see [validation and candidate identity](OFFLINE_VALIDATION_20261030.md). Real broker UAT and review of the final committed repair candidate remain required. See [current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md).
 
 ## Implemented behavioral contracts (only if explicitly enabled)
 
-1. **Capital ladder (POL-01/04):** The owner-approved 2/4/6/8/10 NIFTY
-   lot tiers at inclusive upper boundaries ₹20k/₹40k/₹60k/₹80k.
-   `trading/domain/sizing.py` uses the tier for candidate-side preview.
-   `position_lifecycle._submit_entry` independently recomputes the
-   submitted quantity from **broker available margin**, a verified fresh
-   option entry limit, current lot size (currently 65), the ₹150 reserve,
-   broker-provided single-order quantity ceiling, and existing absolute
-   position hard cap. Tiers are maxima, not a minimum lot count.
-   No inferred brokerage freeze quantity and no automatic order splitting.
-2. **Daily trades/loss (POL-05):** Up to ten reconciled filled ENTRY
-   orders per IST session, including MACD (formerly two); existing MACD
-   spacing still applies. For LIVE entries the gate requires a matching
-   account/day broker P&L ledger, at most 60 seconds old, containing
-   authenticated start-of-day equity, realized and unrealized P&L.
-   Stop NEW entries once their sum is a loss of **1.5% or more** of
-   verified start-of-day equity, using the pre-existing configured
-   `risk.max_daily_loss_pct=1.5`. Incomplete P&L means *block entry*.
-   Position exits and protective actions are NOT gated on P&L.
-   A split BUY yielding multiple filled entry orders counts
-   conservatively in the present order-ledger gate. No new trading
-   opportunities are guaranteed by the ceiling.
+1. **Capital ladder (owner revision, 2026-10-30):** Verified available margin below INR 40k permits up to 2 lots; INR 40k/60k/80k/100k permits up to 4/6/8/10 respectively. Thus INR 20k permits 2, INR 40k permits 4 and INR 100k permits 10. Recompute at each entry and de-escalate immediately below a milestone. Actual option entry-limit premium, the INR 150 reserve, exchange freeze and the 650-contract hard cap can reduce quantity, including to one lot. No guessed quantity limit or order splitting.
+2. **Daily trades/loss:** Up to ten reconciled filled entries per IST day. For each proposed new entry, compare verified account-wide realized + unrealized P&L against **INR 3,000 x its actual affordable lot count**, capped by ten lots. Equality at the negative threshold blocks entry. The budget recalculates for every new entry; it is not anchored to the first trade. The legacy `risk.max_daily_loss_pct` and opening equity are not used by this R01 gate. A breach **only blocks new entries**; existing stops, trailing and ordinary OMS exits continue. Missing, stale or mismatched books block new entries.
 3. **No penny/price bias (POL-03):** Within the opt-in policy only,
    the fixed sub-₹12 0DTE price-label veto in deterministic
    `AIConsultant._evaluate_playbook` is disabled; the fixed
@@ -68,33 +49,26 @@
    an armed gateway, and all existing consultation, OMS and kill
    switch protections. `main` and production deployment are untouched.
 
-## Gateway contract still required before enabling
+## Kite entry evidence contract
 
-The existing gateway may not supply this entire schema. If
-`r01_policy.enabled=true` is used without the required verified data,
-**NEW LIVE entries fail closed**. Do not populate missing fields with
-static estimates, placeholder values, guessed ₹10k/₹500k account equity,
-or zero P&L.
+R01 calls `KiteExecutionGateway.get_entry_funds(instrument_id)`. Legacy `get_funds()` remains a margin-only read. The entry method combines independent sources and does not arm the gateway:
 
-An authenticated `get_funds()` response must provide:
-
-| Field | Required provenance |
+| Field | Required source |
 | --- | --- |
-| `account_id` | Same verified account as `execution_scope.account_id` |
-| `source` | Authenticated provider-specific funds origin, not a placeholder |
-| `funds_asof` | Aware broker-response receipt timestamp and within required freshness budget; **not** the broker P&L timestamp |
-| `available_margin` | Finite actual broker purchasing power |
-| `pnl_account_id` | Same account as the execution session |
-| `pnl_session_date` | Current IST session date YYYY-MM-DD |
-| `pnl_asof` | Aware timestamp, not future, no older than 60 seconds |
-| `start_of_day_equity` | Broker-reconciled positive actual account-day opening equity |
-| `realized_pnl_today` | Verified current-session realized P&L |
-| `unrealized_pnl_today` | Verified current-session current mark-to-market P&L |
-| `max_single_order_quantity` | Authenticated, instrument-appropriate broker order freeze limit as integer |
+| `account_id`, `funds_asof`, `available_margin`, `source` | Account-verified Kite margins; aware local response receipt time, maximum 60-second age |
+| `pnl_account_id`, `pnl_session_date`, `pnl_asof` | Same verified account/current IST day; bounded read window and at most 60-second receipt age |
+| `realized_pnl_today`, `unrealized_pnl_today` | Raw Kite net positions, retaining closed rows, reconciled against net/day quantities and values and unique current-day fills from `/trades` |
+| `max_single_order_quantity` | Current published NSE NIFTY quantity-freeze CSV, bound to the selected NIFTY option in the current Kite master |
+| `expiry_sessions_remaining` | Future regular sessions through the exact listed expiry, excluding NSE FO holidays; minimum configured session budget enforced at entry |
+| `contract_evidence` | Exact instrument/symbol, listed expiry, lot/tick, master/freeze/calendar URLs, SHA-256s and conservative local receipt timestamps |
 
-The broker adapter must reconcile these fields with the correct account,
-date, current NIFTY instrument master, and broker reporting semantics.
-A generic funds endpoint may not contain all these fields; that is a **known integration gap, not permission to use a fabricated fallback**. The native Kite/Breeze adapters now attach `account_id`, `source`, and `funds_asof` to genuine margin responses; they **still do not** provide the required verified daily P&L ledger or instrument-appropriate freeze limit. An authenticated receipt is **not** a substitute for those independent facts.
+The margin and P&L receipt timestamps are not exchange-origin timestamps. Broker-reported P&L is gross of subsequently posted charges. Missing/invalid/partial books never become zero; genuinely complete authenticated empty books may establish zero. Positions with overnight quantities are unsupported for this intraday aggregation and block new entries. Existing exposure management remains independent.
+
+The master/calendar cache is current-session only; the freeze feed refreshes after five minutes. A changed lot/tick, ambiguous symbol, mismatched internal instrument, stale calendar year, closed regular session or expiry absent from verified regular sessions blocks entry. Next-year expiries require the matching year's calendar; special weekend/Muhurat sessions are intentionally unsupported. Broker RMS may impose additional limits; a published exchange ceiling is not a guarantee of broker order acceptance.
+
+Sources: [Kite portfolio](https://kite.trade/docs/connect/v3/portfolio/), [daily trades](https://kite.trade/docs/connect/v3/orders/#retrieving-all-trades), [instrument master](https://kite.trade/docs/connect/v3/market-quotes/#instruments), [NSE contract information](https://www.nseindia.com/static/products-services/equity-derivatives-contract-information), [NSE holidays](https://www.nseindia.com/resources/exchange-communication-holidays).
+
+Read-only acceptance of these sources passed on the refreshed Kite session; see [validation record](OFFLINE_VALIDATION_20261030.md). Breeze remains deferred and does not provide this entry-evidence integration.
 
 ## Change activation and rollback
 
@@ -102,11 +76,11 @@ A generic funds endpoint may not contain all these fields; that is a **known int
   production order sizing/consultation/stops continue through legacy
   paths by default, except that repository session JSON now matches
   existing effective hard cutoffs.
-- Before a separate supervised activation: implement/verify broker
-  field normalization; record risk/stop/price envelope parity in
+- Before supervised activation: verify current-session broker
+  evidence; record risk/stop/price envelope parity in
   fixtures; run the full offline suite; inspect OMS unknown-ACK,
   partial-fill, cancel and broker-outage behavior; conduct supervised
-  broker UAT. This work was intentionally **not performed here**.
+  broker UAT. Offline and read-only checks pass; real broker order UAT is still pending.
 - Never enable the new policy mid-position to retroactively rewrite a legacy stop. A stamped R01 position retains the unified stop authority and its entry-frozen loss setting even if the new-entry feature switch is disabled later; continue protecting it through the existing OMS.
 - Rolling back the branch is a code/config change only; always reconcile
   and continue protecting existing positions before replacing an

@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Mapping
 
 
 class IncidentSeverity(str, Enum):
@@ -21,14 +20,46 @@ class TradingIncident:
 
 
 _ACTIONS = {
-    "BROKER_ACCOUNT_UNVERIFIED": (IncidentSeverity.CRITICAL, "Verify authenticated broker account and revoke new-entry arming.", True),
-    "ORDER_OUTCOME_UNKNOWN": (IncidentSeverity.CRITICAL, "Keep request ID; reconcile broker order/fills before any further mutation.", True),
-    "POSITION_UNPROTECTED": (IncidentSeverity.CRITICAL, "Escalate immediately; reconcile protective stops and verified residual exposure.", True),
-    "SQUAREOFF_UNVERIFIED": (IncidentSeverity.CRITICAL, "Treat as live exposure until broker confirms flat and resting orders resolved.", True),
-    "JOURNAL_UNREADABLE": (IncidentSeverity.CRITICAL, "Preserve all files and block entries; restore only after broker reconciliation.", True),
-    "MARKET_FEED_STALE": (IncidentSeverity.WARNING, "Block new entries until exact-contract quote freshness recovers.", False),
-    "DAILY_LOSS_LIMIT": (IncidentSeverity.WARNING, "Stop new entries; keep protective exits and broker reconciliation active.", False),
-    "EXPIRY_SOURCE_UNVERIFIED": (IncidentSeverity.WARNING, "Do not infer an expiry or contract; refresh verified source evidence.", False),
+    "BROKER_ACCOUNT_UNVERIFIED": (
+        IncidentSeverity.CRITICAL,
+        "Verify authenticated broker account and revoke new-entry arming.",
+        True,
+    ),
+    "ORDER_OUTCOME_UNKNOWN": (
+        IncidentSeverity.CRITICAL,
+        "Keep request ID; reconcile broker order/fills before any further mutation.",
+        True,
+    ),
+    "POSITION_UNPROTECTED": (
+        IncidentSeverity.CRITICAL,
+        "Escalate immediately; reconcile protective stops and verified residual exposure.",
+        True,
+    ),
+    "SQUAREOFF_UNVERIFIED": (
+        IncidentSeverity.CRITICAL,
+        "Treat as live exposure until broker confirms flat and resting orders resolved.",
+        True,
+    ),
+    "JOURNAL_UNREADABLE": (
+        IncidentSeverity.CRITICAL,
+        "Preserve all files and block entries; restore only after broker reconciliation.",
+        True,
+    ),
+    "MARKET_FEED_STALE": (
+        IncidentSeverity.WARNING,
+        "Block new entries until exact-contract quote freshness recovers.",
+        False,
+    ),
+    "DAILY_LOSS_LIMIT": (
+        IncidentSeverity.WARNING,
+        "Stop new entries; keep protective exits and broker reconciliation active.",
+        False,
+    ),
+    "EXPIRY_SOURCE_UNVERIFIED": (
+        IncidentSeverity.WARNING,
+        "Do not infer an expiry or contract; refresh verified source evidence.",
+        False,
+    ),
 }
 
 
@@ -38,8 +69,10 @@ def classify_incident(code: str) -> TradingIncident:
         code = "UNCLASSIFIED"
     severity, action, unknown_position = _ACTIONS.get(
         code,
-        (IncidentSeverity.CRITICAL,
-         "Unclassified trading fault; block entries and reconcile state with broker.",
-         True),
+        (
+            IncidentSeverity.CRITICAL,
+            "Unclassified trading fault; block entries and reconcile state with broker.",
+            True,
+        ),
     )
     return TradingIncident(code, severity, True, action, unknown_position)
