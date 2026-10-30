@@ -1,5 +1,8 @@
 # Trailing stops and uncapped runners
 
+> **Legacy/unstamped position behavior.** The runner and microtrailing details below do **not** govern new positions stamped with the R01 owner policy on `feature/live-activation-guardrails-20261030`. See the [unified stop contract](architecture/R01_UNIFIED_STOP_EXECUTION.md) and [current release status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md). R01 remains feature-disabled, untested and not deployed.
+
+
 The active `ai_opportunity_radar` profile has no fixed profit target. Existing AI
 approval/veto rules, entry sizing, structural wick and EMA9 exits, initial stop,
 holding limit, and mandatory 15:15 IST square-off still apply. Other profiles keep
@@ -48,6 +51,14 @@ limits can prevent a fill. Fees and execution prices affect realised profit.
 configuration also disables the target and uses the same aggressive calculation.
 No historical backtest or live orders were run for this change. Candle simulations
 cannot certify five-second execution or intrabar ordering.
+
+## R01 strategy-independent unified stop (feature-flagged, NOT LIVE-ready)
+
+For **R01-stamped** positions only, `PositionMonitor.manage` bypasses legacy per-strategy stop/target/timer, EMA/VWAP runner and microtrail paths. `StopManager.ensure` derives initial protection from the same unified policy used for later trailing. The frozen 25% initial loss setting combines by **max** with common +15/20/30/40%-peak gain tiers (protect 0/10/20/30%), 09:15–11:30 morning tiers and 11:30–13:15 midday tiers. Stronger desired, broker-active or recorded AI floors are retained. Stops round **up** to ₹0.05 for R01. A desired stop trigger is not a broker-verified fill.
+
+Stale/unverified executable bids cannot produce price-dependent new exits or ratchets. Mandatory 15:15 square-off and pending risk exits remain. Only a persisted R01 position policy version opts a trade in; older trades remain on legacy rules even when the switch changes. Disabling the R01 new-entry flag after an R01 position opens does not downgrade that position. Mandatory **pre-entry** consultation remains; legacy **post-fill** two-step AI stop overrides do not compete with R01 stop authority.
+
+The new unified implementation is **not regression-tested or broker-UAT validated**. See [detailed execution contract](architecture/R01_UNIFIED_STOP_EXECUTION.md) and [release blockers](architecture/LIVE_ACTIVATION_HOLD_20261030.md).
 
 ## Modification and replacement recovery
 

@@ -1,5 +1,8 @@
 # Kite and ICICI Breeze integrations
 
+> **Current feature-branch integration (2026-10-30):** Native LIVE arming now requires a broker/account-scoped host OS ownership lease, and authenticated funds reads record local receipt provenance. Neither native adapter currently supplies the required **session realized/unrealized P&L ledger** or **contract-specific broker order freeze**. R01 is **disabled** and new R01 entries fail closed on missing evidence. The CLI commands below describe transport only, **not** a verified LIVE go-live procedure. See [current status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) and [LIVE hold](architecture/LIVE_ACTIVATION_HOLD_20261030.md).
+
+
 Both native brokers implement the existing `ExecutionGateway` interface:
 account/session verification, funds, positions, order reads, executable quotes,
 BUY limit orders, protective SELL stop-limit orders, stop changes/cancellation,
@@ -50,7 +53,7 @@ and returns exit code 1 when either selected broker is unavailable. It does not
 certify live quote entitlements, fills, static-IP acceptance or market readiness.
 It performs real read requests only when explicitly invoked by the operator.
 
-Native launch commands, once accounts and the existing feed are ready:
+**Historical/native CLI syntax only; do not launch without a separately approved release.** Having a session and feed is insufficient until broker P&L/freeze, instrument master, offline validation, OMS crash recovery and supervised UAT are verified:
 
 ```powershell
 python nifty_trader_scheduler.py --broker kite --live --interval 60 --strategy ai_opportunity_radar --ai-mode playbook
@@ -59,6 +62,12 @@ python nifty_trader_scheduler.py --broker breeze --live --interval 60 --strategy
 
 Run one scheduler. Both native modes require `--live`; use `--broker proxy`
 for existing PAPER simulation. No native broker is armed by default.
+
+## Current native ownership and broker funds provenance
+
+`BaseBrokerGateway.set_mode("LIVE")` verifies the authenticated account and holds a per-(broker, account) host OS lease during the process. Every native mutation transport (BUY, SELL, STOP, modify and cancel) checks ownership. Switching back to PAPER disarms but intentionally retains the lease: this is **not** proof of a broker-flat account. A host lock does not fence other broker clients, distributed processes using a different lock directory or the proxy gateway.
+
+Kite `/user/margins` and Breeze `/funds` provide actual broker margin and now attach `account_id`, `funds_asof` (**local response receipt time**, not broker P&L timestamp) and provider `source`. These APIs **do not** establish `start_of_day_equity`, `realized_pnl_today`, `unrealized_pnl_today` or a verified `max_single_order_quantity`. R01 requires those distinct account/session/contract claims at entry and pretransmit; missing evidence blocks new buys. Stop management/exits are not gated on the daily-loss ledger.
 
 ## Breeze contract identity and recovery
 

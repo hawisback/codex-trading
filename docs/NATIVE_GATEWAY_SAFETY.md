@@ -1,5 +1,8 @@
 # Native gateway safety and recovery
 
+> **Unverified LIVE increment:** On `feature/live-activation-guardrails-20261030`, the native account lease and authenticated funds receipt provenance are coded but **not broker-UAT tested**. R01 remains disabled. See [current status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) and [broker integration](BROKER_INTEGRATIONS.md).
+
+
 The proxy remains the default execution gateway. Native Kite and ICICI Breeze
 require explicit `--broker kite --live` or `--broker breeze --live`. Omitting `--live` fails
 before trader construction. Direct gateway objects also start disarmed; PAPER
@@ -40,6 +43,12 @@ Selecting native Kite does not replace candle, technical, breadth or option-chai
 ingestion. It requires a valid Kite session and access to the quote endpoints.
 The same separation applies to native Breeze. Optional direct historical-data
 and Breeze option-chain reads are explicit methods, not automatic feed failover.
+
+## LIVE account ownership and strict R01 broker evidence
+
+Native `BaseBrokerGateway` now requires an authenticated broker/account-scoped OS lease before LIVE arming and before every real mutation. It fences cooperating adapters sharing the same host lock namespace but not proxy OMS, other deployments with independent lock paths, or unrelated broker clients. A mode change to PAPER does not release the lease while the process is alive; operator reconciliation and supervised owner transition are required.
+
+Native `get_funds()` responses include `account_id`, `source`, and `funds_asof` as receipt metadata. **Receipt time does not certify the broker's opening equity or current daily realized/unrealized P&L.** No missing per-instrument broker order freeze quantity is invented. The strict R01 LIVE entry/submit gates fail closed until the broker provides these claims with matching account, timestamp and contract provenance.
 
 ## Persistent execution metadata
 
