@@ -114,9 +114,15 @@ class PositionMonitor:
                     if result.get("status") != "CLOSED":
                         remaining_open.append(t)
                 elif action.kind == "RATCHET":
-                    # Every R01 market-monitor pass updates durable OMS
-                    # desired protection before any broker modification.
-                    self.ratchet_stops(t, action.trigger)
+                    # Avoid redundant broker reads on every 5s monitor tick.
+                    # Unconfirmed protection is always rechecked by the OMS.
+                    known_floor = max(
+                        float(t.get("desired_stop_trigger") or 0),
+                        float(t.get("current_stop_trigger") or 0),
+                    )
+                    if (action.trigger > known_floor + 0.0001
+                            or t.get("protection_confirmed") is not True):
+                        self.ratchet_stops(t, action.trigger)
                     remaining_open.append(t)
                 else:
                     # No price-based decision from missing/stale broker quote.
