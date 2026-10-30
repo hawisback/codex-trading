@@ -166,8 +166,11 @@ class NiftyOptionsTrader(PositionLifecycle):
 
 
     def manage_open_trades(self, open_trades: list, ctx: dict, intel: dict) -> list:
-        return PositionMonitor(self.strategy_cfg, self.state_verified, self.exit_trade,
-                               self.ratchet_stops, save_position=self.save_active_position).manage(open_trades, ctx, intel)
+        return PositionMonitor(
+            self.strategy_cfg, self.state_verified, self.exit_trade,
+            self.ratchet_stops, save_position=self.save_active_position,
+            trading_cfg=self.trading_cfg,
+        ).manage(open_trades, ctx, intel)
 
 
     def _timed_call(self, stage, function, *args, **kwargs):
@@ -219,6 +222,12 @@ class NiftyOptionsTrader(PositionLifecycle):
 
     def _check_ai_stop_loss(self, trade: dict, ctx: dict):
         """Asynchronous Two-Step Stop Loss check called on monitoring ticks."""
+        from trading.domain.unified_stop_workflow import r01_unified_active
+        if r01_unified_active(trade, self.trading_cfg):
+            # New R01 positions use one stop authority. This suppresses
+            # competing post-fill strategy-specific AI stops, NOT the
+            # mandatory AI consultation/veto before entry.
+            return
         if not trade or trade.get("status") != "OPEN" or getattr(self, "ai_consultant", None) is None:
             return
         status = trade.get("ai_stop_status")

@@ -3,6 +3,7 @@
 from trading.domain.limits import HARD_SQUARE_OFF
 from trading.domain.states import is_exiting
 from trading.domain.trailing import runner_trigger, session_trigger
+from trading.domain.unified_stop_workflow import decide_unified_stop, r01_unified_active
 from trading.domain.volatility import vix_exit_settings
 import logging
 from market_clock import MarketClock
@@ -12,12 +13,13 @@ logger = logging.getLogger("NiftyAI")
 
 
 class PositionMonitor:
-    def __init__(self, strategy_cfg, state_verified, exit_trade, ratchet_stops, save_position=None):
+    def __init__(self, strategy_cfg, state_verified, exit_trade, ratchet_stops, save_position=None, trading_cfg=None):
         self.strategy_cfg = strategy_cfg
         self.state_verified = state_verified
         self.exit_trade = exit_trade
         self.ratchet_stops = ratchet_stops
         self.save_position = save_position
+        self.trading_cfg = trading_cfg or {}
 
     def manage(self, open_trades: list, ctx: dict, intel: dict) -> list:
         """
@@ -72,6 +74,52 @@ class PositionMonitor:
                     remaining_open.append(t)
                 continue
             trade_id = t.get("trade_id")
+            if r01_unified_active(t, self.trading_cfg):
+                # All R01 strategies share one verified-bid/time-aware trailing
+                # policy; legacy timers, targets, runner thresholds, VWAP/EMA
+                # trailing and strategy-specific initial stops are NOT applied.
+                # Technical entry invalidation remains an independent safety
+                # exit and is never allowed to relax the unified floor.
+                action = decide_unified_stop(
+                    t, MarketClock.now_ist(),
+                    initial_loss_pct=self.trading_cfg.get("risk", {})
+                    .get("option_hard_stop_pct", 25),
+                )
+                reason = action.reason if action.kind == "EXIT" else None
+                if action.kind != "HOLD" and reason is None:
+                    spot_price = ctx.get("spot")
+                    level = t.get("invalidation_level")
+                    symbol = t.get("symbol", "")
+                    instrument = t.get("instrument_id", "")
+                    ce = symbol.endswith("CE") or "-CE" in instrument
+                    pe = symbol.endswith("PE") or "-PE" in instrument
+                    try:
+                        technical_breach = (
+                            level is not None and spot_price is not None
+                            and (
+                                (ce and float(spot_price) <= float(level))
+                                or (pe and float(spot_price) >= float(level))
+                            )
+                        )
+                    except (TypeError, ValueError):
+                        technical_breach = False
+                    if technical_breach:
+                        reason = "STRUCTURAL_INVALIDATION_VERIFIED_SPOT"
+                if reason is not None:
+                    if action.reason == "UNIFIED_PROTECTIVE_FLOOR_BREACHED":
+                        reason += f" floor={action.trigger:.2f} phase={action.phase}"
+                    result = self.exit_trade(trade_id, reason, limit_price=t.get("last_bid"))
+                    if result.get("status") != "CLOSED":
+                        remaining_open.append(t)
+                elif action.kind == "RATCHET":
+                    # Every R01 market-monitor pass updates durable OMS
+                    # desired protection before any broker modification.
+                    self.ratchet_stops(t, action.trigger)
+                    remaining_open.append(t)
+                else:
+                    # No price-based decision from missing/stale broker quote.
+                    remaining_open.append(t)
+                continue
             if t.get("quote_verified") is False and MarketClock.now_ist().strftime("%H:%M") < HARD_SQUARE_OFF:
                 remaining_open.append(t)
                 continue
