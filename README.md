@@ -31,11 +31,11 @@ Automated, multi-factor AI trading engine for **NIFTY 50 Index Options**, combin
 > * 🚀 **WITH STEP-LADDER COMPOUNDING (Strategy 4 Active - 2 to 10 Lots):** Compounded ₹10k into **₹118,434.05 (+1,084.3% Net ROI / >11x compounding)** across 30 sessions, and into **₹152,563.90 (+1,425.6% Net ROI / >15x compounding)** across 60 multi-regime sessions with automatic drawdown de-escalation.
 >
 > **Operating Mandate for Any Agent or Operator:**
-> 1. **Zero Trades Without Evaluation:** Every candidate trade (`BUY_CE` or `BUY_PE`) must be evaluated by the Risk Gatekeeper ([`ai_consultant.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/ai_consultant.py)) against the [Deterministic Rules Playbook](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/config/rules_playbook.md).
+> 1. **Zero Trades Without Evaluation:** Every candidate trade (`BUY_CE` or `BUY_PE`) must be evaluated by the Risk Gatekeeper ([`ai_consultant.py`](ai_consultant.py)) against the [Deterministic Rules Playbook](config/rules_playbook.md).
 > 2. **AI Definition Mandate:** "AI" refers **EXCLUSIVELY to the Antigravity AI Code Companion** (`--ai-mode chat`). Running in `--ai-mode rules` or `--ai-mode playbook` executes **100% deterministic code rules**, NOT AI.
 > 3. **Supreme Veto Authority:** If any of the 8 Institutional Traps are flagged, the setup is **instantly vetoed** and the system stands aside in cash.
 > 4. **Fail-Safe to Capital Preservation:** If consultation times out, disconnects, or encounters an error, the engine **fails-safe to ZERO trades placed**. Never fall back to blind execution.
-> 4. **Detailed Reference:** See [AI Architecture & Operational Directive](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/docs/AI_ARCHITECTURE_AND_DIRECTIVE.md).
+> 4. **Detailed Reference:** See [AI Architecture & Operational Directive](docs/AI_ARCHITECTURE_AND_DIRECTIVE.md).
 
 ---
 
@@ -88,25 +88,25 @@ Automated, multi-factor AI trading engine for **NIFTY 50 Index Options**, combin
 ```
 
 ### Core Components
-1. **News-First Market Intelligence ([`market_intelligence.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/market_intelligence.py))**:
+1. **News-First Market Intelligence ([`market_intelligence.py`](market_intelligence.py))**:
    - Ingests real-time catalysts (Crude Oil, Dow Jones, Nasdaq, USD/INR) and live financial RSS feeds (Moneycontrol, ET Markets) with zero paid API keys.
    - Computes composite macro bias (-3 to +3), highlights top catalysts, and flags macro-price trap divergences.
    - Automatically maintains `logs/latest_intelligence.json` and `logs/latest_intelligence.md` at every cycle.
-2. **In-Process Market Data ([`trading/adapters/market_data.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/trading/adapters/market_data.py)) & Native Gateways ([`trading/adapters/gateways/kite.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/trading/adapters/gateways/kite.py) & [`breeze.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/trading/adapters/gateways/breeze.py))**:
+2. **In-Process Market Data ([`trading/adapters/market_data.py`](trading/adapters/market_data.py)) & Native Gateways ([`trading/adapters/gateways/kite.py`](trading/adapters/gateways/kite.py) & [`breeze.py`](trading/adapters/gateways/breeze.py))**:
    - Direct broker market data ingestion (Kite & ICICI Breeze) with zero external port 8000 server dependency.
    - Serves real completed spot candles, true Session VWAP, 5m EMAs, option chain Open Interest (OI), India VIX, and banking/IT sector breadth.
    - Native execution gateways implement idempotent BUY limit orders, crash-safe intent journalling (`logs/broker_intents.json`), resting stop-loss orders, and dynamic ratchets.
-3. **Execution Client ([`execution_client.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/execution_client.py))**:
+3. **Execution Client ([`execution_client.py`](execution_client.py))**:
    - Client wrapper for local proxy OMS (used when running with `--broker proxy` or for paper simulation).
-4. **AI Market Dossier & Consultation Gateway ([`ai_context_dossier.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/ai_context_dossier.py) & [`ai_consultant.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/ai_consultant.py))**:
+4. **AI Market Dossier & Consultation Gateway ([`ai_context_dossier.py`](ai_context_dossier.py) & [`ai_consultant.py`](ai_consultant.py))**:
    - Compiles comprehensive 6-section market dossiers (EMA ribbons, VWAP blender geometry, consolidation boxes, order flow, heavyweights, India VIX, sector breadth, and live news headlines).
    - Serves the **Antigravity Chat-Assisted Pair-Trading** handshake (`mode: "chat"`) or autonomous (`mode: "playbook"`).
    - Evaluates candidate trades against the **8 Institutional Traps** plus **Sector Divergence Veto** before any capital is committed.
-5. **AI Opportunity Radar ([`ai_opportunity_radar.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/ai_opportunity_radar.py))**:
+5. **AI Opportunity Radar ([`ai_opportunity_radar.py`](ai_opportunity_radar.py))**:
    - Autonomous multi-regime opportunity discovery engine (Strategy 4).
    - Continuously evaluates the 6D market state on every bar to identify high-conviction **Dynamic Trend Pullbacks** and **Morning Climax Springs**.
    - Computes structural wick invalidation levels to cap false turns at -6% to -8% loss rather than enduring full -30% theta drawdowns.
-6. **Trader & Scheduler Engine ([`nifty_trader_scheduler.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/nifty_trader_scheduler.py))**:
+6. **Trader & Scheduler Engine ([`nifty_trader_scheduler.py`](nifty_trader_scheduler.py))**:
    - Coordinates the 1-minute execution cycle.
    - Seamlessly switches between Strategy 4 (`ai_opportunity_radar`) and Strategy 3 (`institutional_pullback` backup).
    - Uses **True Spot Session VWAP** and **5m EMAs** derived from spot candles for 100% mathematical parity with the backtest engine.
@@ -354,7 +354,7 @@ Accept: application/json
 
 ---
 
-### 5. PR #51 Order Execution & OMS Engine ([`execution_client.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/execution_client.py))
+### 5. PR #51 Order Execution & OMS Engine ([`execution_client.py`](execution_client.py))
 
 All order execution endpoints support both `PAPER` simulation and `LIVE` broker execution via the header `X-AI-Execution-Key`.
 
@@ -377,7 +377,7 @@ All order execution endpoints support both `PAPER` simulation and `LIVE` broker 
 
 ---
 
-### 6. Python Client Usage Example ([`execution_client.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/execution_client.py))
+### 6. Python Client Usage Example ([`execution_client.py`](execution_client.py))
 
 ```python
 from execution_client import AIExecutionClient
@@ -419,7 +419,7 @@ client.exit_position(fill["order_id"], limit_price=92.50)
 The engine operates on a collaborative **Pair-Trading model** between the background execution daemon and **Antigravity Chat**. The daemon never places orders autonomously into live markets without clearing the setup through the consultation gateway.
 
 ### 1. Mandatory News-First Intelligence Check (Step 3)
-Before candidate entries are analyzed or planned, the engine ingests real-time external catalysts via [`market_intelligence.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/market_intelligence.py) on every 1-minute cycle:
+Before candidate entries are analyzed or planned, the engine ingests real-time external catalysts via [`market_intelligence.py`](market_intelligence.py) on every 1-minute cycle:
 - **Global Intermarket Cues:** Real-time prices and percentage changes for Brent/Crude Oil (`CL=F`), Dow Jones (`^DJI`), Nasdaq (`^IXIC`), and USD/INR (`INR=X`).
 - **Live Indian Financial News:** Real-time headlines and stories scraped from top financial RSS feeds (Moneycontrol, Economic Times / ET Markets).
 - **Macro Traps & Divergence Detection:**
@@ -429,7 +429,7 @@ Before candidate entries are analyzed or planned, the engine ingests real-time e
 
 ### 2. The Trade Capture & Dossier Handshake (`mode: "chat"`)
 When Strategy 3 detects a qualified technical setup (`BUY_CE` or `BUY_PE`):
-1. **Dossier Compilation:** The scheduler compiles a complete 6-section [`MarketDossier`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/ai_context_dossier.py) combining:
+1. **Dossier Compilation:** The scheduler compiles a complete 6-section [`MarketDossier`](ai_context_dossier.py) combining:
    - True Spot VWAP distance, slope, and 60-minute crosses
    - 5m EMA9/EMA20 trend alignment and pullback distance
    - 15m & 30m Range Box boundaries and compression
@@ -480,7 +480,7 @@ When Strategy 3 detects a qualified technical setup (`BUY_CE` or `BUY_PE`):
 
 ## 🧠 AI Consultation Gateway & The 8 Institutional Traps
 
-Before any trade is executed, the scheduler builds a complete [`MarketDossier`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/ai_context_dossier.py) and submits it to [`AIConsultant`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/ai_consultant.py). The gateway evaluates **8 institutional market traps** cataloged in [`config/rules_playbook.md`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/config/rules_playbook.md):
+Before any trade is executed, the scheduler builds a complete [`MarketDossier`](ai_context_dossier.py) and submits it to [`AIConsultant`](ai_consultant.py). The gateway evaluates **8 institutional market traps** cataloged in [`config/rules_playbook.md`](config/rules_playbook.md):
 
 1. **Trap 1: The VWAP Blender** — Choppy rotation with $\ge 3$ VWAP crosses in 60m and spot within 18 pts of flat VWAP. Vetoes entries to prevent whipsaws.
 2. **Trap 2: Extreme Heavyweight Divergence** — Single-stock artificial index rallies (e.g. HDFC up while Reliance is breaking down $<-0.55\%$). Vetoes trades lacking broad institutional sponsorship.
@@ -548,8 +548,8 @@ Audited across **30 trading sessions (Aug 31 – Oct 16, 2026)** and stress-test
 
 > [!NOTE]
 > 📖 **Full Historical Audits:**
-> - Complete trade-by-trade audit across all 30 sessions documented in [`docs/30_SESSIONS_TRADE_JOURNAL.md`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/docs/30_SESSIONS_TRADE_JOURNAL.md).
-> - Multi-regime simulation engine and verification script: [`backtest_ai_opportunity_radar.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/backtest_ai_opportunity_radar.py).
+> - Complete trade-by-trade audit across all 30 sessions documented in [`docs/30_SESSIONS_TRADE_JOURNAL.md`](docs/30_SESSIONS_TRADE_JOURNAL.md).
+> - Multi-regime simulation engine and verification script: [`backtest_ai_opportunity_radar.py`](backtest_ai_opportunity_radar.py).
 
 ---
 
@@ -592,7 +592,7 @@ Instead of an unconstrained all-in sizing model, R01 caps quantity according to 
 ### 2. Sizing Governor & Drawdown Protection
 1. **Dynamic De-escalation:** Sizing is tied to real-time available margin. If account equity pulls back below any milestone, sizing immediately drops to the lower tier.
 2. **Zero-Shortfall Buffer Gate:** Order quantity is strictly bounded by `(available_margin - 150) // (contract_price * 65)`, guaranteeing that orders never exceed liquid funds minus a ₹150 buffer for exchange turnover, STT, and statutory taxes.
-3. **Execution Integration:** Evaluated dynamically at both candidate analysis time ([`analyze()`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/nifty_trader_scheduler.py)) and order routing time ([`execute_trade()`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/nifty_trader_scheduler.py)).
+3. **Execution Integration:** Evaluated dynamically at both candidate analysis time ([`analyze()`](nifty_trader_scheduler.py)) and order routing time ([`execute_trade()`](nifty_trader_scheduler.py)).
 
 ### 3. Empirical Compounding Audit (30 & 60 Sessions)
 The Step-Ladder model was audited against Fixed Sizing and Dynamic Full Cash Reinvestment:
@@ -614,18 +614,18 @@ The Step-Ladder model was audited against Fixed Sizing and Dynamic Full Cash Rei
 
 ## 🧪 Forensic Parity Audit & Validation Tools
 
-- **Bar-by-Bar Data Parity Verification ([`verify_data_parity.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/verify_data_parity.py)):**
+- **Bar-by-Bar Data Parity Verification ([`verify_data_parity.py`](verify_data_parity.py)):**
   Audits raw OHLC candles and indicator values between live ingestion and backtest engine.
   ```powershell
   python verify_data_parity.py 2026-10-13
   # Result: 100.0% Mathematical Parity across all 340 bars
   ```
-- **Read-Only Live API Diagnostics ([`check_live_apis.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/check_live_apis.py)):**
+- **Read-Only Live API Diagnostics ([`check_live_apis.py`](check_live_apis.py)):**
   Verifies connectivity to all broker and AI endpoints without placing any orders.
   ```powershell
   python check_live_apis.py
   ```
-- **Fast Endpoints Validation ([`test_api_endpoints.py`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/test_api_endpoints.py)):**
+- **Fast Endpoints Validation ([`test_api_endpoints.py`](test_api_endpoints.py)):**
   ```powershell
   python test_api_endpoints.py
   ```

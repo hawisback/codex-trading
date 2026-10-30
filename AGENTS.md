@@ -14,7 +14,7 @@
 >    - Active ONLY in `--ai-mode chat` (interactive pair-trading where the Antigravity AI assistant evaluates candidate dossiers in real time).
 >    - If the engine is running in `--ai-mode playbook` or `--ai-mode rules`, the answer to *"Are we using AI?"* is **STRICTLY "NO"**.
 > 2. **"Deterministic Rules & Risk Guardrails" = Hardcoded Code Heuristics:**
->    - The 8 cataloged institutional traps, EMA ribbon checks, VWAP blender filters, and RSI cutoffs in `ai_consultant.py` and [`config/rules_playbook.md`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/config/rules_playbook.md) are **100% deterministic, rule-based algorithmic filters**.
+>    - The 8 cataloged institutional traps, EMA ribbon checks, VWAP blender filters, and RSI cutoffs in `ai_consultant.py` and [`config/rules_playbook.md`](config/rules_playbook.md) are **100% deterministic, rule-based algorithmic filters**.
 >    - They contain **ZERO machine learning, ZERO neural networks, and ZERO artificial intelligence**.
 >    - Confusing deterministic rules with AI previously caused severe financial loss (₹40,000 drawdown). Any agent that conflates deterministic rules with AI violates this charter.
 
@@ -94,7 +94,7 @@ The repository maintains an institutional division of responsibilities:
 
 ## 📋 Rule #5: The 8 Institutional Traps to Enforce
 
-Every candidate trade must pass the 8 institutional traps defined in [`config/rules_playbook.md`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/config/rules_playbook.md):
+Every candidate trade must pass the 8 institutional traps defined in [`config/rules_playbook.md`](config/rules_playbook.md):
 1. **Trap 1: The VWAP Blender & Midday Dead Zone** [REMOVED - Deprecated per user directive & audit to unlock midday alpha].
 2. **Trap 2: The 0DTE Penny Option Gamma Trap** (Veto 0DTE options $< ₹12.0$).
 3. **Trap 3: The V-Reversal Counter-Trend Trap** (Veto Puts if RSI $> 55$ or rapid bounce above EMA9).
@@ -133,7 +133,7 @@ To launch with interactive Antigravity AI Chat Pair-Trading directly in the IDE:
    ```powershell
    python nifty_trader_scheduler.py --broker kite --market-data-broker kite --live --strategy macd_momentum --ai-mode chat --wait-until-market-open
    ```
-   *(For full architecture, purchasing power math, and reactive wakeup protocol, see [`docs/AI_COMPANION_PAIR_TRADING.md`](file:///c:/Users/hawis/Documents/antigravity/splendid-bardeen/docs/AI_COMPANION_PAIR_TRADING.md))*.
+   *(For full architecture, purchasing power math, and reactive wakeup protocol, see [`docs/AI_COMPANION_PAIR_TRADING.md`](docs/AI_COMPANION_PAIR_TRADING.md))*.
 
 ### 3. Account & Data Verification (Read-Only Pre-Flight):
 To run read-only pre-flight account & data verification before market open:
