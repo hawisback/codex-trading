@@ -1,5 +1,8 @@
 # Execution recovery and verification
 
+> **Current branch note:** The existing OMS recovery below also owns the broker stop creation/ratchet/exit path for new R01 positions stamped `r01-owner-20261029-v1`. The [shared unified stop decision](architecture/R01_UNIFIED_STOP_EXECUTION.md) is now integrated into `StopManager` and `PositionMonitor`; unknown ACK, stop cancellation, partial fill and crash recovery **still require executed verification**. Native Kite/Breeze LIVE account leases now guard authenticated mutation transport but are not distributed fencing. For exact status see [current release record](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md). No tests have been run for the new increment.
+
+
 The scheduler uses `position_lifecycle.py` for deterministic order management and
 `execution_safety.py` for atomic state, response validation and the process lock.
 Strategy analysis still calls the mandatory AI consultant before proposing an

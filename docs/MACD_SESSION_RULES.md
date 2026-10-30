@@ -1,5 +1,8 @@
 # Strategy 5 session rules
 
+> **Legacy vs R01 clarification (2026-10-30):** The strategy-specific entry conditions and original two-entry limit described below govern the **unstamped/disabled-R01 legacy mode**. When the approved `r01_policy` feature is eventually enabled, the R01 policy increases the reconciled daily filled-entry ceiling to **10**, while MACD's verified-flat cooldown remains, and **all new R01-stamped positions use the unified strategy-independent stop** in [R01_UNIFIED_STOP_EXECUTION.md](architecture/R01_UNIFIED_STOP_EXECUTION.md), not the legacy MACD trailing model described here. R01 is off, untested and not deployed. [Current status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).
+
+
 The active `macd_momentum` profile uses deterministic entry filters and exit
 rules. `rules` and `playbook` modes use **NO AI**; true neural AI evaluation is
 only provided by the Antigravity companion in `chat` mode. Every candidate must

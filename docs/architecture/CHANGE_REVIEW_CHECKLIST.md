@@ -18,6 +18,13 @@
 
 ## Validation and deployment
 
+- [ ] The exact current branch and reviewed commit are recorded; the owner has inspected the code but **review is not execution evidence**.
+- [ ] R01-stamped unified stop parity is checked against all five strategy names, previous stronger stops, 2-second quote freshness, IST boundaries and config-switch continuity.
+- [ ] Broker P&L (session/account/opening equity/realized/unrealized) and exact instrument freeze limit have authenticated source provenance; missing fields block **new R01 entries**.
+- [ ] Verified single OMS owner at **every** LIVE entrypoint, independent of JSON arming; proxy and third-party brokers cannot be assumed fenced by native host locks.
+- [ ] Broker stop replacement, partial fill, unknown ACK, restart recovery and 15:15 square-off scenarios are tested before enabling R01 or deploying.
+
+
 - [ ] Baseline fixture mapping documented and expected effects reviewed.
 - [ ] Offline suite executed by owner before merge (`python -m tools.checks`, `python -m tools.quality`); record actual results.
 - [ ] For broker/state changes, simulated failure and supervised broker UAT evidence gathered separately.

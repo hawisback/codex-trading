@@ -1,5 +1,8 @@
 # 🧠 Antigravity AI Companion Pair-Trading Architecture & Runbook
 
+> **Current branch note (2026-10-30):** This is a prior companion-mode implementation/usage record, not approval to run LIVE. Mandatory pre-entry chat/rules consultation and veto are preserved. Newly R01-stamped positions use one time-aware stop policy and **do not** run competing legacy post-fill two-step AI stop overrides; older positions retain original rules. The new integration is disabled, has not been regression/UAT verified and is not deployed. See [canonical status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).
+
+
 > **System Scope:** Autonomous in-IDE Pair-Trading with the Antigravity Neural LLM  
 > **Status:** Active in Production  
 > **Strategy:** Strategy 5 / Path A (`macd_momentum`)

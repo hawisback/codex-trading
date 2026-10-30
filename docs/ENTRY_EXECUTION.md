@@ -1,5 +1,8 @@
 # AI entry bands and just-in-time quotes
 
+> **2026-10-30 scope correction:** The figures and `₹70` example below reflect an older entry-policy/strategy snapshot; they must not be treated as the current effective risk configuration for every profile. Current `config/trading.json` specifies `max_entry_quote_age_seconds=3`, `entry_quote_timeout_sec=3`, `ai_approval_ttl_seconds=15`, `max_entry_candidate_age_seconds=60`, `option_selection.min_option_premium=15` and `max_option_premium=135`; strategy overrides and the final submission policy can tighten those values. In **opted-in R01** the fixed price-only penny/option-premium vetoes are suppressed but the authenticated broker margin, quote/AI approval envelope, liquidity, risk and execution gates remain. The feature flag is **off**, and the new LIVE code is untested. [Current branch status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) · [R01 runbook](architecture/R01_ACTIVATION_RUNBOOK.md).
+
+
 The scheduler still calls the actual AI consultant before any entry. A successful
 evaluation now authorizes a price band for one contract, setup, reference price,
 candidate timestamp, and optional structural invalidation level. Vetoes, traps,
@@ -10,20 +13,19 @@ tighten the authorized bounds but cannot widen them.
 
 `config/trading.json` contains the execution settings:
 
-| Setting | Default |
+| Setting | Current JSON or legacy context |
 | --- | --- |
 | Trend/other approved setup upside allowance | 5% |
 | Explicit `CLIMAX_SPRING` upside allowance | 3% |
 | Downside allowance | 8% |
 | Absolute upside allowance | ₹4 |
 | Marketable limit buffer | 1 tick (₹0.05) |
-| Maximum quote age, including request elapsed time | 1 second |
-| Quote socket-operation timeout, without retry | 1 second |
-| Approval validity after evaluation returns | 5 seconds |
-| Maximum age of the original candidate | 15 seconds |
+| Maximum quote age, including request elapsed time | 3 seconds in current JSON; strategy and broker guards may be stricter |
+| Quote socket-operation timeout, without retry | 3 seconds in current JSON; actual transport budget can be shorter |
+| Approval validity after evaluation returns | 15 seconds in current JSON, subject to mandatory consultation and further submission checks |
+| Maximum age of the original candidate | 60 seconds in current JSON; shorter policy gates may apply |
 
-The existing selection limits also apply at execution: ₹15 minimum premium,
-₹70 maximum premium, and 3% maximum bid/ask spread, measured against best bid.
+Legacy candidate and strategy selection can impose a premium minimum or a tighter ceiling than the global current JSON (₹15 to ₹135), plus the 3% spread gate. The earlier ₹70 example below is a **legacy strategy snapshot**, not a universal present ceiling. R01 only disables fixed price-label vetos for opted-in new positions; verified executable prices and liquidity remain mandatory.
 These are configurable policy starting values, not empirically validated claims
 about profitable execution or risk/reward. Raising execution tolerances does not
 change the AI's institutional trap rules or authorize 0DTE contracts excluded by
@@ -31,8 +33,7 @@ the existing selection configuration.
 
 For reference price `P`, the policy ceiling is the minimum of the percentage cap,
 `P + ₹4`, and the premium cap. The ceiling rounds down and the floor rounds up to
-₹0.05 ticks. A reference of ₹67 therefore gives a normal band of ₹61.65–₹70.00
-with the current premium cap; a climax spring gives ₹61.65–₹69.00.
+₹0.05 ticks. Under that **historical ₹70-cap illustration**, a reference of ₹67 gives a normal band of ₹61.65–₹70.00 and a climax spring gives ₹61.65–₹69.00. Do not use the example as an R01 authorization or live price limit.
 
 Chat approvals may supply narrower `min_entry_price`/`max_entry_price` fields.
 The pending consultation JSON publishes the proposed policy band. Both chat and

@@ -1,8 +1,10 @@
 # R01 Unified Stop Loss — Integrated Execution Contract
 
 **Branch:** `feature/live-activation-guardrails-20261030`  
-**Status:** Implemented and regression fixtures authored; **NOT tested, merged, enabled, or broker-UAT validated**.  
+**Status:** Implementation reviewed by the owner; regression fixtures authored, **NOT run**, not merged, enabled, deployed or broker-UAT validated.  
 **Activation:** `config/trading.json:r01_policy.enabled=false` remains unchanged.
+
+Current implementation/release record: [CURRENT_IMPLEMENTATION_STATUS_20261030.md](CURRENT_IMPLEMENTATION_STATUS_20261030.md).
 
 ## End-to-end ownership
 

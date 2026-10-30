@@ -1,5 +1,8 @@
 # 🧠 AI Architecture & Operational Directive
 
+> **Current R01 integration notice:** The mandatory pre-entry consultant evaluation/veto remains unchanged. New R01-stamped positions now use a single stop authority (unified `StopManager`/`PositionMonitor`), so only their *legacy post-fill* two-step AI stop override is skipped; existing unstamped positions retain the prior behavior. Earlier profit/lot claims in this directive are **historical research, not LIVE certification**. See [2026-10-30 current status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) and [unified stop contract](architecture/R01_UNIFIED_STOP_EXECUTION.md). Feature disabled, new tests not run, no supervised broker validation.
+
+
 > **Document Type:** Production Architecture Specification & Institutional Directive  
 > **Status:** Active & Inviolable  
 > **Target Systems:** `nifty_trader_scheduler.py`, `ai_consultant.py`, `ai_context_dossier.py`, `market_intelligence.py`  

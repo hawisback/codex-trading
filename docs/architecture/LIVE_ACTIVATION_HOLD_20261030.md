@@ -3,8 +3,10 @@
 **Repository:** `hawisback/codex-trading`  
 **Work branch:** `feature/live-activation-guardrails-20261030`  
 **Base:** `refactor/r02-r10-safety-foundations-20261029`  
-**Status:** CODE STAGED FOR REVIEW. **NOT ENABLED / NOT TESTED / NOT DEPLOYED.**  
+**Status:** INTEGRATION CODE OWNER-REVIEWED; **NOT ENABLED / NOT TESTED / NOT BROKER-UAT VERIFIED / NOT MERGED OR DEPLOYED.**  
 **Owner request:** Implement and enable all phases for LIVE. The engineering integration can progress; a real-money go-live cannot be certified or executed without missing broker evidence and validation.
+
+See [canonical current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md) and [unified stop integration specification](R01_UNIFIED_STOP_EXECUTION.md). Owner code review does **not** replace the still-unexecuted offline regression, adverse OMS recovery or supervised broker acceptance gates.
 
 ## Implemented in this increment
 
