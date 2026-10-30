@@ -736,6 +736,11 @@ class PositionLifecycle:
                  "invalidation_level": decision.get("invalidation_level"), "entry_execution": evidence}
         if r01:
             state["r01_policy_version"] = "r01-owner-20261029-v1"
+            # Freeze the risk percentage for the position's lifetime.
+            # Disabling R01 for new entries cannot loosen existing stops.
+            state["r01_initial_stop_pct"] = self.trading_cfg.get(
+                "risk", {}
+            ).get("option_hard_stop_pct", 25)
         if decision.get("stop_loss_context") is not None:
             state["entry_market_context"] = copy.deepcopy(decision["stop_loss_context"])
         if decision.get("stop_loss_policy"):

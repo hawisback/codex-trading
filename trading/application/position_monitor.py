@@ -82,8 +82,10 @@ class PositionMonitor:
                 # exit and is never allowed to relax the unified floor.
                 action = decide_unified_stop(
                     t, MarketClock.now_ist(),
-                    initial_loss_pct=self.trading_cfg.get("risk", {})
-                    .get("option_hard_stop_pct", 25),
+                    initial_loss_pct=t.get(
+                        "r01_initial_stop_pct",
+                        self.trading_cfg.get("risk", {}).get("option_hard_stop_pct", 25),
+                    ),
                 )
                 reason = action.reason if action.kind == "EXIT" else None
                 if action.kind != "HOLD" and reason is None:

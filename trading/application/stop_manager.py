@@ -84,8 +84,10 @@ class StopManager:
         # and the OMS on entry/recovery. Retain confirmed stronger stops.
         proposal = r01_stop_floor(
             state, MarketClock.now_ist(),
-            initial_loss_pct=getattr(self.owner, "trading_cfg", {})
-            .get("risk", {}).get("option_hard_stop_pct", 25),
+            initial_loss_pct=state.get(
+                "r01_initial_stop_pct", getattr(self.owner, "trading_cfg", {})
+                .get("risk", {}).get("option_hard_stop_pct", 25)
+            ),
         )
         if proposal is None:
             state["risk_exit_required"] = "Unified stop policy evidence invalid"

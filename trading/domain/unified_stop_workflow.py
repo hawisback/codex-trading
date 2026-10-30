@@ -25,12 +25,10 @@ class UnifiedStopAction:
 
 
 def r01_unified_active(state: Mapping[str, Any], trading_cfg: Mapping[str, Any]) -> bool:
-    if not isinstance(state, Mapping) or not isinstance(trading_cfg, Mapping):
-        return False
-    flags = trading_cfg.get("r01_policy", {})
-    return (isinstance(flags, Mapping)
-            and flags.get("enabled") is True
-            and flags.get("unified_stop_enabled") is True
+    # The flag governs NEW entries. Once an entry has been stamped, its
+    # original stop authority remains active even if runtime config is
+    # disabled mid-session; this prevents retroactive policy migration.
+    return (isinstance(state, Mapping)
             and state.get("r01_policy_version") == R01_STOP_VERSION)
 
 
