@@ -7,6 +7,7 @@
 | Purpose | Document | What it establishes |
 | --- | --- | --- |
 | Branch and release truth | [Current implementation status](architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md) | New R01/guardrail/unified stop implementation versus remaining verification and broker contracts |
+| Production decision | [Production readiness](PRODUCTION_READINESS.md) | Explicit BLOCKED acceptance matrix for offline, broker UAT and final operator approval |
 | Real-money release blockers | [LIVE activation hold](architecture/LIVE_ACTIVATION_HOLD_20261030.md) | Missing authenticated day P&L, instrument freeze limits, source-of-truth calendar/master, tests and UAT |
 | R01 policy activation contract | [R01 activation runbook](architecture/R01_ACTIVATION_RUNBOOK.md) | Exact broker fields, lot and risk policy, enabled flag and rollback constraints |
 | Unified position stops | [R01 unified stop execution](architecture/R01_UNIFIED_STOP_EXECUTION.md) | Stamped per-position policy, strategy-neutral stop schedule, broker OMS and freshness |
