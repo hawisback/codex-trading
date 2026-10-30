@@ -1,6 +1,7 @@
 """Expose the established offline suite without importing root diagnostic scripts."""
 
 REGRESSION_MODULES = (
+    "tests.test_broker_diagnostics",
     "tests.test_api_contracts",
     "tests.test_market_enhancements",
     "tests.test_market_data",

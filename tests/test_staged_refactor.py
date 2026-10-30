@@ -17,6 +17,7 @@ from tests.scenarios import (
     INTELLIGENCE,
     market_responses,
     make_trader,
+    legacy_configuration,
     context_variants,
     extra_contexts,
     approved_contexts,
@@ -26,7 +27,6 @@ from trading.application.market_context import MarketContextService
 from trading.application.entry import EntryWorkflow
 from trading.models import CandidateSignal
 from trading.strategies.registry import StrategyRegistry
-from trading.configuration import load_configuration
 from trading.replay import ReplayService
 
 
@@ -126,7 +126,7 @@ class StagedParityTests(unittest.TestCase):
             (ROOT / "tests/fixtures/staged_extra_reference.json").read_text(encoding="utf-8")
         )
         trader = make_trader(self.path, "ai_opportunity_radar")
-        replay = ReplayService(load_configuration("ai_opportunity_radar", "playbook"))
+        replay = ReplayService(legacy_configuration("ai_opportunity_radar"))
         for name, context in extra_contexts(self.reference["contexts"]["normal"]["result"]).items():
             with self.subTest(scenario=name):
                 decision = trader.analyze(context, copy.deepcopy(INTELLIGENCE))
@@ -180,7 +180,7 @@ class StagedParityTests(unittest.TestCase):
         )
         for strategy in STRATEGIES:
             trader = make_trader(self.path, strategy)
-            replay = ReplayService(load_configuration(strategy, "playbook"))
+            replay = ReplayService(legacy_configuration(strategy))
             for name, context in approved_contexts(self.reference["contexts"]["normal"]["result"]).items():
                 with self.subTest(strategy=strategy, scenario=name):
                     decision = trader.analyze(context, copy.deepcopy(INTELLIGENCE))

@@ -51,7 +51,7 @@
 
 ## 💰 Rule #3: Account Constraints, Step-Ladder Compounding & Sizing
 
-> **Current policy (owner update, 2026-10-30):** R01 uses up to 2 lots below INR 40k, 4 at 40k, 6 at 60k, 8 at 80k and 10 at 100k, always limited by actual option-premium affordability and the INR 150 reserve. Daily realized + unrealized loss blocks NEW entries at INR 3,000 times each proposed entry's actual lot count; existing stop management continues. Kite is the current release target; Breeze is deferred. R01 remains disabled pending actual broker acceptance. See [canonical status](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).
+> **Current policy (owner update, 2026-10-30):** R01 uses up to 2 lots below INR 40k, 4 at 40k, 6 at 60k, 8 at 80k and 10 at 100k, always limited by actual option-premium affordability and the INR 150 reserve. Daily realized + unrealized loss blocks NEW entries at INR 3,000 times each proposed entry's actual lot count; existing stop management continues. Kite is the current release target; Breeze is deferred. R01 is configured on with `auto_trade_enabled=false` for a paused operator acceptance start; actual broker acceptance remains pending. See [canonical status](docs/architecture/CURRENT_IMPLEMENTATION_STATUS_20261030.md).
 
 
 * **Baseline Capital:** **₹10,000 Margin**.
@@ -111,7 +111,7 @@ Every candidate trade must pass the 8 institutional traps defined in [`config/ru
 
 ## 🚀 Morning Pre-Flight Command
 
-> **Do not use the historical `--live` examples below as authorization to trade.** Broker day-P&L/freeze limits, current instrument master, offline suites, OMS recovery and supervised UAT remain release blockers. `r01_policy.enabled=false` and the branch is not merged/deployed. Read [LIVE hold](docs/architecture/LIVE_ACTIVATION_HOLD_20261030.md) before any separately approved release.
+> **Do not use the historical `--live` examples below as authorization to trade.** Broker day-P&L/freeze limits, current instrument master, offline suites, OMS recovery and supervised UAT remain release blockers. `r01_policy.enabled=true` with `auto_trade_enabled=false` prepares a paused start; the branch is not merged/deployed. Read [LIVE hold](docs/architecture/LIVE_ACTIVATION_HOLD_20261030.md) before any separately approved release.
 
 
 ### 1. Deterministic Rules Mode (Algorithmic Heuristics, Zero AI):

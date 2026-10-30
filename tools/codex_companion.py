@@ -18,6 +18,7 @@ from market_clock import MarketClock
 from trading.adapters.codex_judgment import CodexJudgment
 from trading.application.companion_worker import CompanionWorker, read_json
 from trading.domain.companion_contract import (
+    CompanionError,
     judgment_schema,
     pending_consultation,
     strict_json,
@@ -25,6 +26,23 @@ from trading.domain.companion_contract import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Only application-owned codes may be printed. Arbitrary exception messages
+# can contain credentials, file contents or model output.
+PUBLIC_ERROR_CODES = frozenset((
+    "CODEX_EXECUTABLE_NOT_FOUND",
+    "CODEX_PROCESS_FAILED",
+    "MODEL_DEADLINE_EXPIRED",
+    "MODEL_CANCELLED_OR_DEADLINE_EXPIRED",
+    "MODEL_OUTPUT_MISSING_OR_OVERSIZED",
+    "COMPANION_STATE_UNVERIFIED",
+    "EVALUATION_RUBRIC_MISSING",
+    "AUTHORITATIVE_RISK_POLICY_MISSING",
+    "AUTHORITATIVE_INITIAL_PROTECTION_INVALID",
+    "JUDGMENT_SCHEMA_MISMATCH",
+    "JUDGMENT_IDENTITY_MISMATCH",
+    "ENTRY_JUDGMENT_INVALID",
+))
 
 
 def check(root, backend):
@@ -148,7 +166,10 @@ def main(argv=None):
         return 0
     except Exception as exc:
         # Never echo credentials, dossiers or raw model output into diagnostics.
-        print(json.dumps({"status": "FAILED_CLOSED", "error_type": type(exc).__name__}), flush=True)
+        report = {"status": "FAILED_CLOSED", "error_type": type(exc).__name__}
+        if isinstance(exc, CompanionError) and str(exc) in PUBLIC_ERROR_CODES:
+            report["error_code"] = str(exc)
+        print(json.dumps(report), flush=True)
         return 2
 
 

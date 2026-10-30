@@ -2,7 +2,7 @@
 
 **Original R01 branch:** `feature/r01-approved-policy-contracts-20261029`
 **Current integrated branch:** `feature/live-activation-guardrails-20261030`
-**Status:** Implemented behind `config/trading.json:r01_policy.enabled=false`. **NOT activated, merged, broker-validated or deployed.**
+**Status:** Implemented with `config/trading.json:r01_policy.enabled=true` and `auto_trade_enabled=false` for paused operator acceptance. **NOT activated, merged, broker-validated or deployed.**
 **Tests:** The owner authorized testing and repairs. The local quality wrapper and **574 registered offline tests pass**; see [validation and candidate identity](OFFLINE_VALIDATION_20261030.md). Real broker UAT and review of the final committed repair candidate remain required. See [current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md).
 
 ## Implemented behavioral contracts (only if explicitly enabled)
@@ -72,10 +72,11 @@ Read-only acceptance of these sources passed on the refreshed Kite session; see 
 
 ## Change activation and rollback
 
-- The branch intentionally ships with **`enabled: false`**. Existing
-  production order sizing/consultation/stops continue through legacy
-  paths by default, except that repository session JSON now matches
-  existing effective hard cutoffs.
+- The branch now configures **R01 enabled with new entries paused**
+  (`r01_policy.enabled=true`, `auto_trade_enabled=false`). This prepares a
+  fresh operator-started scheduler; it does not arm a gateway or change the
+  loaded policy of an already-running process. Existing unstamped positions
+  retain their frozen legacy management.
 - Before supervised activation: verify current-session broker
   evidence; record risk/stop/price envelope parity in
   fixtures; run the full offline suite; inspect OMS unknown-ACK,

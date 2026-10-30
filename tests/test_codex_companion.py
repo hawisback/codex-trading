@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 import copy
 from datetime import datetime, timedelta
 import json
+import io
 from pathlib import Path
 import tempfile
 import threading
@@ -377,11 +378,35 @@ class CodexTransportTests(unittest.TestCase):
         self.assertIn("--output-schema", command)
         self.assertNotIn("--dangerously-bypass-approvals-and-sandbox", command)
         with patch.dict(
-            "os.environ", {"KITE_ACCESS_TOKEN": "never-forward", "BREEZE_API_SECRET": "never-forward"}
+            "os.environ", {
+                "KITE_ACCESS_TOKEN": "never-forward",
+                "BREEZE_API_SECRET": "never-forward",
+                "TRADING_API_KEY": "never-forward",
+                "trading_api_key": "never-forward",
+                "PATH": "keep-runtime-path",
+            }, clear=True
         ):
             environment = backend.environment()
         self.assertNotIn("KITE_ACCESS_TOKEN", environment)
         self.assertNotIn("BREEZE_API_SECRET", environment)
+        self.assertNotIn("TRADING_API_KEY", environment)
+        self.assertNotIn("trading_api_key", environment)
+        self.assertEqual("keep-runtime-path", environment["PATH"])
+
+    def test_cli_reports_missing_executable_without_exposing_arbitrary_error_text(self):
+        from tools import codex_companion
+
+        for message, expected_code in (
+            ("CODEX_EXECUTABLE_NOT_FOUND", "CODEX_EXECUTABLE_NOT_FOUND"),
+            ("sensitive-value-must-not-be-printed", None),
+        ):
+            with self.subTest(message=message), patch.object(
+                codex_companion, "CodexJudgment", side_effect=CompanionError(message)
+            ), patch("sys.stdout", new_callable=io.StringIO) as output:
+                self.assertEqual(2, codex_companion.main(["--check"]))
+                report = json.loads(output.getvalue())
+                self.assertEqual(expected_code, report.get("error_code"))
+                self.assertNotIn("sensitive-value", output.getvalue())
 
     def test_deadline_kills_model_before_any_output_can_be_used(self):
         from unittest.mock import Mock

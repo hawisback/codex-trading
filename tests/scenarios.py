@@ -2,13 +2,18 @@
 
 import copy
 from datetime import timedelta
+from functools import partial
+import json
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from market_clock import MarketClock
 from nifty_trader_scheduler import NiftyOptionsTrader
 from test_self_healing_exit import Broker
 from trading.adapters.position_store import JsonPositionStore
+from trading.adapters.entry_controls import read_entry_control_block
+from trading.configuration import load_configuration
 
 ROOT = Path(__file__).resolve().parents[1]
 NOW = "2026-10-19T10:00:00+05:30"
@@ -85,18 +90,34 @@ def market_responses():
     }
 
 
+def legacy_configuration(strategy="institutional_pullback"):
+    """Explicit legacy test policy, independent of operator R01/pause switches."""
+    settings = copy.deepcopy(load_configuration(strategy, "playbook", root=ROOT, environ={}))
+    settings.trading.update(auto_trade_enabled=True, system_armed=True, kill_switch=False)
+    settings.trading.setdefault("r01_policy", {})["enabled"] = False
+    return settings
+
+
 def make_trader(path, strategy="institutional_pullback"):
     broker = Broker()
-    return NiftyOptionsTrader(
-        strategy=strategy,
-        ai_mode="playbook",
-        client=broker,
-        quote_reader=broker,
-        intelligence=SimpleNamespace(
-            get_market_intelligence=lambda **kw: copy.deepcopy(INTELLIGENCE), stop_worker=lambda **kw: True
-        ),
-        state_store=JsonPositionStore(path),
-    )
+    settings = legacy_configuration(strategy)
+    with patch("nifty_trader_scheduler.load_configuration", return_value=settings):
+        trader = NiftyOptionsTrader(
+            strategy=strategy,
+            ai_mode="playbook",
+            client=broker,
+            quote_reader=broker,
+            intelligence=SimpleNamespace(
+                get_market_intelligence=lambda **kw: copy.deepcopy(INTELLIGENCE),
+                stop_worker=lambda **kw: True,
+            ),
+            state_store=JsonPositionStore(path),
+        )
+    controls = Path(path).parent / "scenario-trading.json"
+    controls.parent.mkdir(parents=True, exist_ok=True)
+    controls.write_text(json.dumps(settings.trading), encoding="utf-8")
+    trader.entry_control_reader = partial(read_entry_control_block, controls)
+    return trader
 
 
 def context_variants(context):

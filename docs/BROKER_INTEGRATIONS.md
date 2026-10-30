@@ -53,6 +53,16 @@ and returns exit code 1 when either selected broker is unavailable. It does not
 certify live quote entitlements, fills, static-IP acceptance or market readiness.
 It performs real read requests only when explicitly invoked by the operator.
 
+The report separates the saved `configuration.configured_mode` and nested R01
+controls from each broker's diagnostic `mode`. For example, configured `LIVE`
+and diagnostic `PAPER` are consistent: this command creates its own unarmed
+gateway for read-only verification. `mode_scope=DIAGNOSTIC_GATEWAY_ONLY` and
+`ready_scope=BROKER_READS_ONLY` make that scope explicit. `live_authorized=false`
+belongs to that diagnostic gateway; `scheduler_execution_status=NOT_OBSERVED`
+means the report has not inspected a running scheduler. Never relabel a gateway
+LIVE or call `set_mode("LIVE")` merely to match the saved JSON. Configuration
+validation failures produce exit code 1 without disclosing arbitrary fields.
+
 **Historical/native CLI syntax only; do not launch without a separately approved release.** Having a session and feed is insufficient until broker P&L/freeze, instrument master, offline validation, OMS crash recovery and supervised UAT are verified:
 
 ```powershell

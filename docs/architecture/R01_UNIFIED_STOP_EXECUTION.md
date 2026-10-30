@@ -1,8 +1,8 @@
 # R01 Unified Stop Loss — Integrated Execution Contract
 
 **Branch:** `feature/live-activation-guardrails-20261030`
-**Status:** Implementation reviewed by the owner; local regression and native fake-transport fixtures pass, not merged, enabled, deployed or broker-UAT validated.
-**Activation:** `config/trading.json:r01_policy.enabled=false` remains unchanged.
+**Status:** Implementation reviewed by the owner; local regression and native fake-transport fixtures pass, not merged, deployed or broker-UAT validated; new entries remain paused.
+**Configuration:** `config/trading.json:r01_policy.enabled=true` with `auto_trade_enabled=false` prepares a paused operator start; it does not authorize broker execution.
 
 Current implementation/release record: [CURRENT_IMPLEMENTATION_STATUS_20261030.md](CURRENT_IMPLEMENTATION_STATUS_20261030.md).
 

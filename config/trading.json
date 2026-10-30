@@ -1,10 +1,10 @@
 {
   "mode": "LIVE",
-  "auto_trade_enabled": true,
+  "auto_trade_enabled": false,
   "system_armed": true,
   "kill_switch": false,
   "r01_policy": {
-    "enabled": false,
+    "enabled": true,
     "capital_basis": "available_margin",
     "daily_loss_per_lot_inr": 3000,
     "daily_loss_basis": "proposed_entry_lots",

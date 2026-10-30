@@ -25,6 +25,9 @@ class HybridReplayTests(unittest.TestCase):
         self.today = self.bars(self.start, 120)
         self.cfg = json.loads((ROOT / "config/strategies.json").read_text())["strategies"]["macd_momentum"]
         self.trading = json.loads((ROOT / "config/trading.json").read_text())
+        # This fixture verifies the legacy penny-option trap, independent of
+        # the operator's R01 opt-in (whose price-only veto is disabled).
+        self.trading.setdefault("r01_policy", {})["enabled"] = False
         self.reviewer = HybridHistoricalReview(self.cfg, self.trading)
 
     def bars(self, start, count, flat=False):

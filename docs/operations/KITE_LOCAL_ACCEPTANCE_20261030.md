@@ -7,7 +7,7 @@ identity, single-writer lease, consultant veto, risk gates and OMS protections.
 ## Completed engineering evidence
 
 - Owner-approved lot milestones and per-entry INR 3,000-per-lot loss budget are
-  implemented behind `r01_policy.enabled=false`.
+  configured with `r01_policy.enabled=true` and `auto_trade_enabled=false` for a paused start.
 - Local fake-transport tests exercise initial stops, ratchets, partial fills,
   unknown acknowledgements, cancellation, restarts and process ownership.
 - Authenticated Kite and public NSE/Kite risk-source reads pass. Source failure
@@ -32,8 +32,8 @@ companion. The one-shot legacy watcher does not invoke it.
    `r01_policy.enabled=true` and `auto_trade_enabled=false` in
    `config/trading.json` **before starting a fresh scheduler**. Keep the approved
    risk fields intact. R01 is a startup policy; do not switch an existing legacy
-   position to it. The checked-in/default working configuration remains R01-off
-   until the operator performs this step.
+   position to it. The current working configuration already has these paused-start values;
+   verify them before each fresh acceptance start.
 3. Start `python -m tools.codex_companion` in one terminal. Start the documented
    Kite scheduler with `--ai-mode chat` in another. The operator performs this
    LIVE activation. Fresh controls are re-read by the entry cycle and immediately
@@ -68,6 +68,11 @@ restart the scheduler only after reconciling actual exposure and pending SELLs.
    Verify the intended account locally, complete books and no conflicting
    position/pending orders. Check current risk-source evidence as described in
    the validation record. Never interpret a failed read as a flat account.
+   The broker report displays saved settings under `configuration` (including
+   `configured_mode=LIVE` and nested R01 flags), separately from its unarmed
+   diagnostic gateway's `mode=PAPER`. It does not inspect or change a running
+   scheduler's execution authorization. A valid paused configuration reports
+   `entry_block_reason=AUTO_TRADE_DISABLED_OR_UNVERIFIED` as expected.
 2. In an operator-controlled broker acceptance environment, record a complete
    entry lifecycle: intended contract/account, requested versus actual filled
    quantity/price, matching protective SELL quantity and broker-confirmed stop
@@ -93,7 +98,7 @@ put session tokens or secrets in acceptance reports.
 - Retain the tested source fingerprint, current config and durable OMS state.
   Record the feature-branch repair commit after check-in. No separate deployment
   infrastructure is required for this local release.
-- The default R01 setting stays disabled. A temporary operator-controlled R01
+- The current configuration enables R01 with new entries paused. An operator-controlled R01
   trial uses the paused-start sequence above; ongoing LIVE use follows verified
   broker acceptance. All actual starts and real orders are operator actions.
 - To stop new exposure, use the existing kill switch / new-entry controls.

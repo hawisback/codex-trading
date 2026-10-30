@@ -61,7 +61,8 @@ class CodexJudgment:
         return {
             key: value
             for key, value in os.environ.items()
-            if not key.upper().startswith(prefixes) and key.upper() not in ("OPENAI_API_KEY", "CODEX_API_KEY")
+            if not key.upper().startswith(prefixes)
+            and key.upper() not in ("OPENAI_API_KEY", "CODEX_API_KEY", "TRADING_API_KEY")
         }
 
     def generate(self, packet, schema, deadline, cancel):

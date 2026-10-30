@@ -4,7 +4,7 @@
 **Work branch:** `feature/live-activation-guardrails-20261030`
 **Current release target:** **Kite only; Breeze deferred by owner.** Breeze authentication is outside this release's gates. Kite R01 read-only evidence passes; actual broker order acceptance remains required.
 **Base:** `refactor/r02-r10-safety-foundations-20261029`
-**Status:** PRIOR INTEGRATION OWNER-REVIEWED; **LOCAL OFFLINE REPAIRS PASS / NOT ENABLED / NOT BROKER-UAT VERIFIED / NOT MERGED OR DEPLOYED.** See [executed validation and local candidate identity](OFFLINE_VALIDATION_20261030.md).
+**Status:** PRIOR INTEGRATION OWNER-REVIEWED; **LOCAL OFFLINE REPAIRS PASS / CONFIGURED FOR PAUSED ACCEPTANCE / NOT BROKER-UAT VERIFIED / NOT MERGED OR DEPLOYED.** See [executed validation and local candidate identity](OFFLINE_VALIDATION_20261030.md).
 **Owner request:** Implement and enable all phases for LIVE. The engineering integration can progress; a real-money go-live cannot be certified or executed without missing broker evidence and validation.
 
 See [canonical current status](CURRENT_IMPLEMENTATION_STATUS_20261030.md), [executed offline validation](OFFLINE_VALIDATION_20261030.md) and [unified stop integration specification](R01_UNIFIED_STOP_EXECUTION.md). Passing local fixtures does not establish real broker behavior or satisfy supervised broker acceptance.
@@ -28,7 +28,7 @@ This is a single-machine Windows release. No CI, Linux/distributed rollout, or n
 
 ## Current activation facts
 
-- Current branch config remains `r01_policy.enabled=false`.
+- Current branch config has `r01_policy.enabled=true` and `auto_trade_enabled=false` for a paused operator start; this does not arm a native gateway.
 - Config text `mode: LIVE`, `system_armed: true` does not itself authorize native broker LIVE; the CLI still requires `--live` and the gateway's account authorization.
 - `main` is unchanged and no broker order was submitted, canceled or modified in this change.
 - The local repair candidate passed the quality wrapper and registered offline integration/regression tests. This does not establish real broker conformance or approve the final release commit.

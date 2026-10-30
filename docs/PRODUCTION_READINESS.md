@@ -2,7 +2,7 @@
 
 **Release gate: BLOCKED.** This file provides the production-readiness pointer expected by the earlier modernization plan. It is a release checklist, **not a certification or a command to activate LIVE**.
 
-**Code under review:** `hawisback/codex-trading` · `feature/live-activation-guardrails-20261030`. Current `r01_policy.enabled=false`; `main` has not received this increment and no production rollout has been established.
+**Code under review:** `hawisback/codex-trading` · `feature/live-activation-guardrails-20261030`. Current `r01_policy.enabled=true` with `auto_trade_enabled=false` prepares a paused start; `main` has not received this increment and no production rollout has been established.
 
 **Current release scope: Kite only.** The owner deferred Breeze; its HTTP 401
 issue is outside this release's acceptance gates. Kite account/API reads and
@@ -19,7 +19,7 @@ additional deployment/security project is required.
 | Contract-specific order freeze | **READ-ONLY PASS** | Exact Kite NIFTY master lot/tick and current published NSE freeze feed with source hashes; broker RMS acceptance remains part of UAT |
 | Expiry / market master | **READ-ONLY PASS** | Current Kite listed expiry, NSE FO holiday calendar and R05 entry resolver; conservative regular weekday sessions only, matching calendar year required |
 | OMS single-writer and recovery | **NATIVE OFFLINE PASS / UAT OPEN** | Native process exclusion, crash release and recovery fixtures pass; proxy/distributed boundary and actual broker recovery remain unverified |
-| Registered offline tests and replay | **PASS LOCALLY: 574 tests** | Windows/Python 3.14.6 quality wrapper passed; repairs remain uncommitted; tested working-tree fingerprint recorded; other environments are outside scope |
+| Registered offline tests and replay | **PASS LOCALLY: 574 tests** | Windows/Python 3.14.6 quality wrapper passed; base repairs were committed as `23df96f`; subsequent paused-configuration/reporting changes require their own validation; other environments are outside scope |
 | Codex companion | **OFFLINE + CANARY PASS** | Explicit CLI invocation, request-bound application publication and failure tests pass; actual broker chat-mode acceptance remains pending |
 | Operator entry pause | **OFFLINE PASS** | Fresh control reads and BUY-boundary enforcement; protective stop/exit paths remain active |
 | Supervised broker UAT | **NOT RUN** | Verified protected order lifecycle, actual broker response semantics and supervised incident/rollback drills |
@@ -31,7 +31,7 @@ additional deployment/security project is required.
 2. Recheck current-session Kite P&L/order-freeze/expiry evidence. Read-only integration passes; existing broker account identity, risk and single-writer protections remain mandatory.
 3. Review the [executed offline validation](architecture/OFFLINE_VALIDATION_20261030.md). The owner authorized these tests; revalidate changes to the final release candidate and record its source fingerprint.
 4. Conduct controlled broker conformance/UAT and restart/rollback drills with approved operator controls. Never infer a fill or flatness from an API acknowledgement alone.
-5. After broker acceptance passes, the operator can perform the controlled local activation. The assistant has not enabled R01 or armed the scheduler.
+5. After broker acceptance passes, the operator can perform the controlled local activation. R01 is configured on with new entries paused; the assistant has not armed a gateway or started the scheduler.
 
 `python -m tools.refactor_readiness` is a **read-only, deliberately BLOCKED** preflight and does not check broker authorization or place trades. An optimistic JSON flag or passing syntax check cannot replace any gate.
 

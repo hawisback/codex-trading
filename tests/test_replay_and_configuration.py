@@ -14,7 +14,7 @@ from unittest.mock import patch
 from ai_consultant import AIConsultant
 from backtest_engine import BacktestEngine
 from market_clock import MarketClock
-from tests.scenarios import ROOT, NOW, INTELLIGENCE, STRATEGIES, context_variants
+from tests.scenarios import ROOT, NOW, INTELLIGENCE, STRATEGIES, context_variants, legacy_configuration
 from trading.adapters.historical import WorkspaceHistoricalSource, workspace_path
 from trading.bootstrap import ensure_environment, load_environment_file
 from trading.configuration import load_configuration
@@ -196,7 +196,7 @@ class ReplayTests(unittest.TestCase):
 
     def test_all_live_strategy_decisions_and_actual_ai_verdicts_replay_identically(self):
         for strategy in STRATEGIES:
-            replay = ReplayService(load_configuration(strategy, "playbook"))
+            replay = ReplayService(legacy_configuration(strategy))
             self.assertIs(type(replay.ai_consultant), AIConsultant)
             for name, context in context_variants(self.context).items():
                 with self.subTest(strategy=strategy, scenario=name):
@@ -228,7 +228,7 @@ class ReplayTests(unittest.TestCase):
                 pass
 
     def test_news_and_time_gates_and_actual_ai_timeout_preserve_cash(self):
-        replay = ReplayService(load_configuration("institutional_pullback", "playbook"))
+        replay = ReplayService(legacy_configuration("institutional_pullback"))
         self.assertEqual(
             "INTELLIGENCE_UNAVAILABLE", replay.evaluate(self.context, {"ready": False}, now=NOW)["blocked"]
         )
