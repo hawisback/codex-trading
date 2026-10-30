@@ -13,6 +13,7 @@ REGRESSION_MODULES = (
     "tests.test_owner_lot_policy",
     "tests.test_daily_loss_policy",
     "tests.test_unified_stop_policy",
+    "tests.test_unified_stop_integration",
     "tests.test_r01_entry_bounds",
     "tests.test_boundary_safety",
     "tests.test_oms_intent_contracts",
