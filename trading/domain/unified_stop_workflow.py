@@ -61,6 +61,8 @@ def r01_stop_floor(state: Mapping[str, Any], now: datetime,
                    *, initial_loss_pct: Any = 25) -> tuple[float, str] | None:
     if not isinstance(now, datetime) or now.tzinfo is None:
         return None
+    from market_clock import IST_TZ
+    now = now.astimezone(IST_TZ)
     entry = _positive(state.get("entry_price"))
     if entry is None:
         return None

@@ -651,6 +651,10 @@ class PositionLifecycle:
         r01 = (self.trading_cfg.get("r01_policy", {}).get("enabled") is True
                and self.execution_scope.get("mode") == "LIVE")
         if r01:
+            # Unified, strategy-neutral protective logic is mandatory for
+            # the R01 policy. An incomplete opt-in must never mix exit rules.
+            if self.trading_cfg.get("r01_policy", {}).get("unified_stop_enabled") is not True:
+                return {"error": True, "detail": "R01_UNIFIED_STOP_REQUIRED"}
             try:
                 broker_funds = BrokerFundsView.validated(
                     funds,
