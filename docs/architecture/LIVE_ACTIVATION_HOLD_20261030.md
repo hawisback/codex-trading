@@ -24,7 +24,7 @@ Neither current native broker `get_funds()` normalization establishes all requir
 | `start_of_day_equity` | Actual day opening equity baseline for 1.5% loss threshold, not arbitrary configured capital | Block NEW R01 BUY |
 | `realized_pnl_today`, `unrealized_pnl_today` | Verified loss including live open exposure | Block NEW R01 BUY |
 | Current exchange calendar and validated broker instrument master | R05 code only defines a source-evidence resolver; it is not a connected authoritative feed | Do not allow unverified new expiries |
-| Unified stop parity and OMS recovery proof | Current position monitor still contains strategy-specific exits; order/stop state must survive crashes and unknown ACKs | No replacement of active LIVE OMS |
+| Unified stop parity and OMS recovery proof | R01-stamped positions now use one shared monitor and StopManager policy; legacy stops remain intentionally available for non-R01 positions. End-to-end broker/crash/partial-fill tests remain outstanding | No replacement of active LIVE OMS before verification |
 | Broker-specific rate/partial-fill/order-cancel UAT | Offline types cannot prove real broker response identity, stop coverage, quantities or live order semantics | No LIVE release |
 
 **Do not create synthetic positive data or hardcode these fields.** A broker endpoint that reports available cash alone is **not** evidence of real-time daily realized+unrealized P&L. Broker freeze quantity may depend on exchange instrument, contract and current notices.
@@ -35,7 +35,7 @@ Neither current native broker `get_funds()` normalization establishes all requir
 2. Load and verify the current broker instrument master; derive and check broker-specific order freeze limits against the current contract, with appropriate source provenance. Do not split orders without new OMS design/approval.
 3. Connect the exchange holiday and expiry source to R05 without guessing session weekdays, then enforce new-entry market-data freshness while leaving existing-position protection active.
 4. Complete and test OMS account-lease lifecycle through every permitted entrypoint, crash restart, stop replacement, partial fills and unknown broker acknowledgments.
-5. Reconcile the shared stop policy with *all* `PositionMonitor` exit and trailing rules; preserve any stronger stop and all existing open positions.
+5. **Validate the newly integrated R01 unified stop path** with legacy parity, stale quote, tick floor, stronger-stop, active-position policy freeze, partial-fill, order modification and crash/restart tests; preserve all pre-existing legacy stops. Integration is coded but not proven by execution.
 6. Run (with the owner's explicit changed instruction) the complete offline suites, replay adverse-event scenarios, and broker sandbox/supervised UAT with known-safe size and recovery drill.
 7. Obtain a separate review/approval of exact deployed commit, verified account, risk limits, operator ownership, kill switch and rollback plan. Only then consider turning `r01_policy.enabled` to true and authorizing a controlled LIVE start.
 
